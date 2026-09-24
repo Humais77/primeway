@@ -7,7 +7,6 @@ import {
   ArrowLeftRight,
   CalendarDays,
   BadgeCheck,
-  UserRound,
   Download,
   LogOut,
   Gift,
@@ -17,12 +16,20 @@ import {
   Grid2X2,
   Upload,
   LucideProps,
+  UserRound,
 } from "lucide-react";
 
 import { connectDB } from "@/src/lib/db";
 import { getSession } from "@/src/lib/auth";
 import User from "@/src/models/User";
 import { formatPKR } from "@/src/lib/money";
+
+import {
+  DashboardUIProvider,
+} from "@/src/components/dashboard/DashboardUI";
+
+import DashboardHeader from "@/src/components/dashboard/DashboardHeader";
+
 import React from "react";
 
 export default async function DashboardPage() {
@@ -41,262 +48,249 @@ export default async function DashboardPage() {
   }
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-md px-4 py-4 pb-28">
-      {/* Header */}
-      <header className="mb-4 flex items-center justify-between">
-        <button className="rounded-xl bg-white p-3 shadow-sm">
-          ☰
-        </button>
+    <DashboardUIProvider
+      fullName={user.fullName}
+      userId={String(user._id)}
+    >
+      <main className="mx-auto min-h-screen w-full max-w-md px-4 py-4 pb-28">
+        {/* Header */}
+        <DashboardHeader />
 
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-[#111b58]">
-            Prime Way
-          </h1>
+        {/* Account Card */}
+        <section className="rounded-2xl bg-gradient-to-r from-[#4020bd] to-[#063d82] p-5 text-white shadow-lg">
+          <div className="flex justify-between">
+            <div>
+              <p className="text-sm opacity-80">
+                Welcome Back!
+              </p>
 
-          <p className="text-[10px] tracking-[0.25em] text-gray-500">
-            INVEST TODAY, EARN TOMORROW
-          </p>
-        </div>
+              <h2 className="text-xl font-bold">
+                {user.fullName}
+              </h2>
 
-        <button className="rounded-xl bg-white p-3 shadow-sm">
-          🔔
-        </button>
-      </header>
+              <span className="mt-2 inline-block rounded-full bg-green-500 px-3 py-1 text-xs">
+                Active
+              </span>
+            </div>
 
-      {/* Account Card */}
-      <section className="rounded-2xl bg-gradient-to-r from-[#4020bd] to-[#063d82] p-5 text-white shadow-lg">
-        <div className="flex justify-between">
-          <div>
-            <p className="text-sm opacity-80">
-              Welcome Back!
-            </p>
+            <div className="text-right">
+              <Wallet className="ml-auto mb-2" />
 
-            <h2 className="text-xl font-bold">
-              {user.fullName}
-            </h2>
+              <p className="text-sm opacity-80">
+                Total Balance
+              </p>
 
-            <span className="mt-2 inline-block rounded-full bg-green-500 px-3 py-1 text-xs">
-              Active
-            </span>
+              <p className="text-2xl font-bold">
+                {formatPKR(user.balancePaisa)}
+              </p>
+            </div>
           </div>
+        </section>
 
-          <div className="text-right">
-            <Wallet className="ml-auto mb-2" />
-
-            <p className="text-sm opacity-80">
-              Total Balance
-            </p>
-
-            <p className="text-2xl font-bold">
-              {formatPKR(user.balancePaisa)}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Original Actions */}
-      <section className="mt-3 grid grid-cols-3 gap-2 rounded-2xl bg-white p-3 shadow-sm">
-        <button className="flex flex-col items-center gap-1 rounded-xl p-3 hover:bg-gray-50">
-          <ArrowDownToLine className="text-purple-600" />
-          <span className="text-sm">Deposit</span>
-        </button>
-
-        <button className="flex flex-col items-center gap-1 rounded-xl p-3 hover:bg-gray-50">
-          <ArrowUpFromLine className="text-green-600" />
-          <span className="text-sm">Withdraw</span>
-        </button>
-
-        <button className="flex flex-col items-center gap-1 rounded-xl p-3 hover:bg-gray-50">
-          <Wallet className="text-blue-600" />
-          <span className="text-sm">My Plan</span>
-        </button>
-      </section>
-
-      {/* Original Statistics */}
-      <section className="mt-3 grid grid-cols-2 gap-3">
-        <StatCard
-          title="Total Investment"
-          value={formatPKR(user.totalInvestmentPaisa)}
-        />
-
-        <StatCard
-          title="Total Profit"
-          value={formatPKR(user.totalProfitPaisa)}
-        />
-
-        <StatCard
-          title="Referral Earnings"
-          value={formatPKR(user.totalReferralPaisa)}
-        />
-
-        <StatCard
-          title="Total Withdrawn"
-          value={formatPKR(user.totalWithdrawnPaisa)}
-        />
-      </section>
-
-      {/* Referral */}
-      <section className="mt-3 rounded-2xl bg-white p-4 shadow-sm">
-        <div className="mb-2 flex items-center gap-2">
-          <Users className="h-5 w-5 text-purple-600" />
-
-          <h3 className="text-base font-semibold">
-            Referral Program
-          </h3>
-        </div>
-
-        <p className="text-sm text-gray-500">
-          Your referral code
-        </p>
-
-        <div className="mt-2 rounded-lg bg-gray-100 p-3 font-mono text-sm">
-          {user.referralCode}
-        </div>
-      </section>
-
-      {/* Recent Transactions */}
-      <section className="mt-3 rounded-2xl bg-white p-4 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h3 className="text-base font-bold text-[#111b58]">
-              Recent Transactions
-            </h3>
-
-            <span className="text-[11px] text-gray-400">
-              last 10 min
-            </span>
-          </div>
-
-          <button className="flex items-center text-xs font-medium text-purple-600">
-            View All
-            <span className="ml-1 text-base">›</span>
+        {/* Original Actions */}
+        <section className="mt-3 grid grid-cols-3 gap-2 rounded-2xl bg-white p-3 shadow-sm">
+          <button className="flex flex-col items-center gap-1 rounded-xl p-3 transition hover:bg-gray-50">
+            <ArrowDownToLine className="text-purple-600" />
+            <span className="text-sm">Deposit</span>
           </button>
-        </div>
 
-        <div className="flex min-h-[60px] items-center justify-center">
-          <p className="text-xs text-gray-400">
-            No transaction from the last 10 minutes.
+          <button className="flex flex-col items-center gap-1 rounded-xl p-3 transition hover:bg-gray-50">
+            <ArrowUpFromLine className="text-green-600" />
+            <span className="text-sm">Withdraw</span>
+          </button>
+
+          <button className="flex flex-col items-center gap-1 rounded-xl p-3 transition hover:bg-gray-50">
+            <Wallet className="text-blue-600" />
+            <span className="text-sm">My Plan</span>
+          </button>
+        </section>
+
+        {/* Statistics */}
+        <section className="mt-3 grid grid-cols-2 gap-3">
+          <StatCard
+            title="Total Investment"
+            value={formatPKR(user.totalInvestmentPaisa)}
+          />
+
+          <StatCard
+            title="Total Profit"
+            value={formatPKR(user.totalProfitPaisa)}
+          />
+
+          <StatCard
+            title="Referral Earnings"
+            value={formatPKR(user.totalReferralPaisa)}
+          />
+
+          <StatCard
+            title="Total Withdrawn"
+            value={formatPKR(user.totalWithdrawnPaisa)}
+          />
+        </section>
+
+        {/* Referral */}
+        <section className="mt-3 rounded-2xl bg-white p-4 shadow-sm">
+          <div className="mb-2 flex items-center gap-2">
+            <Users className="h-5 w-5 text-purple-600" />
+
+            <h3 className="text-base font-semibold">
+              Referral Program
+            </h3>
+          </div>
+
+          <p className="text-sm text-gray-500">
+            Your referral code
           </p>
-        </div>
-      </section>
 
-      {/* Quick Actions */}
-      <section className="mt-3 grid grid-cols-4 gap-2">
-        <QuickAction
-          icon={<FileText />}
-          label={
-            <>
-              Deposit
-              <br />
-              History
-            </>
-          }
-          iconClass="bg-purple-100 text-purple-600"
-        />
+          <div className="mt-2 rounded-lg bg-gray-100 p-3 font-mono text-sm">
+            {user.referralCode}
+          </div>
+        </section>
 
-        <QuickAction
-          icon={<Upload />}
-          label={
-            <>
-              Withdraw
-              <br />
-              History
-            </>
-          }
-          iconClass="bg-green-100 text-green-600"
-        />
+        {/* Recent Transactions */}
+        <section className="mt-3 rounded-2xl bg-white p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-bold text-[#111b58]">
+                Recent Transactions
+              </h3>
 
-        <QuickAction
-          icon={<ArrowLeftRight />}
-          label="Transaction"
-          iconClass="bg-orange-100 text-orange-500"
-        />
+              <span className="text-[11px] text-gray-400">
+                last 10 min
+              </span>
+            </div>
 
-        <QuickAction
-          icon={<CalendarDays />}
-          label="My Plan"
-          iconClass="bg-blue-100 text-blue-600"
-        />
+            <button className="flex items-center text-xs font-medium text-purple-600">
+              View All
+              <span className="ml-1 text-base">›</span>
+            </button>
+          </div>
 
-        <QuickAction
-          icon={<BadgeCheck />}
-          label="Verified"
-          iconClass="bg-pink-100 text-pink-500"
-        />
+          <div className="flex min-h-[60px] items-center justify-center">
+            <p className="text-xs text-gray-400">
+              No transaction from the last 10 minutes.
+            </p>
+          </div>
+        </section>
 
-        <QuickAction
-          icon={<Users />}
-          label="My Team"
-          iconClass="bg-purple-100 text-purple-600"
-        />
+        {/* Quick Actions */}
+        <section className="mt-3 grid grid-cols-4 gap-2">
+          <QuickAction
+            icon={<FileText />}
+            label={
+              <>
+                Deposit
+                <br />
+                History
+              </>
+            }
+            iconClass="bg-purple-100 text-purple-600"
+          />
 
-        <QuickAction
-          icon={<Download />}
-          label="App Download"
-          iconClass="bg-blue-100 text-blue-600"
-        />
+          <QuickAction
+            icon={<Upload />}
+            label={
+              <>
+                Withdraw
+                <br />
+                History
+              </>
+            }
+            iconClass="bg-green-100 text-green-600"
+          />
 
-        <QuickAction
-          icon={<LogOut />}
-          label="Logout"
-          iconClass="bg-gray-100 text-gray-600"
-        />
-      </section>
+          <QuickAction
+            icon={<ArrowLeftRight />}
+            label="Transaction"
+            iconClass="bg-orange-100 text-orange-500"
+          />
 
-      {/* Financial Summary */}
-      <section className="mt-3 grid grid-cols-2 gap-2">
-        <SummaryCard
-          icon={<CreditCard />}
-          title="Total Deposit"
-          value="Rs0.00"
-          iconClass="bg-blue-50 text-blue-600"
-          valueClass="text-blue-600"
-        />
+          <QuickAction
+            icon={<CalendarDays />}
+            label="My Plan"
+            iconClass="bg-blue-100 text-blue-600"
+          />
 
-        <SummaryCard
-          icon={<ArrowUpFromLine />}
-          title="Total Withdraw"
-          value="Rs0.00"
-          iconClass="bg-pink-50 text-pink-500"
-          valueClass="text-pink-500"
-        />
+          <QuickAction
+            icon={<BadgeCheck />}
+            label="Verified"
+            iconClass="bg-pink-100 text-pink-500"
+          />
 
-        <SummaryCard
-          icon={<Gift />}
-          title="Total Team Reward"
-          value="Rs0.00"
-          iconClass="bg-purple-50 text-purple-600"
-          valueClass="text-purple-600"
-        />
+          <QuickAction
+            icon={<Users />}
+            label="My Team"
+            iconClass="bg-purple-100 text-purple-600"
+          />
 
-        <SummaryCard
-          icon={<CreditCard />}
-          title="My Deposit"
-          value="Rs0.00"
-          iconClass="bg-green-50 text-green-600"
-          valueClass="text-green-600"
-        />
+          <QuickAction
+            icon={<Download />}
+            label="App Download"
+            iconClass="bg-blue-100 text-blue-600"
+          />
 
-        <SummaryCard
-          icon={<Users />}
-          title="My Team Deposit"
-          value="Rs0.00"
-          iconClass="bg-orange-50 text-orange-500"
-          valueClass="text-orange-500"
-        />
+          <QuickAction
+            icon={<LogOut />}
+            label="Logout"
+            iconClass="bg-gray-100 text-gray-600"
+          />
+        </section>
 
-        <SummaryCard
-          icon={<Users />}
-          title="My Team"
-          value="0"
-          iconClass="bg-blue-50 text-blue-600"
-          valueClass="text-blue-600"
-        />
-      </section>
+        {/* Financial Summary */}
+        <section className="mt-3 grid grid-cols-2 gap-2">
+          <SummaryCard
+            icon={<CreditCard />}
+            title="Total Deposit"
+            value="Rs0.00"
+            iconClass="bg-blue-50 text-blue-600"
+            valueClass="text-blue-600"
+          />
 
-      {/* Bottom Navigation */}
-      <BottomNavigation />
-    </main>
+          <SummaryCard
+            icon={<ArrowUpFromLine />}
+            title="Total Withdraw"
+            value="Rs0.00"
+            iconClass="bg-pink-50 text-pink-500"
+            valueClass="text-pink-500"
+          />
+
+          <SummaryCard
+            icon={<Gift />}
+            title="Total Team Reward"
+            value="Rs0.00"
+            iconClass="bg-purple-50 text-purple-600"
+            valueClass="text-purple-600"
+          />
+
+          <SummaryCard
+            icon={<CreditCard />}
+            title="My Deposit"
+            value="Rs0.00"
+            iconClass="bg-green-50 text-green-600"
+            valueClass="text-green-600"
+          />
+
+          <SummaryCard
+            icon={<Users />}
+            title="My Team Deposit"
+            value="Rs0.00"
+            iconClass="bg-orange-50 text-orange-500"
+            valueClass="text-orange-500"
+          />
+
+          <SummaryCard
+            icon={<Users />}
+            title="My Team"
+            value="0"
+            iconClass="bg-blue-50 text-blue-600"
+            valueClass="text-blue-600"
+          />
+        </section>
+
+        {/* Bottom Navigation */}
+        <BottomNavigation />
+      </main>
+    </DashboardUIProvider>
   );
 }
 
@@ -376,8 +370,13 @@ function SummaryCard({
       </span>
 
       <div className="min-w-0">
-        <p className="truncate text-[11px] text-gray-500">{title}</p>
-        <p className={`mt-0.5 text-sm font-bold ${valueClass}`}>{value}</p>
+        <p className="truncate text-[11px] text-gray-500">
+          {title}
+        </p>
+
+        <p className={`mt-0.5 text-sm font-bold ${valueClass}`}>
+          {value}
+        </p>
       </div>
     </div>
   );
@@ -397,7 +396,7 @@ function BottomNavigation() {
         label="My Deposit"
       />
 
-      {/* Center Payment Button */}
+      {/* Payment */}
       <div className="relative -mt-7">
         <button className="flex h-[58px] w-[58px] items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-blue-600 text-white shadow-[0_6px_18px_rgba(109,40,217,0.4)] ring-4 ring-white">
           <Grid2X2 size={23} />
@@ -441,7 +440,9 @@ function BottomNavItem({
         strokeWidth: active ? 2.5 : 2,
       })}
 
-      <span className="text-[10px] font-medium">{label}</span>
+      <span className="text-[10px] font-medium">
+        {label}
+      </span>
     </button>
   );
 }
