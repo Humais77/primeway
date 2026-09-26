@@ -51,9 +51,12 @@ export default async function DashboardPage() {
       fullName={user.fullName}
       userId={user.id}
     >
-      <main className="mx-auto min-h-screen w-full max-w-md px-4 py-4 pb-28">
+      <main className="mx-auto w-full max-w-7xl px-4 py-6 pb-28">
         {/* Header */}
-        <DashboardHeader />
+        <DashboardHeader 
+          fullName={user.fullName} 
+          balanceStr={formatPKR(user.balancePaisa)} 
+        />
 
         {/* Account Card */}
         <section className="rounded-2xl bg-gradient-to-r from-[#4020bd] to-[#063d82] p-5 text-white shadow-lg">
@@ -419,7 +422,7 @@ function SummaryCard({
 
 function BottomNavigation() {
   return (
-    <nav className="fixed bottom-3 left-1/2 z-50 flex h-[68px] w-[calc(100%-24px)] max-w-md -translate-x-1/2 items-center justify-around rounded-2xl bg-white px-2 shadow-[0_8px_30px_rgba(40,30,100,0.15)]">
+    <nav className="fixed bottom-3 left-1/2 z-50 flex h-[68px] w-[calc(100%-24px)] max-w-md -translate-x-1/2 items-center justify-around rounded-2xl bg-white px-2 shadow-[0_8px_30px_rgba(40,30,100,0.15)] lg:hidden">
       <BottomNavItem
         icon={<Home />}
         label="Home"

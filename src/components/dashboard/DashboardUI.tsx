@@ -1,15 +1,16 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import DashboardSidebar from "./DashboardSidebar";
 
 type DashboardUIContextType = {
+  sidebarOpen: boolean;
   openSidebar: () => void;
   closeSidebar: () => void;
+  toggleSidebar: () => void;
 };
 
-const DashboardUIContext =
-  createContext<DashboardUIContextType | null>(null);
+const DashboardUIContext = createContext<DashboardUIContextType | null>(null);
 
 export function DashboardUIProvider({
   children,
@@ -22,21 +23,39 @@ export function DashboardUIProvider({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  useEffect(() => {
+    // Automatically open sidebar on desktop when the website loads
+    if (window.innerWidth >= 1024) {
+      setSidebarOpen(true);
+    }
+  }, []);
+
   return (
     <DashboardUIContext.Provider
       value={{
+        sidebarOpen,
         openSidebar: () => setSidebarOpen(true),
         closeSidebar: () => setSidebarOpen(false),
+        toggleSidebar: () => setSidebarOpen((prev) => !prev),
       }}
     >
-      {children}
+      <div className="flex min-h-screen w-full bg-[#f4f7fa]">
+        <DashboardSidebar
+          open={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          fullName={fullName}
+          userId={userId}
+        />
 
-      <DashboardSidebar
-        open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        fullName={fullName}
-        userId={userId}
-      />
+        {/* Main Content Wrapper - Shifts when sidebar is open */}
+        <div
+          className={`flex-1 transition-all duration-300 ease-in-out ${
+            sidebarOpen ? "lg:pl-[260px]" : "pl-0"
+          }`}
+        >
+          {children}
+        </div>
+      </div>
     </DashboardUIContext.Provider>
   );
 }
