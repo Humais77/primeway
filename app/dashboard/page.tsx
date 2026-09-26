@@ -51,51 +51,128 @@ export default async function DashboardPage() {
       fullName={user.fullName}
       userId={user.id}
     >
-      <main className="mx-auto w-full max-w-7xl px-4 py-6 pb-28">
-        {/* Header */}
-        <DashboardHeader 
+      <DashboardHeader 
           fullName={user.fullName} 
           balanceStr={formatPKR(user.balancePaisa)} 
         />
+      <main className="w-full px-4 pb-28 pt-[92px] md:px-6 lg:px-8">
+        {/* Header */}
+        
 
         {/* Account Card */}
-        <section className="rounded-2xl bg-gradient-to-r from-[#4020bd] to-[#063d82] p-5 text-white shadow-lg">
-          <div className="flex justify-between">
-            <div>
-              <p className="text-sm opacity-80">
-                Welcome Back!
-              </p>
+        <section
+  className="
+    relative
+    overflow-hidden
+    rounded-2xl
+    bg-gradient-to-r
+    from-[#4020bd]
+    via-[#3520a8]
+    to-[#063d82]
+    p-6
+    text-white
+    shadow-[0_8px_25px_rgba(64,32,189,0.18)]
+    md:p-7
+  "
+>
+  {/* Decorative glow */}
+  <div
+    className="
+      pointer-events-none
+      absolute
+      -right-16
+      -top-20
+      h-48
+      w-48
+      rounded-full
+      bg-white/10
+      blur-2xl
+    "
+  />
 
-              <h2 className="text-xl font-bold">
-                {user.fullName}
-              </h2>
+  <div
+    className="
+      pointer-events-none
+      absolute
+      -bottom-24
+      right-32
+      h-40
+      w-40
+      rounded-full
+      bg-blue-300/10
+      blur-3xl
+    "
+  />
 
-              <span className="mt-2 inline-block rounded-full bg-green-500 px-3 py-1 text-xs">
-                {user.isActive ? "Active" : "Inactive"}
-              </span>
-            </div>
+  <div className="relative flex items-center justify-between">
+    {/* Left */}
+    <div>
+      <p className="text-sm font-medium text-white/70">
+        Welcome Back!
+      </p>
 
-            <div className="text-right">
-              <Wallet className="ml-auto mb-2" />
+      <h2 className="mt-1 text-2xl font-bold md:text-3xl">
+        {user.fullName}
+      </h2>
 
-              <p className="text-sm opacity-80">
-                Total Balance
-              </p>
+      <span
+        className="
+          mt-3
+          inline-flex
+          items-center
+          gap-1.5
+          rounded-full
+          bg-green-500/20
+          px-3
+          py-1
+          text-xs
+          font-semibold
+          text-green-100
+          ring-1
+          ring-green-300/30
+        "
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-green-300" />
+        {user.isActive ? "Active" : "Inactive"}
+      </span>
+    </div>
 
-              <p className="text-2xl font-bold">
-                {formatPKR(user.balancePaisa)}
-              </p>
-            </div>
-          </div>
-        </section>
+    {/* Right */}
+    <div className="text-right">
+      <div
+        className="
+          ml-auto
+          mb-2
+          flex
+          h-11
+          w-11
+          items-center
+          justify-center
+          rounded-xl
+          bg-white/10
+        "
+      >
+        <Wallet size={22} />
+      </div>
+
+      <p className="text-xs font-medium text-white/70 md:text-sm">
+        Total Balance
+      </p>
+
+      <p className="mt-1 text-2xl font-black md:text-3xl">
+        {formatPKR(user.balancePaisa)}
+      </p>
+    </div>
+  </div>
+</section>
 
         {/* Main Actions */}
-        <section className="mt-3 grid grid-cols-3 gap-2 rounded-2xl bg-white p-3 shadow-sm">
+        <section className="mt-4 grid grid-cols-3 gap-3 rounded-2xl border border-[#e5e8f3] bg-white p-3 shadow-sm">
           <button
             type="button"
             className="flex flex-col items-center gap-1 rounded-xl p-3 transition hover:bg-gray-50"
           >
-            <ArrowDownToLine className="text-purple-600" />
+            <ArrowDownToLine className="text-[#4020bd]" />
 
             <span className="text-sm">
               Deposit
@@ -106,7 +183,7 @@ export default async function DashboardPage() {
             type="button"
             className="flex flex-col items-center gap-1 rounded-xl p-3 transition hover:bg-gray-50"
           >
-            <ArrowUpFromLine className="text-green-600" />
+            <ArrowUpFromLine className="text-[#063d82]" />
 
             <span className="text-sm">
               Withdraw
@@ -117,7 +194,7 @@ export default async function DashboardPage() {
             type="button"
             className="flex flex-col items-center gap-1 rounded-xl p-3 transition hover:bg-gray-50"
           >
-            <Wallet className="text-blue-600" />
+           <Wallet className="text-[#4020bd]" />
 
             <span className="text-sm">
               My Plan

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState } from "react";
 import DashboardSidebar from "./DashboardSidebar";
 
 type DashboardUIContextType = {
@@ -10,7 +10,8 @@ type DashboardUIContextType = {
   toggleSidebar: () => void;
 };
 
-const DashboardUIContext = createContext<DashboardUIContextType | null>(null);
+const DashboardUIContext =
+  createContext<DashboardUIContextType | null>(null);
 
 export function DashboardUIProvider({
   children,
@@ -21,25 +22,27 @@ export function DashboardUIProvider({
   fullName: string;
   userId: string;
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  useEffect(() => {
-    // Automatically open sidebar on desktop when the website loads
-    if (window.innerWidth >= 1024) {
-      setSidebarOpen(true);
-    }
-  }, []);
+  // Sidebar is OPEN when dashboard loads
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
     <DashboardUIContext.Provider
       value={{
         sidebarOpen,
+
         openSidebar: () => setSidebarOpen(true),
+
         closeSidebar: () => setSidebarOpen(false),
-        toggleSidebar: () => setSidebarOpen((prev) => !prev),
+
+        toggleSidebar: () =>
+          setSidebarOpen((prev) => !prev),
       }}
     >
-      <div className="flex min-h-screen w-full bg-[#f4f7fa]">
+      <div className="min-h-screen w-full bg-[#f5f7fb]">
+        {/* ======================================================
+            SIDEBAR
+            Starts BELOW the header
+        ====================================================== */}
         <DashboardSidebar
           open={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
@@ -47,10 +50,14 @@ export function DashboardUIProvider({
           userId={userId}
         />
 
-        {/* Main Content Wrapper - Shifts when sidebar is open */}
+        {/* ======================================================
+            PAGE CONTENT
+        ====================================================== */}
         <div
-          className={`flex-1 transition-all duration-300 ease-in-out ${
-            sidebarOpen ? "lg:pl-[260px]" : "pl-0"
+          className={`min-h-screen transition-[padding] duration-300 ease-in-out ${
+            sidebarOpen
+              ? "lg:pl-[245px]"
+              : "lg:pl-0"
           }`}
         >
           {children}
