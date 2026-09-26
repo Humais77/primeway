@@ -30,7 +30,7 @@ import {
 } from "@/src/components/dashboard/DashboardUI";
 
 import DashboardHeader from "@/src/components/dashboard/DashboardHeader";
-
+import BottomNavigation from "@/src/components/dashboard/BottomNavigation";
 export default async function DashboardPage() {
   const session = await getSession();
 
@@ -497,45 +497,7 @@ function SummaryCard({
   );
 }
 
-function BottomNavigation() {
-  return (
-    <nav className="fixed bottom-3 left-1/2 z-50 flex h-[68px] w-[calc(100%-24px)] max-w-md -translate-x-1/2 items-center justify-around rounded-2xl bg-white px-2 shadow-[0_8px_30px_rgba(40,30,100,0.15)] lg:hidden">
-      <BottomNavItem
-        icon={<Home />}
-        label="Home"
-        active
-      />
 
-      <BottomNavItem
-        icon={<CreditCard />}
-        label="My Deposit"
-      />
-
-      <div className="relative -mt-7">
-        <button
-          type="button"
-          className="flex h-[58px] w-[58px] items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-blue-600 text-white shadow-[0_6px_18px_rgba(109,40,217,0.4)] ring-4 ring-white"
-        >
-          <Grid2X2 size={23} />
-        </button>
-
-        <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-medium text-purple-600">
-          Payment
-        </span>
-      </div>
-
-      <BottomNavItem
-        icon={<Settings />}
-        label="Setting"
-      />
-
-      <BottomNavItem
-        icon={<UserRound />}
-        label="Profile"
-      />
-    </nav>
-  );
-}
 
 function BottomNavItem({
   icon,
