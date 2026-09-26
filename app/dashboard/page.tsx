@@ -19,9 +19,10 @@ import {
   UserRound,
 } from "lucide-react";
 
-import { connectDB } from "@/src/lib/db";
+import React from "react";
+
+import { db } from "@/src/prisma/db";
 import { getSession } from "@/src/lib/auth";
-import User from "@/src/models/User";
 import { formatPKR } from "@/src/lib/money";
 
 import {
@@ -30,8 +31,6 @@ import {
 
 import DashboardHeader from "@/src/components/dashboard/DashboardHeader";
 
-import React from "react";
-
 export default async function DashboardPage() {
   const session = await getSession();
 
@@ -39,9 +38,9 @@ export default async function DashboardPage() {
     return null;
   }
 
-  await connectDB();
-
-  const user = await User.findById(session.userId).lean();
+  const user = await db.orm.public.User.first({
+    id: session.userId,
+  });
 
   if (!user) {
     return null;
@@ -50,7 +49,7 @@ export default async function DashboardPage() {
   return (
     <DashboardUIProvider
       fullName={user.fullName}
-      userId={String(user._id)}
+      userId={user.id}
     >
       <main className="mx-auto min-h-screen w-full max-w-md px-4 py-4 pb-28">
         {/* Header */}
@@ -69,7 +68,7 @@ export default async function DashboardPage() {
               </h2>
 
               <span className="mt-2 inline-block rounded-full bg-green-500 px-3 py-1 text-xs">
-                Active
+                {user.isActive ? "Active" : "Inactive"}
               </span>
             </div>
 
@@ -87,21 +86,39 @@ export default async function DashboardPage() {
           </div>
         </section>
 
-        {/* Original Actions */}
+        {/* Main Actions */}
         <section className="mt-3 grid grid-cols-3 gap-2 rounded-2xl bg-white p-3 shadow-sm">
-          <button className="flex flex-col items-center gap-1 rounded-xl p-3 transition hover:bg-gray-50">
+          <button
+            type="button"
+            className="flex flex-col items-center gap-1 rounded-xl p-3 transition hover:bg-gray-50"
+          >
             <ArrowDownToLine className="text-purple-600" />
-            <span className="text-sm">Deposit</span>
+
+            <span className="text-sm">
+              Deposit
+            </span>
           </button>
 
-          <button className="flex flex-col items-center gap-1 rounded-xl p-3 transition hover:bg-gray-50">
+          <button
+            type="button"
+            className="flex flex-col items-center gap-1 rounded-xl p-3 transition hover:bg-gray-50"
+          >
             <ArrowUpFromLine className="text-green-600" />
-            <span className="text-sm">Withdraw</span>
+
+            <span className="text-sm">
+              Withdraw
+            </span>
           </button>
 
-          <button className="flex flex-col items-center gap-1 rounded-xl p-3 transition hover:bg-gray-50">
+          <button
+            type="button"
+            className="flex flex-col items-center gap-1 rounded-xl p-3 transition hover:bg-gray-50"
+          >
             <Wallet className="text-blue-600" />
-            <span className="text-sm">My Plan</span>
+
+            <span className="text-sm">
+              My Plan
+            </span>
           </button>
         </section>
 
@@ -109,22 +126,30 @@ export default async function DashboardPage() {
         <section className="mt-3 grid grid-cols-2 gap-3">
           <StatCard
             title="Total Investment"
-            value={formatPKR(user.totalInvestmentPaisa)}
+            value={formatPKR(
+              user.totalInvestmentPaisa
+            )}
           />
 
           <StatCard
             title="Total Profit"
-            value={formatPKR(user.totalProfitPaisa)}
+            value={formatPKR(
+              user.totalProfitPaisa
+            )}
           />
 
           <StatCard
             title="Referral Earnings"
-            value={formatPKR(user.totalReferralPaisa)}
+            value={formatPKR(
+              user.totalReferralPaisa
+            )}
           />
 
           <StatCard
             title="Total Withdrawn"
-            value={formatPKR(user.totalWithdrawnPaisa)}
+            value={formatPKR(
+              user.totalWithdrawnPaisa
+            )}
           />
         </section>
 
@@ -160,9 +185,14 @@ export default async function DashboardPage() {
               </span>
             </div>
 
-            <button className="flex items-center text-xs font-medium text-purple-600">
+            <button
+              type="button"
+              className="flex items-center text-xs font-medium text-purple-600"
+            >
               View All
-              <span className="ml-1 text-base">›</span>
+              <span className="ml-1 text-base">
+                ›
+              </span>
             </button>
           </div>
 
@@ -328,7 +358,10 @@ function QuickAction({
   iconClass: string;
 }) {
   return (
-    <button className="flex min-h-[86px] flex-col items-center justify-center gap-2 rounded-2xl bg-white p-2 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+    <button
+      type="button"
+      className="flex min-h-[86px] flex-col items-center justify-center gap-2 rounded-2xl bg-white p-2 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+    >
       <span
         className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconClass}`}
       >
@@ -374,7 +407,9 @@ function SummaryCard({
           {title}
         </p>
 
-        <p className={`mt-0.5 text-sm font-bold ${valueClass}`}>
+        <p
+          className={`mt-0.5 text-sm font-bold ${valueClass}`}
+        >
           {value}
         </p>
       </div>
@@ -396,9 +431,11 @@ function BottomNavigation() {
         label="My Deposit"
       />
 
-      {/* Payment */}
       <div className="relative -mt-7">
-        <button className="flex h-[58px] w-[58px] items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-blue-600 text-white shadow-[0_6px_18px_rgba(109,40,217,0.4)] ring-4 ring-white">
+        <button
+          type="button"
+          className="flex h-[58px] w-[58px] items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-blue-600 text-white shadow-[0_6px_18px_rgba(109,40,217,0.4)] ring-4 ring-white"
+        >
           <Grid2X2 size={23} />
         </button>
 
@@ -431,6 +468,7 @@ function BottomNavItem({
 }) {
   return (
     <button
+      type="button"
       className={`flex w-[58px] flex-col items-center justify-center gap-1 ${
         active ? "text-purple-600" : "text-gray-500"
       }`}

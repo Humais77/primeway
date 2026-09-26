@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { randomInt } from "crypto";
 import { z } from "zod";
 
-import { connectDB } from "@/src/lib/db";
-import User from "@/src/models/User";
+import { db } from "@/src/prisma/db";
 
 const RegisterSchema = z.object({
   fullName: z.string().min(2).max(100),
@@ -22,9 +22,9 @@ const RegisterSchema = z.object({
 });
 
 function generateReferralCode(username: string) {
-  return `${username.slice(0, 5).toUpperCase()}${Math.floor(
-    100000 + Math.random() * 900000
-  )}`;
+  return `${username
+    .slice(0, 5)
+    .toUpperCase()}${randomInt(100000, 1000000)}`;
 }
 
 export async function POST(request: Request) {
@@ -33,19 +33,17 @@ export async function POST(request: Request) {
 
     const data = RegisterSchema.parse(body);
 
-    await connectDB();
+    const email = data.email.toLowerCase();
+    const username = data.username.toLowerCase();
 
-    const existingUser = await User.findOne({
-      $or: [
-        { email: data.email.toLowerCase() },
-        { username: data.username.toLowerCase() },
-      ],
+    const existingEmail = await db.orm.public.User.first({
+      email,
     });
 
-    if (existingUser) {
+    if (existingEmail) {
       return NextResponse.json(
         {
-          message: "User already exists",
+          message: "Email is already registered",
         },
         {
           status: 409,
@@ -53,16 +51,40 @@ export async function POST(request: Request) {
       );
     }
 
-    let referredBy = null;
+    const existingUsername = await db.orm.public.User.first({
+      username,
+    });
+
+    if (existingUsername) {
+      return NextResponse.json(
+        {
+          message: "Username is already taken",
+        },
+        {
+          status: 409,
+        }
+      );
+    }
+
+    let referrerId: string | null = null;
 
     if (data.referralCode) {
-      const referrer = await User.findOne({
+      const referrer = await db.orm.public.User.first({
         referralCode: data.referralCode,
       });
 
-      if (referrer) {
-        referredBy = referrer._id;
+      if (!referrer) {
+        return NextResponse.json(
+          {
+            message: "Invalid referral code",
+          },
+          {
+            status: 400,
+          }
+        );
       }
+
+      referrerId = referrer.id;
     }
 
     const passwordHash = await bcrypt.hash(
@@ -70,25 +92,48 @@ export async function POST(request: Request) {
       12
     );
 
-    const user = await User.create({
-      fullName: data.fullName,
-      username: data.username.toLowerCase(),
-      email: data.email.toLowerCase(),
-      passwordHash,
-      referralCode: generateReferralCode(data.username),
-      referredBy,
+    const referralCode = generateReferralCode(username);
+
+    const user = await db.transaction(async (tx) => {
+      const createdUser = await tx.orm.public.User.create({
+        fullName: data.fullName,
+        username,
+        email,
+        passwordHash,
+        referralCode,
+      });
+
+      if (referrerId) {
+        await tx.orm.public.Referral.create({
+          referrer: (referrer) =>
+            referrer.connect({
+              id: referrerId!,
+            }),
+
+          referredUser: (referredUser) =>
+            referredUser.connect({
+              id: createdUser.id,
+            }),
+
+          level: 1,
+        });
+      }
+
+      return createdUser;
     });
 
     return NextResponse.json(
       {
         message: "Registration successful",
-        userId: user._id,
+        userId: user.id,
       },
       {
         status: 201,
       }
     );
   } catch (error) {
+    console.error("Registration error:", error);
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         {
@@ -100,8 +145,6 @@ export async function POST(request: Request) {
         }
       );
     }
-
-    console.error(error);
 
     return NextResponse.json(
       {

@@ -48,7 +48,7 @@ export default function LoginPage() {
 
       router.refresh();
     } catch {
-      setError("Something went wrong");
+      setError("Unable to connect to the server.");
     } finally {
       setLoading(false);
     }
@@ -73,18 +73,22 @@ export default function LoginPage() {
             type="email"
             placeholder="Email address"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-xl border p-3 outline-none focus:border-purple-500"
+            onChange={(event) => setEmail(event.target.value)}
+            autoComplete="email"
             required
+            className="w-full rounded-xl border p-3 outline-none focus:border-purple-500"
           />
 
           <input
             type="password"
             placeholder="Password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl border p-3 outline-none focus:border-purple-500"
+            onChange={(event) =>
+              setPassword(event.target.value)
+            }
+            autoComplete="current-password"
             required
+            className="w-full rounded-xl border p-3 outline-none focus:border-purple-500"
           />
 
           {error && (
@@ -96,7 +100,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 py-3 font-semibold text-white disabled:opacity-50"
+            className="w-full rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? "Logging in..." : "Login"}
           </button>
@@ -106,7 +110,7 @@ export default function LoginPage() {
           Don't have an account?{" "}
           <Link
             href="/register"
-            className="font-semibold text-purple-600"
+            className="font-semibold text-purple-600 hover:text-purple-700"
           >
             Register
           </Link>

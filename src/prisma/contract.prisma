@@ -1,0 +1,317 @@
+// use prisma-8
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum ProfitFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum InvestmentStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  INVESTMENT
+  PROFIT
+  REFERRAL_COMMISSION
+  REFUND
+}
+
+enum DepositStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id String @id @default(uuid())
+
+  fullName String
+  username String @unique
+  email String @unique
+  passwordHash String
+
+  role UserRole @default(USER)
+
+  referralCode String @unique
+
+  balancePaisa Int @default(0)
+
+  totalInvestmentPaisa Int @default(0)
+  totalProfitPaisa Int @default(0)
+  totalReferralPaisa Int @default(0)
+  totalWithdrawnPaisa Int @default(0)
+
+  isActive Boolean @default(true)
+
+  createdAt TimestamptzString @default(now())
+  updatedAt TimestamptzString @default(now())
+
+  investments Investment[]
+  deposits Deposit[] @relation("UserDeposits")
+  withdrawals Withdrawal[] @relation("UserWithdrawals")
+  transactions Transaction[]
+
+  referralsGiven Referral[] @relation("Referrer")
+  referralReceived Referral? @relation("ReferredUser")
+
+  commissionsEarned ReferralCommission[] @relation("CommissionReceiver")
+  commissionsGenerated ReferralCommission[] @relation("CommissionSource")
+
+  reviewedDeposits Deposit[] @relation("DepositReviewer")
+  reviewedWithdrawals Withdrawal[] @relation("WithdrawalReviewer")
+}
+
+model InvestmentPlan {
+  id String @id @default(uuid())
+
+  name String
+
+  minAmountPaisa Int
+  maxAmountPaisa Int
+
+  // 200 = 2%
+  profitRateBps Int
+
+  frequency ProfitFrequency
+  durationDays Int
+
+  isActive Boolean @default(true)
+
+  createdAt TimestamptzString @default(now())
+  updatedAt TimestamptzString @default(now())
+
+  investments Investment[]
+}
+
+model Investment {
+  id String @id @default(uuid())
+
+  userId String
+  planId String
+
+  amountPaisa Int
+
+  profitRateBps Int
+  frequency ProfitFrequency
+
+  startDate TimestamptzString
+  endDate TimestamptzString
+  nextProfitAt TimestamptzString
+
+  earnedProfitPaisa Int @default(0)
+
+  status InvestmentStatus @default(ACTIVE)
+
+  createdAt TimestamptzString @default(now())
+  updatedAt TimestamptzString @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan InvestmentPlan @relation(fields: [planId], references: [id])
+
+  transactions Transaction[]
+
+  @@index([userId])
+  @@index([planId])
+  @@index([status])
+  @@index([nextProfitAt])
+}
+
+model Deposit {
+  id String @id @default(uuid())
+
+  userId String
+
+  amountPaisa Int
+
+  method String
+  transactionReference String?
+  proofUrl String?
+
+  status DepositStatus @default(PENDING)
+
+  reviewedBy String?
+  reviewedAt TimestamptzString?
+
+  createdAt TimestamptzString @default(now())
+  updatedAt TimestamptzString @default(now())
+
+  user User @relation(
+    "UserDeposits",
+    fields: [userId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  reviewer User? @relation(
+    "DepositReviewer",
+    fields: [reviewedBy],
+    references: [id]
+  )
+
+  transactions Transaction[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Withdrawal {
+  id String @id @default(uuid())
+
+  userId String
+
+  amountPaisa Int
+
+  method String
+
+  accountDetails Json
+
+  status WithdrawalStatus @default(PENDING)
+
+  rejectionReason String?
+
+  reviewedBy String?
+  reviewedAt TimestamptzString?
+
+  createdAt TimestamptzString @default(now())
+  updatedAt TimestamptzString @default(now())
+
+  user User @relation(
+    "UserWithdrawals",
+    fields: [userId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  reviewer User? @relation(
+    "WithdrawalReviewer",
+    fields: [reviewedBy],
+    references: [id]
+  )
+
+  transactions Transaction[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Transaction {
+  id String @id @default(uuid())
+
+  userId String
+
+  type TransactionType
+
+  amountPaisa Int
+
+  balanceBeforePaisa Int
+  balanceAfterPaisa Int
+
+  referenceId String?
+
+  description String?
+
+  investmentId String?
+  depositId String?
+  withdrawalId String?
+
+  createdAt TimestamptzString @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  investment Investment? @relation(
+    fields: [investmentId],
+    references: [id]
+  )
+
+  deposit Deposit? @relation(
+    fields: [depositId],
+    references: [id]
+  )
+
+  withdrawal Withdrawal? @relation(
+    fields: [withdrawalId],
+    references: [id]
+  )
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model Referral {
+  id String @id @default(uuid())
+
+  referrerId String
+  referredUserId String @unique
+
+  level Int
+
+  createdAt TimestamptzString @default(now())
+
+  referrer User @relation(
+    "Referrer",
+    fields: [referrerId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  referredUser User @relation(
+    "ReferredUser",
+    fields: [referredUserId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  @@index([referrerId])
+}
+
+model ReferralCommission {
+  id String @id @default(uuid())
+
+  receiverId String
+  sourceUserId String
+
+  level Int
+
+  baseAmountPaisa Int
+  commissionRateBps Int
+  commissionAmountPaisa Int
+
+  transactionId String?
+
+  createdAt TimestamptzString @default(now())
+
+  receiver User @relation(
+    "CommissionReceiver",
+    fields: [receiverId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  sourceUser User @relation(
+    "CommissionSource",
+    fields: [sourceUserId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  @@index([receiverId])
+  @@index([sourceUserId])
+  @@index([createdAt])
+}

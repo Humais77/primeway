@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 
-import { connectDB } from "@/src/lib/db";
-import User from "@/src/models/User";
+import { db } from "@/src/prisma/db";
 import { createSession } from "@/src/lib/auth";
 
 const LoginSchema = z.object({
@@ -17,10 +16,10 @@ export async function POST(request: Request) {
 
     const data = LoginSchema.parse(body);
 
-    await connectDB();
+    const email = data.email.toLowerCase();
 
-    const user = await User.findOne({
-      email: data.email.toLowerCase(),
+    const user = await db.orm.public.User.first({
+      email,
     });
 
     if (!user) {
@@ -62,7 +61,7 @@ export async function POST(request: Request) {
     }
 
     await createSession({
-      userId: user._id.toString(),
+      userId: user.id,
       role: user.role,
     });
 
@@ -71,7 +70,19 @@ export async function POST(request: Request) {
       role: user.role,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Login error:", error);
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          message: "Invalid input",
+          errors: error.issues,
+        },
+        {
+          status: 400,
+        }
+      );
+    }
 
     return NextResponse.json(
       {

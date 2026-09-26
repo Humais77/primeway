@@ -2,6 +2,11 @@
 
 # dependencies
 /node_modules
+/.agents/
+/.claude/
+/.cursor/
+/.devin/
+
 /.pnp
 .pnp.*
 .yarn/*
