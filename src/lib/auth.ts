@@ -17,10 +17,11 @@ export interface SessionPayload {
 export async function createSession(
   payload: SessionPayload
 ) {
-  const token = await new SignJWT(payload)
-    .setProtectedHeader({
-      alg: "HS256",
-    })
+  const token = await new SignJWT({
+    userId: payload.userId,
+    role: payload.role,
+  })
+    .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")
     .sign(JWT_SECRET);
@@ -48,7 +49,8 @@ export async function getSession(): Promise<SessionPayload | null> {
   try {
     const { payload } = await jwtVerify(
       token,
-      JWT_SECRET
+      JWT_SECRET,
+      { algorithms: ["HS256"] }
     );
 
     if (
