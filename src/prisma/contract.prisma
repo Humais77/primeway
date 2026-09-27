@@ -75,6 +75,8 @@ model User {
 
   reviewedDeposits Deposit[] @relation("DepositReviewer")
   reviewedWithdrawals Withdrawal[] @relation("WithdrawalReviewer")
+
+  notifications Notification[]
 }
 
 model InvestmentPlan {
@@ -316,5 +318,30 @@ model ReferralCommission {
 
   @@index([receiverId])
   @@index([sourceUserId])
+  @@index([createdAt])
+}
+
+model Notification {
+  id String @id @default(uuid())
+
+  userId String
+
+  title String
+  message String
+
+  type String @default("INFO")
+
+  isRead Boolean @default(false)
+
+  createdAt TimestamptzString @default(now())
+
+  user User @relation(
+    fields: [userId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  @@index([userId])
+  @@index([isRead])
   @@index([createdAt])
 }

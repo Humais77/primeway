@@ -60,10 +60,36 @@ export async function POST(request: Request) {
       );
     }
 
+    // Create login session
     await createSession({
       userId: user.id,
       role: user.role,
     });
+
+    // Create login notification
+    try {
+      await db.orm.public.Notification.create({
+        user: (notificationUser) =>
+          notificationUser.connect({
+            id: user.id,
+          }),
+
+        title: "Login successful",
+
+        message:
+          "You have successfully logged in to your Prime Way account.",
+
+        type: "LOGIN",
+
+        isRead: false,
+      });
+    } catch (notificationError) {
+      // Notification failure should not prevent successful login.
+      console.error(
+        "Login notification error:",
+        notificationError
+      );
+    }
 
     return NextResponse.json({
       message: "Login successful",
