@@ -85,8 +85,11 @@ model InvestmentPlan {
   minAmountPaisa Int
   maxAmountPaisa Int
 
-  // 200 = 2%
+  // 2000 = 20%
   profitRateBps Int
+
+  // 1400 = 14%
+  referralBonusBps Int @default(1400)
 
   frequency ProfitFrequency
   durationDays Int

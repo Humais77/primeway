@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed:plans": "tsx scripts/seed-investment-plans.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -36,6 +37,7 @@
     "eslint-config-next": "16.3.6",
     "prisma": "^8.0.0-rc.17",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }

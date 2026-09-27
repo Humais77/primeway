@@ -47,14 +47,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <DashboardUIProvider
-      fullName={user.fullName}
-      userId={user.id}
-    >
-      <DashboardHeader 
-          fullName={user.fullName} 
-          balanceStr={formatPKR(user.balancePaisa)} 
-        />
+  
       <main className="w-full px-4 pb-28 pt-[92px] md:px-6 lg:px-8">
         {/* Header */}
         
@@ -400,7 +393,7 @@ export default async function DashboardPage() {
         {/* Bottom Navigation */}
         <BottomNavigation />
       </main>
-    </DashboardUIProvider>
+    
   );
 }
 
