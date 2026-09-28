@@ -396,3 +396,11 @@ model Notification {
   @@index([isRead])
   @@index([createdAt])
 }
+
+model WithdrawalSetting {
+  id String @id @default(uuid())
+
+  minWithdrawalPaisa Int @default(50000)
+
+  updatedAt TimestamptzString @default(now())
+}
