@@ -28,6 +28,24 @@ export default async function InvestPlanPage() {
     .orderBy((plan) => plan.createdAt.asc())
     .all();
 
+const runningInvestments =
+  await db.orm.public.Investment
+    .where({
+      userId: session.userId,
+      status: "ACTIVE",
+    })
+    .all();
+
+const runningPlanIds = new Set(
+  runningInvestments.map(
+    (investment) => investment.planId
+  )
+);
+
+const availablePlans = plans.filter(
+  (plan) => !runningPlanIds.has(plan.id)
+);
+
   return (
     <main className="w-full px-4 pb-28 pt-[92px] md:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-6xl">
@@ -56,19 +74,19 @@ export default async function InvestPlanPage() {
         </div>
 
         {/* Plans */}
-        {plans.length === 0 ? (
-          <EmptyPlans />
-        ) : (
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {plans.map((plan, index) => (
-              <InvestmentPlanCard
-                key={plan.id}
-                plan={plan}
-                index={index}
-              />
-            ))}
-          </div>
-        )}
+        {availablePlans.length === 0 ? (
+  <EmptyPlans />
+) : (
+  <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+    {availablePlans.map((plan, index) => (
+      <InvestmentPlanCard
+        key={plan.id}
+        plan={plan}
+        index={index}
+      />
+    ))}
+  </div>
+)}
       </div>
     </main>
   );

@@ -9,6 +9,42 @@ type Params = {
   }>;
 };
 
+function addDays(date: Date, days: number) {
+  const result = new Date(date);
+
+  result.setDate(
+    result.getDate() + days
+  );
+
+  return result;
+}
+
+function getNextProfitDate(
+  start: Date,
+  frequency:
+    | "DAILY"
+    | "WEEKLY"
+    | "MONTHLY"
+) {
+  const date = new Date(start);
+
+  if (frequency === "DAILY") {
+    date.setDate(
+      date.getDate() + 1
+    );
+  } else if (frequency === "WEEKLY") {
+    date.setDate(
+      date.getDate() + 7
+    );
+  } else {
+    date.setMonth(
+      date.getMonth() + 1
+    );
+  }
+
+  return date;
+}
+
 export async function PATCH(
   request: Request,
   { params }: Params
@@ -18,8 +54,12 @@ export async function PATCH(
 
     if (!admin) {
       return NextResponse.json(
-        { message: "Unauthorized." },
-        { status: 401 }
+        {
+          message: "Unauthorized.",
+        },
+        {
+          status: 401,
+        }
       );
     }
 
@@ -38,7 +78,9 @@ export async function PATCH(
           message:
             "Invalid deposit action.",
         },
-        { status: 400 }
+        {
+          status: 400,
+        }
       );
     }
 
@@ -53,7 +95,9 @@ export async function PATCH(
           message:
             "Deposit not found.",
         },
-        { status: 404 }
+        {
+          status: 404,
+        }
       );
     }
 
@@ -63,9 +107,17 @@ export async function PATCH(
           message:
             "This deposit has already been reviewed.",
         },
-        { status: 400 }
+        {
+          status: 400,
+        }
       );
     }
+
+    /*
+     * ============================================================
+     * REJECT DEPOSIT
+     * ============================================================
+     */
 
     if (action === "REJECT") {
       const updated =
@@ -73,12 +125,15 @@ export async function PATCH(
           .where({ id })
           .update({
             status: "REJECTED",
+
             rejectionReason:
-              typeof body.reason ===
-              "string"
+              typeof body.reason === "string"
                 ? body.reason.trim()
                 : null,
-            reviewedBy: admin.userId,
+
+            reviewedBy:
+              admin.userId,
+
             reviewedAt:
               new Date().toISOString(),
           });
@@ -86,109 +141,259 @@ export async function PATCH(
       return NextResponse.json({
         message:
           "Deposit rejected successfully.",
+
         deposit: updated,
       });
     }
 
+    if (!deposit.planId) {
+  return NextResponse.json(
+    {
+      message:
+        "This deposit has no investment plan attached and cannot be approved.",
+    },
+    { status: 400 }
+  );
+}
+
     /*
-     * APPROVAL
+     * ============================================================
+     * APPROVE DEPOSIT
+     * ============================================================
      *
-     * Everything happens in one transaction:
-     *
-     * 1. Deposit becomes APPROVED
-     * 2. User balance increases
-     * 3. User total investment/deposit
-     *    balance is updated
-     * 4. Transaction record is created
-     *
-     * This prevents the balance from being
-     * updated without the deposit being approved.
+     * 1. Find user
+     * 2. Find investment plan
+     * 3. Check duplicate investment
+     * 4. Approve deposit
+     * 5. Add deposit amount to balance
+     * 6. Create transaction
+     * 7. Create ACTIVE investment
      */
 
     const result =
-      await db.transaction(async (tx) => {
-        const user =
-          await tx.orm.public.User.first({
-            id: deposit.userId,
-          });
-
-        if (!user) {
-          throw new Error(
-            "USER_NOT_FOUND"
-          );
-        }
-
-        const balanceBefore =
-          user.balancePaisa;
-
-        const balanceAfter =
-          balanceBefore +
-          deposit.amountPaisa;
-
-        const updatedDeposit =
-          await tx.orm.public.Deposit
-            .where({ id })
-            .update({
-              status: "APPROVED",
-              reviewedBy:
-                admin.userId,
-              reviewedAt:
-                new Date().toISOString(),
+      await db.transaction(
+        async (tx) => {
+          /*
+           * Find user
+           */
+          const user =
+            await tx.orm.public.User.first({
+              id: deposit.userId,
             });
 
-        await tx.orm.public.User
-          .where({
-            id: user.id,
-          })
-          .update({
-            balancePaisa:
-              balanceAfter,
-          });
+          if (!user) {
+            throw new Error(
+              "USER_NOT_FOUND"
+            );
+          }
 
-        const transaction =
-          await tx.orm.public.Transaction.create(
-            {
-              user: (transactionUser) =>
-                transactionUser.connect({
-                  id: user.id,
-                }),
+          /*
+           * Find selected investment plan
+           */
+          const plan =
+            await tx.orm.public.InvestmentPlan.first(
+              {
+                id: deposit.planId,
+              }
+            );
 
-              type: "DEPOSIT",
+          if (!plan) {
+            throw new Error(
+              "PLAN_NOT_FOUND"
+            );
+          }
 
-              amountPaisa:
-                deposit.amountPaisa,
+          /*
+           * Plan must still be active
+           */
+          if (!plan.isActive) {
+            throw new Error(
+              "PLAN_INACTIVE"
+            );
+          }
 
-              balanceBeforePaisa:
-                balanceBefore,
+          /*
+           * Prevent duplicate ACTIVE investment
+           */
+          const existingInvestment =
+            await tx.orm.public.Investment.first(
+              {
+                userId:
+                  deposit.userId,
 
-              balanceAfterPaisa:
+                planId: plan.id, 
+
+                status: "ACTIVE",
+              }
+            );
+
+          if (existingInvestment) {
+            throw new Error(
+              "INVESTMENT_ALREADY_EXISTS"
+            );
+          }
+
+          /*
+           * Validate investment amount
+           */
+          if (
+            deposit.amountPaisa <
+              plan.minAmountPaisa ||
+            deposit.amountPaisa >
+              plan.maxAmountPaisa
+          ) {
+            throw new Error(
+              "INVALID_INVESTMENT_AMOUNT"
+            );
+          }
+
+          /*
+           * Balance calculation
+           */
+          const balanceBefore =
+            user.balancePaisa;
+
+          const balanceAfter =
+            balanceBefore +
+            deposit.amountPaisa;
+
+          /*
+           * Investment dates
+           */
+          const start =
+            new Date();
+
+          const end =
+            addDays(
+              start,
+              plan.durationDays
+            );
+
+          const nextProfit =
+            getNextProfitDate(
+              start,
+              plan.frequency
+            );
+
+          /*
+           * 1. APPROVE DEPOSIT
+           */
+          const updatedDeposit =
+            await tx.orm.public.Deposit
+              .where({ id })
+              .update({
+                status: "APPROVED",
+
+                reviewedBy:
+                  admin.userId,
+
+                reviewedAt:
+                  new Date().toISOString(),
+              });
+
+          /*
+           * 2. UPDATE USER BALANCE
+           */
+          await tx.orm.public.User
+            .where({
+              id: user.id,
+            })
+            .update({
+              balancePaisa:
                 balanceAfter,
+            });
 
-              referenceId:
-                deposit.id,
+          /*
+           * 3. CREATE DEPOSIT TRANSACTION
+           */
+          const transaction =
+            await tx.orm.public.Transaction.create(
+              {
+                user:
+                  (transactionUser) =>
+                    transactionUser.connect({
+                      id: user.id,
+                    }),
 
-              description:
-                `Deposit approved - ${deposit.method}`,
+                type: "DEPOSIT",
 
-              deposit: (
-                selectedDeposit
-              ) =>
-                selectedDeposit.connect({
-                  id: deposit.id,
-                }),
-            }
-          );
+                amountPaisa:
+                  deposit.amountPaisa,
 
-        return {
-          deposit: updatedDeposit,
-          transaction,
-          balanceAfter,
-        };
-      });
+                balanceBeforePaisa:
+                  balanceBefore,
+
+                balanceAfterPaisa:
+                  balanceAfter,
+
+                referenceId:
+                  deposit.id,
+
+                description:
+                  `Deposit approved - ${deposit.method}`,
+
+                deposit:
+                  (selectedDeposit) =>
+                    selectedDeposit.connect({
+                      id: deposit.id,
+                    }),
+              }
+            );
+
+          /*
+           * 4. CREATE RUNNING INVESTMENT
+           */
+          const investment =
+            await tx.orm.public.Investment.create(
+              {
+                userId:
+                  deposit.userId,
+
+                planId: plan.id, 
+
+                amountPaisa:
+                  deposit.amountPaisa,
+
+                profitRateBps:
+                  plan.profitRateBps,
+
+                frequency:
+                  plan.frequency,
+
+                startDate:
+                  start.toISOString(),
+
+                endDate:
+                  end.toISOString(),
+
+                nextProfitAt:
+                  nextProfit.toISOString(),
+
+                earnedProfitPaisa:
+                  0,
+
+                status:
+                  "ACTIVE",
+              }
+            );
+
+          return {
+            deposit:
+              updatedDeposit,
+
+            transaction,
+
+            investment,
+
+            balanceAfter,
+          };
+        }
+      );
 
     return NextResponse.json({
       message:
-        "Deposit approved and user balance updated.",
+        "Deposit approved and investment started successfully.",
+
       ...result,
     });
   } catch (error) {
@@ -197,18 +402,81 @@ export async function PATCH(
       error
     );
 
-    if (
-      error instanceof Error &&
-      error.message ===
+    if (error instanceof Error) {
+      if (
+        error.message ===
         "USER_NOT_FOUND"
-    ) {
-      return NextResponse.json(
-        {
-          message:
-            "Deposit user no longer exists.",
-        },
-        { status: 404 }
-      );
+      ) {
+        return NextResponse.json(
+          {
+            message:
+              "Deposit user no longer exists.",
+          },
+          {
+            status: 404,
+          }
+        );
+      }
+
+      if (
+        error.message ===
+        "PLAN_NOT_FOUND"
+      ) {
+        return NextResponse.json(
+          {
+            message:
+              "Investment plan no longer exists.",
+          },
+          {
+            status: 404,
+          }
+        );
+      }
+
+      if (
+        error.message ===
+        "PLAN_INACTIVE"
+      ) {
+        return NextResponse.json(
+          {
+            message:
+              "This investment plan is no longer active.",
+          },
+          {
+            status: 400,
+          }
+        );
+      }
+
+      if (
+        error.message ===
+        "INVESTMENT_ALREADY_EXISTS"
+      ) {
+        return NextResponse.json(
+          {
+            message:
+              "The user already has an active investment in this plan.",
+          },
+          {
+            status: 400,
+          }
+        );
+      }
+
+      if (
+        error.message ===
+        "INVALID_INVESTMENT_AMOUNT"
+      ) {
+        return NextResponse.json(
+          {
+            message:
+              "The deposit amount is outside the investment plan limits.",
+          },
+          {
+            status: 400,
+          }
+        );
+      }
     }
 
     return NextResponse.json(
@@ -216,7 +484,9 @@ export async function PATCH(
         message:
           "Unable to review deposit.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }

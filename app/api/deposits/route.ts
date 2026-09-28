@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { db } from "@/src/prisma/db";
 import { getSession } from "@/src/lib/auth";
 import { isGateway } from "@/src/lib/gateways";
@@ -15,6 +16,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
+
     const {
       planId,
       gateway: gatewayRaw,
@@ -36,7 +38,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // ✅ gateway is now narrowed to the enum union
     const gateway = gatewayRaw;
 
     if (
@@ -56,22 +57,70 @@ export async function POST(request: Request) {
       );
     }
 
-    const plan = await db.orm.public.InvestmentPlan.first({
-      id: planId,
-      isActive: true,
-    });
+    const plan =
+      await db.orm.public.InvestmentPlan.first({
+        id: planId,
+        isActive: true,
+      });
 
     if (!plan) {
       return NextResponse.json(
-        { message: "Investment plan is no longer available." },
+        {
+          message:
+            "Investment plan is no longer available.",
+        },
         { status: 404 }
       );
     }
 
-    const account = await db.orm.public.PaymentAccount.first({
-      gateway,           // ✅ correctly typed
-      isActive: true,
-    });
+    /*
+     * Prevent duplicate ACTIVE investment
+     */
+    const activeInvestment =
+      await db.orm.public.Investment.first({
+        userId: session.userId,
+        planId: plan.id,
+        status: "ACTIVE",
+      });
+
+    if (activeInvestment) {
+      return NextResponse.json(
+        {
+          message:
+            "You already have an active investment in this plan.",
+        },
+        { status: 400 }
+      );
+    }
+
+    /*
+     * Prevent duplicate PENDING deposit
+     *
+     * This is important because the Investment does not
+     * exist until the admin approves the deposit.
+     */
+    const pendingDeposit =
+      await db.orm.public.Deposit.first({
+        userId: session.userId,
+        planId: plan.id,
+        status: "PENDING",
+      });
+
+    if (pendingDeposit) {
+      return NextResponse.json(
+        {
+          message:
+            "You already have a pending deposit for this plan. Please wait for admin approval.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const account =
+      await db.orm.public.PaymentAccount.first({
+        gateway,
+        isActive: true,
+      });
 
     if (!account) {
       return NextResponse.json(
@@ -83,46 +132,73 @@ export async function POST(request: Request) {
       );
     }
 
+    /*
+     * Currently the investment amount is the plan minimum.
+     */
     const amountPaisa = plan.minAmountPaisa;
-    const processingChargePaisa = account.processingChargePaisa;
-    const exactAmountPaisa = amountPaisa + processingChargePaisa;
 
-    const deposit = await db.orm.public.Deposit.create({
-      user: (user) =>
-        user.connect({ id: session.userId }),
+    const processingChargePaisa =
+      account.processingChargePaisa;
 
-      plan: (selectedPlan) =>
-        selectedPlan.connect({ id: plan.id }),
+    const exactAmountPaisa =
+      amountPaisa + processingChargePaisa;
 
-      paymentAccount: (selectedAccount) =>
-        selectedAccount.connect({ id: account.id }),
+    const deposit =
+      await db.orm.public.Deposit.create({
+        user: (user) =>
+          user.connect({
+            id: session.userId,
+          }),
 
-      amountPaisa,
-      processingChargePaisa,
-      exactAmountPaisa,
+        plan: (selectedPlan) =>
+          selectedPlan.connect({
+            id: plan.id,
+          }),
 
-      method: gateway,   // ✅ typed correctly
+        paymentAccount: (selectedAccount) =>
+          selectedAccount.connect({
+            id: account.id,
+          }),
 
-      transactionReference: transactionReference.trim(),
-      proofUrl,
+        amountPaisa,
+        processingChargePaisa,
+        exactAmountPaisa,
 
-      paymentAccountName: account.accountName,
-      paymentAccountNumber: account.accountNumber,
+        method: gateway,
 
-      status: "PENDING",
-    });
+        transactionReference:
+          transactionReference.trim(),
+
+        proofUrl,
+
+        paymentAccountName:
+          account.accountName,
+
+        paymentAccountNumber:
+          account.accountNumber,
+
+        status: "PENDING",
+      });
 
     return NextResponse.json(
       {
-        message: "Deposit submitted successfully.",
+        message:
+          "Deposit submitted successfully. Please wait for admin approval.",
         deposit,
       },
       { status: 201 }
     );
   } catch (error) {
-    console.error("Deposit POST error:", error);
+    console.error(
+      "Deposit POST error:",
+      error
+    );
+
     return NextResponse.json(
-      { message: "Unable to submit deposit." },
+      {
+        message:
+          "Unable to submit deposit.",
+      },
       { status: 500 }
     );
   }
