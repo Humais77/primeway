@@ -20,6 +20,10 @@
       "model": "Notification",
       "namespace": "public"
     },
+    "PaymentAccount": {
+      "model": "PaymentAccount",
+      "namespace": "public"
+    },
     "Referral": {
       "model": "Referral",
       "namespace": "public"
@@ -76,6 +80,23 @@
               {
                 "name": "CANCELLED",
                 "value": "CANCELLED"
+              }
+            ]
+          },
+          "PaymentGateway": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "EASYPAISA",
+                "value": "EASYPAISA"
+              },
+              {
+                "name": "BANK",
+                "value": "BANK"
+              },
+              {
+                "name": "RAAST",
+                "value": "RAAST"
               }
             ]
           },
@@ -173,6 +194,13 @@
                   "kind": "scalar"
                 }
               },
+              "exactAmountPaisa": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -187,7 +215,49 @@
                   "kind": "scalar"
                 }
               },
+              "paymentAccountId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "paymentAccountName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "paymentAccountNumber": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "planId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "processingChargePaisa": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "proofUrl": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "rejectionReason": {
                 "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
@@ -222,7 +292,7 @@
                 }
               },
               "transactionReference": {
-                "nullable": true,
+                "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -244,6 +314,38 @@
               }
             },
             "relations": {
+              "paymentAccount": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "paymentAccountId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "PaymentAccount",
+                  "namespace": "public"
+                }
+              },
+              "plan": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "planId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "InvestmentPlan",
+                  "namespace": "public"
+                }
+              },
               "reviewer": {
                 "cardinality": "N:1",
                 "nullable": true,
@@ -300,14 +402,35 @@
                 "createdAt": {
                   "column": "createdAt"
                 },
+                "exactAmountPaisa": {
+                  "column": "exactAmountPaisa"
+                },
                 "id": {
                   "column": "id"
                 },
                 "method": {
                   "column": "method"
                 },
+                "paymentAccountId": {
+                  "column": "paymentAccountId"
+                },
+                "paymentAccountName": {
+                  "column": "paymentAccountName"
+                },
+                "paymentAccountNumber": {
+                  "column": "paymentAccountNumber"
+                },
+                "planId": {
+                  "column": "planId"
+                },
+                "processingChargePaisa": {
+                  "column": "processingChargePaisa"
+                },
                 "proofUrl": {
                   "column": "proofUrl"
+                },
+                "rejectionReason": {
+                  "column": "rejectionReason"
                 },
                 "reviewedAt": {
                   "column": "reviewedAt"
@@ -620,6 +743,21 @@
               }
             },
             "relations": {
+              "deposit": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "planId"
+                  ]
+                },
+                "to": {
+                  "model": "Deposit",
+                  "namespace": "public"
+                }
+              },
               "investments": {
                 "cardinality": "1:N",
                 "on": {
@@ -772,6 +910,119 @@
               },
               "namespaceId": "public",
               "table": "Notification"
+            }
+          },
+          "PaymentAccount": {
+            "fields": {
+              "accountName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "accountNumber": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "gateway": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "PaymentGateway",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "isActive": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "processingChargePaisa": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "deposits": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "paymentAccountId"
+                  ]
+                },
+                "to": {
+                  "model": "Deposit",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "accountName": {
+                  "column": "accountName"
+                },
+                "accountNumber": {
+                  "column": "accountNumber"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "gateway": {
+                  "column": "gateway"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "isActive": {
+                  "column": "isActive"
+                },
+                "processingChargePaisa": {
+                  "column": "processingChargePaisa"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "PaymentAccount"
             }
           },
           "Referral": {
@@ -1745,6 +1996,11 @@
                   "nativeType": "timestamptz",
                   "nullable": false
                 },
+                "exactAmountPaisa": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
                 "id": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -1755,7 +2011,41 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "paymentAccountId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "paymentAccountName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "paymentAccountNumber": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "planId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "processingChargePaisa": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
                 "proofUrl": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "rejectionReason": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": true
@@ -1788,7 +2078,7 @@
                 "transactionReference": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": true
+                  "nullable": false
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-string@1",
@@ -1826,6 +2116,38 @@
                 {
                   "source": {
                     "columns": [
+                      "planId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Deposit"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "InvestmentPlan"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "paymentAccountId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Deposit"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "PaymentAccount"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
                       "reviewedBy"
                     ],
                     "namespaceId": "public",
@@ -1841,6 +2163,22 @@
                 }
               ],
               "indexes": [
+                {
+                  "columns": [
+                    "paymentAccountId"
+                  ],
+                  "name": "Deposit_paymentAccountId_idx_6d12e2f9",
+                  "prefix": "Deposit_paymentAccountId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "planId"
+                  ],
+                  "name": "Deposit_planId_idx_5b32079a",
+                  "prefix": "Deposit_planId_idx",
+                  "unique": false
+                },
                 {
                   "columns": [
                     "reviewedBy"
@@ -2245,6 +2583,104 @@
                   ],
                   "name": "Notification_userId_idx_a489d58a",
                   "prefix": "Notification_userId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "PaymentAccount": {
+              "checks": [
+                {
+                  "expression": "\"gateway\" IN ('EASYPAISA', 'BANK', 'RAAST')",
+                  "name": "PaymentAccount_gateway_check_2e4795dc",
+                  "prefix": "PaymentAccount_gateway_check"
+                }
+              ],
+              "columns": {
+                "accountName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "accountNumber": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "gateway": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "PaymentGateway",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "isActive": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "processingChargePaisa": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [
+                {
+                  "columns": [
+                    "gateway"
+                  ],
+                  "name": "PaymentAccount_gateway_idx_d24c9a9f",
+                  "prefix": "PaymentAccount_gateway_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "isActive"
+                  ],
+                  "name": "PaymentAccount_isActive_idx_77fe3ba1",
+                  "prefix": "PaymentAccount_isActive_idx",
                   "unique": false
                 }
               ],
@@ -2992,6 +3428,14 @@
                 "CANCELLED"
               ]
             },
+            "PaymentGateway": {
+              "kind": "valueSet",
+              "values": [
+                "EASYPAISA",
+                "BANK",
+                "RAAST"
+              ]
+            },
             "ProfitFrequency": {
               "kind": "valueSet",
               "values": [
@@ -3032,10 +3476,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "41702b7718147f7949b06ac31ff8f72bc391b155c527b35c785b1fa728a902b3"
+    "storageHash": "6142f5a4c67babd9a93767f94d24f05074f751c7e6c9771085e5858c9d6a51a7"
   },
   "execution": {
-    "executionHash": "fb585d50d81afd5a19880672b473b2fe158e9d0421d97f92cfdc0e2d09b1123b",
+    "executionHash": "ea1e3ac44dbf6b1cded43eb85f135f4b44c2d1fc67405f242dc3bdbdc110b0fc",
     "mutations": {
       "defaults": [
         {
@@ -3080,6 +3524,17 @@
             "column": "id",
             "namespace": "public",
             "table": "Notification"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "PaymentAccount"
           }
         },
         {

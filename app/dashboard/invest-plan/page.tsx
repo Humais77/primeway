@@ -231,13 +231,13 @@ function InvestmentPlanCard({
         </div>
 
         {/* Invest button */}
-        <Link
-          href={`/dashboard/invest-plan/${plan.id}`}
-          className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#4020bd] to-[#063d82] text-sm font-bold text-white shadow-lg shadow-purple-200 transition hover:opacity-90"
-        >
-          Invest Now
-          <ArrowRight size={17} />
-        </Link>
+       <Link
+  href={`/dashboard/deposit?planId=${plan.id}`}
+  className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#4020bd] to-[#063d82] text-sm font-bold text-white shadow-lg shadow-purple-200 transition hover:opacity-90"
+>
+  Invest Now
+  <ArrowRight size={17} />
+</Link>
       </div>
     </article>
   );

@@ -12,6 +12,8 @@ import {
   ArrowUpFromLine,
   ReceiptText,
   Settings,
+  Wallet,
+  CreditCard,
 } from "lucide-react";
 
 const items = [
@@ -35,11 +37,16 @@ const items = [
     href: "/admin/investments",
     icon: TrendingUp,
   },
-  {
-    label: "Deposits",
-    href: "/admin/deposits",
-    icon: ArrowDownToLine,
-  },
+ {
+  label: "Deposits",
+  href: "/admin/deposits",
+  icon: Wallet,
+},
+{
+  label: "Payment Accounts",
+  href: "/admin/payment-accounts",
+  icon: CreditCard,
+},
   {
     label: "Withdrawals",
     href: "/admin/withdrawals",

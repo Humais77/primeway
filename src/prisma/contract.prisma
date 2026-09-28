@@ -38,6 +38,32 @@ enum WithdrawalStatus {
   REJECTED
 }
 
+enum PaymentGateway {
+  EASYPAISA
+  BANK
+  RAAST
+} 
+
+model PaymentAccount {
+  id String @id @default(uuid())
+
+  gateway PaymentGateway
+
+  accountName String
+  accountNumber String
+
+  processingChargePaisa Int @default(0)
+
+  isActive Boolean @default(false)
+
+  createdAt TimestamptzString @default(now())
+  updatedAt TimestamptzString @default(now())
+
+  deposits Deposit[]
+
+  @@index([gateway])
+  @@index([isActive])
+}
 model User {
   id String @id @default(uuid())
 
@@ -102,6 +128,7 @@ model InvestmentPlan {
   updatedAt TimestamptzString @default(now())
 
   investments Investment[]
+  deposit Deposit[]
 }
 
 model Investment {
@@ -141,14 +168,26 @@ model Deposit {
   id String @id @default(uuid())
 
   userId String
+  planId String?
+
+  paymentAccountId String?
 
   amountPaisa Int
 
+  processingChargePaisa Int @default(0)
+  exactAmountPaisa Int
+
   method String
-  transactionReference String?
-  proofUrl String?
+
+  transactionReference String
+  proofUrl String
+
+  paymentAccountName String
+  paymentAccountNumber String
 
   status DepositStatus @default(PENDING)
+
+  rejectionReason String?
 
   reviewedBy String?
   reviewedAt TimestamptzString?
@@ -163,6 +202,16 @@ model Deposit {
     onDelete: Cascade
   )
 
+  plan InvestmentPlan? @relation(
+    fields: [planId],
+    references: [id]
+  )
+
+  paymentAccount PaymentAccount? @relation(
+    fields: [paymentAccountId],
+    references: [id]
+  )
+
   reviewer User? @relation(
     "DepositReviewer",
     fields: [reviewedBy],
@@ -172,7 +221,9 @@ model Deposit {
   transactions Transaction[]
 
   @@index([userId])
+  @@index([planId])
   @@index([status])
+  @@index([paymentAccountId])
 }
 
 model Withdrawal {
