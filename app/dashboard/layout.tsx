@@ -42,7 +42,11 @@ export default async function DashboardLayout({
           balanceStr={formatPKR(user.balancePaisa)}
         />
 
-        {children}
+        {/* Offset for the fixed 72px header.
+            Padding-bottom for the fixed bottom nav on mobile. */}
+        <div className="pt-[72px] pb-[88px] lg:pb-0">
+          {children}
+        </div>
 
         <BottomNavigation />
       </div>
