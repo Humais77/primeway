@@ -47,7 +47,7 @@ const availablePlans = plans.filter(
 );
 
   return (
-    <main className="w-full px-4 pb-28 pt-[92px] md:px-6 lg:px-8">
+    <main className="w-full px-4 pb-4 pt-4 md:px-6 md:pt-6 lg:px-8">
       <div className="mx-auto w-full max-w-6xl">
         {/* Header */}
         <div className="mb-7">

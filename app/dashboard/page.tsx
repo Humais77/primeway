@@ -48,7 +48,7 @@ export default async function DashboardPage() {
 
   return (
   
-      <main className="w-full px-4 pb-28 pt-[92px] md:px-6 lg:px-8">
+      <main className="w-full px-4 pb-4 pt-4 md:px-6 md:pt-6 lg:px-8">
         {/* Header */}
         
 

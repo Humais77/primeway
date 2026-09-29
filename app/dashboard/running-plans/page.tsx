@@ -97,7 +97,7 @@ export default async function RunningPlansPage({
     .all();
 
   return (
-    <main className="min-h-screen w-full px-4 pb-28 pt-[92px] md:px-6 lg:px-8">
+    <main className="min-h-screen w-full px-4 pb-4 pt-4 md:px-6 md:pt-6 lg:px-8">
       <div className="mx-auto w-full max-w-6xl">
         {/* Header */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">

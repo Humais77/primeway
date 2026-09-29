@@ -35,7 +35,7 @@ export default async function WithdrawPage() {
   }
 
   return (
-    <main className="min-h-screen px-4 pb-4 pt-24 md:px-6 md:pb-6 md:pt-24 lg:px-8 lg:pb-8 lg:pt-24">
+   <main className="min-h-screen px-4 pb-4 pt-4 md:px-6 md:pt-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
         <div className="mb-8">
          

@@ -58,20 +58,9 @@ export default async function TransactionsPage() {
     );
 
   return (
-    <main className="min-h-screen p-4 md:p-6 lg:p-8">
+    <main className="min-h-screen px-4 pb-4 pt-4 md:px-6 md:pt-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        {/* PAGE HEADER */}
-        <div className="mb-8">
-          <div>
-            <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-purple-600">
-              Account Activity
-            </p>
-
-           
-
-           
-          </div>
-        </div>
+    
 
         <TransactionHistory
           initialTransactions={
