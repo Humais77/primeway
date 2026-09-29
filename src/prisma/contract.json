@@ -32,6 +32,10 @@
       "model": "ReferralCommission",
       "namespace": "public"
     },
+    "ReferralSetting": {
+      "model": "ReferralSetting",
+      "namespace": "public"
+    },
     "Transaction": {
       "model": "Transaction",
       "namespace": "public"
@@ -579,6 +583,21 @@
                 },
                 "to": {
                   "model": "InvestmentPlan",
+                  "namespace": "public"
+                }
+              },
+              "referralCommissions": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "investmentId"
+                  ]
+                },
+                "to": {
+                  "model": "ReferralCommission",
                   "namespace": "public"
                 }
               },
@@ -1160,6 +1179,13 @@
                   "kind": "scalar"
                 }
               },
+              "investmentId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "level": {
                 "nullable": false,
                 "type": {
@@ -1190,6 +1216,22 @@
               }
             },
             "relations": {
+              "investment": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "investmentId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Investment",
+                  "namespace": "public"
+                }
+              },
               "receiver": {
                 "cardinality": "N:1",
                 "nullable": false,
@@ -1240,6 +1282,9 @@
                 "id": {
                   "column": "id"
                 },
+                "investmentId": {
+                  "column": "investmentId"
+                },
                 "level": {
                   "column": "level"
                 },
@@ -1255,6 +1300,57 @@
               },
               "namespaceId": "public",
               "table": "ReferralCommission"
+            }
+          },
+          "ReferralSetting": {
+            "fields": {
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "level1BonusBps": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "level2BonusBps": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "id": {
+                  "column": "id"
+                },
+                "level1BonusBps": {
+                  "column": "level1BonusBps"
+                },
+                "level2BonusBps": {
+                  "column": "level2BonusBps"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "ReferralSetting"
             }
           },
           "Transaction": {
@@ -1649,22 +1745,6 @@
                   "namespace": "public"
                 }
               },
-              "referralReceived": {
-                "cardinality": "1:1",
-                "nullable": true,
-                "on": {
-                  "localFields": [
-                    "id"
-                  ],
-                  "targetFields": [
-                    "referredUserId"
-                  ]
-                },
-                "to": {
-                  "model": "Referral",
-                  "namespace": "public"
-                }
-              },
               "referralsGiven": {
                 "cardinality": "1:N",
                 "on": {
@@ -1673,6 +1753,21 @@
                   ],
                   "targetFields": [
                     "referrerId"
+                  ]
+                },
+                "to": {
+                  "model": "Referral",
+                  "namespace": "public"
+                }
+              },
+              "referralsReceived": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "referredUserId"
                   ]
                 },
                 "to": {
@@ -2807,6 +2902,22 @@
               "indexes": [
                 {
                   "columns": [
+                    "level"
+                  ],
+                  "name": "Referral_level_idx_30977cf3",
+                  "prefix": "Referral_level_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "referredUserId"
+                  ],
+                  "name": "Referral_referredUserId_idx_9cd5e2dd",
+                  "prefix": "Referral_referredUserId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
                     "referrerId"
                   ],
                   "name": "Referral_referrerId_idx_cac6d89f",
@@ -2822,7 +2933,8 @@
               "uniques": [
                 {
                   "columns": [
-                    "referredUserId"
+                    "referredUserId",
+                    "level"
                   ]
                 }
               ]
@@ -2857,6 +2969,11 @@
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
+                },
+                "investmentId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
                 },
                 "level": {
                   "codecId": "pg/int4@1",
@@ -2913,6 +3030,22 @@
                     "namespaceId": "public",
                     "tableName": "User"
                   }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "investmentId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "ReferralCommission"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Investment"
+                  }
                 }
               ],
               "indexes": [
@@ -2922,6 +3055,14 @@
                   ],
                   "name": "ReferralCommission_createdAt_idx_9575dbd7",
                   "prefix": "ReferralCommission_createdAt_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "investmentId"
+                  ],
+                  "name": "ReferralCommission_investmentId_idx_a040f76a",
+                  "prefix": "ReferralCommission_investmentId_idx",
                   "unique": false
                 },
                 {
@@ -2941,6 +3082,61 @@
                   "unique": false
                 }
               ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "investmentId",
+                    "level"
+                  ]
+                }
+              ]
+            },
+            "ReferralSetting": {
+              "columns": {
+                "id": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "default"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "level1BonusBps": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 1300
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "level2BonusBps": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 500
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
               "primaryKey": {
                 "columns": [
                   "id"
@@ -3556,7 +3752,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "c841f0e551bd9908928c3111f77cac2fc442644ae19e512ae4ed777c8bd74d6f"
+    "storageHash": "065d03938893f85469f1e270cfb6769bad9ced32c477dda138ee5cf3c2d4c6d0"
   },
   "execution": {
     "executionHash": "62dc92bd5bb17d62e8d1871f5a3850b2e26ae747c0143d4788512e278f85dfd8",
