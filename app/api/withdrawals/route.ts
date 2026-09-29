@@ -194,15 +194,10 @@ export async function POST(
 
         // Reserve/deduct the money immediately.
         await tx.orm.public.User
-          .where({ id: user.id })
-          .update({
-            balancePaisa:
-              balanceAfter,
-
-            totalWithdrawnPaisa:
-              user.totalWithdrawnPaisa +
-              amountPaisa,
-          });
+  .where({ id: user.id })
+  .update({
+    balancePaisa: balanceAfter,
+  });
 
         // Record the withdrawal request.
         await tx.orm.public.Transaction.create(

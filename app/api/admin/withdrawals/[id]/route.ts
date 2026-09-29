@@ -96,15 +96,36 @@ export async function PATCH(
               );
             }
 
-            return await tx.orm.public.Withdrawal
-              .where({ id })
-              .update({
-                status: "APPROVED",
-                reviewedBy:
-                  session.userId,
-                reviewedAt:
-                  new Date().toISOString()
-              });
+            const user =
+  await tx.orm.public.User.first({
+    id: current.userId,
+  });
+
+if (!user) {
+  throw new Error(
+    "User account not found."
+  );
+}
+
+await tx.orm.public.User
+  .where({
+    id: user.id,
+  })
+  .update({
+    totalWithdrawnPaisa:
+      user.totalWithdrawnPaisa +
+      current.amountPaisa,
+  });
+
+return await tx.orm.public.Withdrawal
+  .where({ id })
+  .update({
+    status: "APPROVED",
+    reviewedBy:
+      session.userId,
+    reviewedAt:
+      new Date().toISOString(),
+  });
           }
         );
 
