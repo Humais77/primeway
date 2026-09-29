@@ -94,7 +94,7 @@ model User {
   transactions Transaction[]
 
   referralsGiven Referral[] @relation("Referrer")
-  referralReceived Referral? @relation("ReferredUser")
+  referralsReceived Referral[] @relation("ReferredUser")
 
   commissionsEarned ReferralCommission[] @relation("CommissionReceiver")
   commissionsGenerated ReferralCommission[] @relation("CommissionSource")
@@ -157,6 +157,8 @@ model Investment {
   plan InvestmentPlan @relation(fields: [planId], references: [id])
 
   transactions Transaction[]
+
+  referralCommissions ReferralCommission[]
 
   @@index([userId])
   @@index([planId])
@@ -314,7 +316,7 @@ model Referral {
   id String @id @default(uuid())
 
   referrerId String
-  referredUserId String @unique
+  referredUserId String
 
   level Int
 
@@ -334,7 +336,10 @@ model Referral {
     onDelete: Cascade
   )
 
+  @@unique([referredUserId, level])
   @@index([referrerId])
+  @@index([referredUserId])
+  @@index([level])
 }
 
 model ReferralCommission {
@@ -342,6 +347,8 @@ model ReferralCommission {
 
   receiverId String
   sourceUserId String
+
+  investmentId String?
 
   level Int
 
@@ -367,9 +374,25 @@ model ReferralCommission {
     onDelete: Cascade
   )
 
+  investment Investment? @relation(
+    fields: [investmentId],
+    references: [id]
+  )
+
+  @@unique([investmentId, level])
   @@index([receiverId])
   @@index([sourceUserId])
+  @@index([investmentId])
   @@index([createdAt])
+}
+
+model ReferralSetting {
+  id String @id @default("default")
+
+  level1BonusBps Int @default(1300)
+  level2BonusBps Int @default(500)
+
+  updatedAt TimestamptzString @default(now())
 }
 
 model Notification {

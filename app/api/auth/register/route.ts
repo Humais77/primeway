@@ -33,12 +33,19 @@ export async function POST(request: Request) {
 
     const data = RegisterSchema.parse(body);
 
-    const email = data.email.toLowerCase();
-    const username = data.username.toLowerCase();
+    const email = data.email.trim().toLowerCase();
+    const username = data.username.trim().toLowerCase();
 
-    const existingEmail = await db.orm.public.User.first({
-      email,
-    });
+    const referralCodeInput =
+      data.referralCode?.trim().toUpperCase() || null;
+
+    /*
+     * Check duplicate email.
+     */
+    const existingEmail =
+      await db.orm.public.User.first({
+        email,
+      });
 
     if (existingEmail) {
       return NextResponse.json(
@@ -51,9 +58,13 @@ export async function POST(request: Request) {
       );
     }
 
-    const existingUsername = await db.orm.public.User.first({
-      username,
-    });
+    /*
+     * Check duplicate username.
+     */
+    const existingUsername =
+      await db.orm.public.User.first({
+        username,
+      });
 
     if (existingUsername) {
       return NextResponse.json(
@@ -66,14 +77,23 @@ export async function POST(request: Request) {
       );
     }
 
-    let referrerId: string | null = null;
+    /*
+     * Find direct referrer.
+     */
+    let referrer:
+      | {
+          id: string;
+          referralCode: string;
+        }
+      | null = null;
 
-    if (data.referralCode) {
-      const referrer = await db.orm.public.User.first({
-        referralCode: data.referralCode,
-      });
+    if (referralCodeInput) {
+      const foundReferrer =
+        await db.orm.public.User.first({
+          referralCode: referralCodeInput,
+        });
 
-      if (!referrer) {
+      if (!foundReferrer) {
         return NextResponse.json(
           {
             message: "Invalid referral code",
@@ -84,7 +104,7 @@ export async function POST(request: Request) {
         );
       }
 
-      referrerId = referrer.id;
+      referrer = foundReferrer;
     }
 
     const passwordHash = await bcrypt.hash(
@@ -92,35 +112,94 @@ export async function POST(request: Request) {
       12
     );
 
-    const referralCode = generateReferralCode(username);
+    /*
+     * Generate a unique referral code.
+     */
+    let generatedReferralCode = "";
+    let codeExists = true;
 
-    const user = await db.transaction(async (tx) => {
-      const createdUser = await tx.orm.public.User.create({
-        fullName: data.fullName,
-        username,
-        email,
-        passwordHash,
-        referralCode,
-      });
+    while (codeExists) {
+      generatedReferralCode =
+        generateReferralCode(username);
 
-      if (referrerId) {
-        await tx.orm.public.Referral.create({
-          referrer: (referrer) =>
-            referrer.connect({
-              id: referrerId!,
-            }),
-
-          referredUser: (referredUser) =>
-            referredUser.connect({
-              id: createdUser.id,
-            }),
-
-          level: 1,
+      const existingCode =
+        await db.orm.public.User.first({
+          referralCode: generatedReferralCode,
         });
-      }
 
-      return createdUser;
-    });
+      codeExists = !!existingCode;
+    }
+
+    /*
+     * Create user + referral relationships
+     * inside one transaction.
+     */
+    const user = await db.transaction(
+      async (tx) => {
+        const createdUser =
+          await tx.orm.public.User.create({
+            fullName: data.fullName.trim(),
+            username,
+            email,
+            passwordHash,
+            referralCode:
+              generatedReferralCode,
+          });
+
+        if (referrer) {
+          /*
+           * LEVEL 1
+           *
+           * New user -> direct referrer
+           *
+           * Example:
+           *
+           * Humais -> Ali
+           *
+           * Ali is Humais's Level 1.
+           */
+          await tx.orm.public.Referral.create({
+            referrerId: referrer.id,
+            referredUserId: createdUser.id,
+            level: 1,
+          });
+
+          /*
+           * LEVEL 2
+           *
+           * Find the person who referred
+           * the direct referrer.
+           *
+           * Example:
+           *
+           * Humais -> Ali -> Ahmed
+           *
+           * Ahmed:
+           * Ali    = Level 1
+           * Humais = Level 2
+           */
+          const parentReferral =
+            await tx.orm.public.Referral.first({
+              referredUserId: referrer.id,
+              level: 1,
+            });
+
+          if (parentReferral) {
+            await tx.orm.public.Referral.create({
+              referrerId:
+                parentReferral.referrerId,
+
+              referredUserId:
+                createdUser.id,
+
+              level: 2,
+            });
+          }
+        }
+
+        return createdUser;
+      }
+    );
 
     return NextResponse.json(
       {
@@ -132,7 +211,10 @@ export async function POST(request: Request) {
       }
     );
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error(
+      "Registration error:",
+      error
+    );
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(

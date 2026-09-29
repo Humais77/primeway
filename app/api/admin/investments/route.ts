@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/src/prisma/db";
 import { requireAdmin } from "@/src/lib/admin";
+import { createReferralCommissions } from "@/src/lib/referrals";
 
 function addDays(
   date: Date,
@@ -145,14 +146,19 @@ export async function POST(
 
     if (!plan) {
       return NextResponse.json(
-        { message: "Investment plan not found." },
+        {
+          message:
+            "Investment plan not found.",
+        },
         { status: 404 }
       );
     }
 
     if (
-      amountPaisa < plan.minAmountPaisa ||
-      amountPaisa > plan.maxAmountPaisa
+      amountPaisa <
+        plan.minAmountPaisa ||
+      amountPaisa >
+        plan.maxAmountPaisa
     ) {
       return NextResponse.json(
         {
@@ -170,7 +176,10 @@ export async function POST(
 
     if (Number.isNaN(start.getTime())) {
       return NextResponse.json(
-        { message: "Invalid start date." },
+        {
+          message:
+            "Invalid start date.",
+        },
         { status: 400 }
       );
     }
@@ -186,24 +195,73 @@ export async function POST(
         plan.frequency
       );
 
+    /*
+     * Create investment and referral
+     * commissions in one transaction.
+     */
+
+    const existingInvestment =
+  await db.orm.public.Investment.first({
+    userId,
+    planId,
+    status: "ACTIVE",
+  });
+
+if (existingInvestment) {
+  return NextResponse.json(
+    {
+      message:
+        "User already has an active investment in this plan.",
+    },
+    { status: 409 }
+  );
+}
     const investment =
-      await db.orm.public.Investment.create({
-        userId,
-        planId,
-        amountPaisa,
-        profitRateBps:
-          plan.profitRateBps,
-        frequency:
-          plan.frequency,
-        startDate:
-          start.toISOString(),
-        endDate:
-          end.toISOString(),
-        nextProfitAt:
-          nextProfit.toISOString(),
-        status:
-          status ?? "ACTIVE",
+      await db.transaction(async (tx) => {
+        const createdInvestment =
+          await tx.orm.public.Investment.create({
+            userId,
+            planId,
+            amountPaisa,
+
+            profitRateBps:
+              plan.profitRateBps,
+
+            frequency:
+              plan.frequency,
+
+            startDate:
+              start.toISOString(),
+
+            endDate:
+              end.toISOString(),
+
+            nextProfitAt:
+              nextProfit.toISOString(),
+
+            status:
+              status ?? "ACTIVE",
+          });
+
+        /*
+         * Referral commission should only
+         * be generated for an ACTIVE investment.
+         */
+        if (
+          (status ?? "ACTIVE") ===
+          "ACTIVE"
+        ) {
+          await createReferralCommissions(
+            tx,
+            userId,
+            createdInvestment.id,
+            createdInvestment.amountPaisa
+          );
+        }
+
+        return createdInvestment;
       });
+      
 
     return NextResponse.json(
       {

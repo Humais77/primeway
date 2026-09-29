@@ -127,7 +127,7 @@ export default function DashboardSidebar({
     {
       icon: <Users size={21} strokeWidth={2.2} />,
       label: "My Team",
-      href: "/dashboard/team",
+      href: "/dashboard/my-team",
     },
     {
       icon: <RotateCcw size={21} strokeWidth={2.2} />,
