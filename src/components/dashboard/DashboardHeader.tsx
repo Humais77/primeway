@@ -43,7 +43,9 @@ type ProfileData = {
   email: string;
   role: "USER" | "ADMIN";
   balancePaisa: number;
-  level: number;
+  referralCode?: string;
+  level1Count?: number;
+  level2Count?: number;
 };
 
 export default function DashboardHeader({
@@ -304,8 +306,11 @@ export default function DashboardHeader({
   const email =
     profile?.email || "";
 
-  const level =
-    profile?.level ?? 1;
+  const level1Count =
+  profile?.level1Count ?? 0;
+
+const level2Count =
+  profile?.level2Count ?? 0;
 
   const initials = displayName
     .substring(0, 2)
@@ -919,45 +924,76 @@ export default function DashboardHeader({
               {/* Level */}
 
               <div className="p-3">
-                <div
-                  className="
-                    flex
-                    items-center
-                    justify-between
-                    rounded-xl
-                    bg-[#f5f4ff]
-                    px-3
-                    py-3
-                  "
-                >
-                  <div>
-                    <p className="text-[9px] font-medium uppercase tracking-wide text-gray-400">
-                      My Level
-                    </p>
+  <div
+    className="
+      rounded-xl
+      bg-[#f5f4ff]
+      px-3
+      py-3
+    "
+  >
+    <div className="mb-3 flex items-center justify-between">
+      <div>
+        <p className="text-[9px] font-medium uppercase tracking-wide text-gray-400">
+          Referral Network
+        </p>
 
-                    <p className="mt-1 text-sm font-black text-[#4020bd]">
-                      Level {level}
-                    </p>
-                  </div>
+        <p className="mt-1 text-sm font-black text-[#4020bd]">
+          My Team
+        </p>
+      </div>
 
-                  <div
-                    className="
-                      flex
-                      h-9
-                      w-9
-                      items-center
-                      justify-center
-                      rounded-lg
-                      bg-[#e9e7ff]
-                      text-xs
-                      font-black
-                      text-[#4020bd]
-                    "
-                  >
-                    L{level}
-                  </div>
-                </div>
-              </div>
+      <div
+        className="
+          flex
+          h-9
+          w-9
+          items-center
+          justify-center
+          rounded-lg
+          bg-[#e9e7ff]
+          text-xs
+          font-black
+          text-[#4020bd]
+        "
+      >
+        2L
+      </div>
+    </div>
+
+    <div className="grid grid-cols-2 gap-2">
+      {/* Level 1 */}
+      <div className="rounded-lg bg-white px-3 py-2.5">
+        <p className="text-[9px] font-medium uppercase tracking-wide text-gray-400">
+          Level 1
+        </p>
+
+        <p className="mt-1 text-base font-black text-[#111b58]">
+          {level1Count}
+        </p>
+
+        <p className="text-[9px] text-gray-400">
+          Direct referrals
+        </p>
+      </div>
+
+      {/* Level 2 */}
+      <div className="rounded-lg bg-white px-3 py-2.5">
+        <p className="text-[9px] font-medium uppercase tracking-wide text-gray-400">
+          Level 2
+        </p>
+
+        <p className="mt-1 text-base font-black text-[#111b58]">
+          {level2Count}
+        </p>
+
+        <p className="text-[9px] text-gray-400">
+          Indirect referrals
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
 
               {/* Logout */}
 
