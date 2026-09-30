@@ -447,22 +447,49 @@ const level2Count =
 
         {/* Brand */}
 
-        <div className="flex items-center gap-3">
-          <Link
+        <Link
   href="/dashboard"
-  aria-label="Prime Way — Home"
-  className="flex items-center"
+  aria-label="GrowVest — Home"
+  className="flex items-center "
 >
   <Image
-    src="/images/logo.png"
-    alt="Prime Way"
-    width={140}
-    height={44}
+    src="/images/Brand Logo.png"
+    alt="GrowVest"
+    width={80}
+    height={80}
     priority
-    className="h-10 w-auto object-contain md:h-11"
+    className="h-11 w-11 shrink-0 object-contain md:h-12 md:w-12"
   />
+
+  <div className="flex h-11 flex-col justify-center md:h-12">
+    <Image
+      src="/images/Brand Name.png"
+      alt="GrowVest"
+      width={200}
+      height={48}
+      priority
+      className="h-6 w-auto object-contain object-left md:h-7"
+    />
+
+    <span
+      className="
+        mt-0.5
+        mb-[-12]
+        hidden
+        text-[8px]
+        font-semibold
+        uppercase
+        tracking-[0.22em]
+        text-[#4b5563]
+        sm:block
+        md:text-[9px]
+        md:tracking-[0.28em]
+      "
+    >
+      Invest · Grow · Together
+    </span>
+  </div>
 </Link>
-        </div>
       </div>
 
       {/* =========================================================
