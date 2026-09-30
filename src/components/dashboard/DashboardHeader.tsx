@@ -21,7 +21,8 @@ import {
   useRef,
   useState,
 } from "react";
-
+import Link from "next/link";
+import Image from "next/image";
 type DashboardHeaderProps = {
   fullName?: string;
   balanceStr?: string;
@@ -447,57 +448,20 @@ const level2Count =
         {/* Brand */}
 
         <div className="flex items-center gap-3">
-          <div
-            className="
-              flex
-              h-11
-              w-11
-              items-center
-              justify-center
-              rounded-xl
-              bg-gradient-to-br
-              from-[#4020bd]
-              to-[#063d82]
-              text-white
-              shadow-[0_5px_16px_rgba(64,32,189,0.25)]
-            "
-          >
-            <TrendingUp
-              size={24}
-              strokeWidth={2.5}
-            />
-          </div>
-
-          <div className="hidden sm:block">
-            <h1
-              className="
-                text-xl
-                font-black
-                leading-none
-                tracking-wide
-                text-[#063d82]
-                md:text-2xl
-              "
-            >
-              Prime{" "}
-              <span className="text-[#4020bd]">
-                Way
-              </span>
-            </h1>
-
-            <p
-              className="
-                mt-1
-                text-[8px]
-                font-bold
-                tracking-[0.2em]
-                text-gray-400
-                md:text-[9px]
-              "
-            >
-              INVEST TODAY, EARN TOMORROW
-            </p>
-          </div>
+          <Link
+  href="/dashboard"
+  aria-label="Prime Way — Home"
+  className="flex items-center"
+>
+  <Image
+    src="/images/logo.png"
+    alt="Prime Way"
+    width={140}
+    height={44}
+    priority
+    className="h-10 w-auto object-contain md:h-11"
+  />
+</Link>
         </div>
       </div>
 
