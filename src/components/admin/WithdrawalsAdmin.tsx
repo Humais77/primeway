@@ -232,10 +232,10 @@ export default function WithdrawalsAdmin({
   return (
     <div className="space-y-7">
       {/* MINIMUM WITHDRAWAL SETTING */}
-      <div className="rounded-3xl bg-white p-6 shadow-sm">
+      <div className="rounded-3xl border border-[#dceedd] bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>
-            <h2 className="text-xl font-black text-[#111b58]">
+            <h2 className="text-xl font-black text-[#173b20]">
               Withdrawal Settings
             </h2>
 
@@ -260,7 +260,7 @@ export default function WithdrawalsAdmin({
                     event.target.value
                   )
                 }
-                className="h-11 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-purple-500"
+                className="h-11 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none transition focus:border-[#45a94a] focus:ring-2 focus:ring-[#45a94a]/10"
               />
             </div>
 
@@ -268,7 +268,7 @@ export default function WithdrawalsAdmin({
               type="button"
               onClick={saveMinimum}
               disabled={saving}
-              className="mt-6 flex h-11 items-center gap-2 rounded-xl bg-[#4020bd] px-5 text-sm font-bold text-white disabled:opacity-50"
+              className="mt-6 flex h-11 items-center gap-2 rounded-xl bg-[#45a94a] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#2f7d32] disabled:opacity-50"
             >
               <Save size={16} />
 
@@ -281,9 +281,9 @@ export default function WithdrawalsAdmin({
       </div>
 
       {/* WITHDRAWALS */}
-      <div className="overflow-hidden rounded-3xl bg-white shadow-sm">
-        <div className="border-b border-gray-100 p-6">
-          <h2 className="text-xl font-black text-[#111b58]">
+      <div className="overflow-hidden rounded-3xl border border-[#dceedd] bg-white shadow-sm">
+        <div className="border-b border-[#edf4ed] p-6">
+          <h2 className="text-xl font-black text-[#173b20]">
             Withdrawal Requests
           </h2>
 
@@ -294,7 +294,7 @@ export default function WithdrawalsAdmin({
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1200px] text-left">
-            <thead className="bg-[#f7f7ff] text-xs uppercase text-gray-500">
+            <thead className="bg-[#f4faf4] text-xs uppercase text-[#2f7d32]">
               <tr>
                 <th className="px-5 py-4">
                   User
@@ -335,10 +335,10 @@ export default function WithdrawalsAdmin({
                   return (
                     <tr
                       key={withdrawal.id}
-                      className="border-t border-gray-100"
+                      className="border-t border-[#edf4ed] transition hover:bg-[#f9fcf9]"
                     >
                       <td className="px-5 py-5">
-                        <p className="font-bold text-[#111b58]">
+                        <p className="font-bold text-[#173b20]">
                           {
                             withdrawal.user
                               ?.fullName
@@ -355,7 +355,7 @@ export default function WithdrawalsAdmin({
                       </td>
 
                       <td className="px-5 py-5">
-                        <p className="font-black text-[#111b58]">
+                        <p className="font-black text-[#173b20]">
                           {money(
                             withdrawal.amountPaisa
                           )}
@@ -363,7 +363,7 @@ export default function WithdrawalsAdmin({
                       </td>
 
                       <td className="px-5 py-5">
-                        <span className="rounded-full bg-purple-50 px-3 py-1 text-xs font-bold text-purple-600">
+                        <span className="rounded-full border border-[#dceedd] bg-[#eff8f0] px-3 py-1 text-xs font-bold text-[#2f7d32]">
                           {
                             withdrawal.method
                           }
@@ -447,7 +447,7 @@ export default function WithdrawalsAdmin({
                                     "APPROVED"
                                   )
                                 }
-                                className="flex items-center gap-1.5 rounded-lg bg-green-50 px-3 py-2 text-xs font-bold text-green-600 hover:bg-green-100 disabled:opacity-50"
+                                className="flex items-center gap-1.5 rounded-lg bg-green-50 px-3 py-2 text-xs font-bold text-green-600 transition hover:bg-green-100 disabled:opacity-50"
                               >
                                 <CheckCircle2
                                   size={14}
@@ -467,7 +467,7 @@ export default function WithdrawalsAdmin({
                                     "REJECTED"
                                   )
                                 }
-                                className="flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-100 disabled:opacity-50"
+                                className="flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-2 text-xs font-bold text-red-600 transition hover:bg-red-100 disabled:opacity-50"
                               >
                                 <XCircle
                                   size={14}
@@ -488,7 +488,7 @@ export default function WithdrawalsAdmin({
                                 )
                               )
                             }
-                            className="rounded-lg bg-gray-100 p-2 text-gray-600 hover:bg-gray-200"
+                            className="rounded-lg border border-[#dceedd] bg-[#f4faf4] p-2 text-[#2f7d32] transition hover:bg-[#e4f4e5]"
                             title="View account details"
                           >
                             <Eye

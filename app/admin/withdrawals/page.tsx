@@ -8,30 +8,34 @@ export default async function AdminWithdrawalsPage() {
     .orderBy((withdrawal) => withdrawal.createdAt.desc())
     .all();
 
-  let setting = await db.orm.public.WithdrawalSetting.first();
+  let setting =
+    await db.orm.public.WithdrawalSetting.first();
 
   if (!setting) {
-    setting = await db.orm.public.WithdrawalSetting.create({
-      minWithdrawalPaisa: 50000,
-    });
+    setting =
+      await db.orm.public.WithdrawalSetting.create({
+        minWithdrawalPaisa: 50000,
+      });
   }
 
   return (
-    <main className="p-4 md:p-6 lg:p-8">
+    <main className="min-h-screen bg-[#f5f8f5] p-4 md:p-6 lg:p-8">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-black text-[#111b58]">
+          <h1 className="text-3xl font-black text-[#173b20]">
             Withdrawals
           </h1>
+
           <p className="mt-2 text-sm text-gray-500">
             Manage withdrawal requests and minimum withdrawal settings.
           </p>
         </div>
 
         <WithdrawalsAdmin
-          
           initialWithdrawals={
-            withdrawals as unknown as Parameters<typeof WithdrawalsAdmin>[0]["initialWithdrawals"]
+            withdrawals as unknown as Parameters<
+              typeof WithdrawalsAdmin
+            >[0]["initialWithdrawals"]
           }
           initialMinWithdrawalPaisa={
             setting.minWithdrawalPaisa

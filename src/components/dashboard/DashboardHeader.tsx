@@ -7,7 +7,6 @@ import {
   Wallet,
   Power,
   ChevronDown,
-  TrendingUp,
   CheckCircle2,
   Info,
   AlertCircle,
@@ -16,13 +15,10 @@ import {
 
 import { useDashboardUI } from "./DashboardUI";
 import { useRouter } from "next/navigation";
-import {
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+
 type DashboardHeaderProps = {
   fullName?: string;
   balanceStr?: string;
@@ -59,14 +55,12 @@ export default function DashboardHeader({
   const [notifications, setNotifications] =
     useState<NotificationItem[]>([]);
 
-  const [unreadCount, setUnreadCount] =
-    useState(0);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const [showNotifications, setShowNotifications] =
     useState(false);
 
-  const [showProfile, setShowProfile] =
-    useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   const [profile, setProfile] =
     useState<ProfileData | null>(null);
@@ -74,8 +68,7 @@ export default function DashboardHeader({
   const notificationRef =
     useRef<HTMLDivElement>(null);
 
-  const profileRef =
-    useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
 
   /*
    * =========================================================
@@ -85,24 +78,16 @@ export default function DashboardHeader({
 
   const loadNotifications = async () => {
     try {
-      const response = await fetch(
-        "/api/notifications",
-        {
-          cache: "no-store",
-        }
-      );
+      const response = await fetch("/api/notifications", {
+        cache: "no-store",
+      });
 
       if (!response.ok) return;
 
       const data = await response.json();
 
-      setNotifications(
-        data.notifications ?? []
-      );
-
-      setUnreadCount(
-        data.unreadCount ?? 0
-      );
+      setNotifications(data.notifications ?? []);
+      setUnreadCount(data.unreadCount ?? 0);
     } catch (error) {
       console.error(
         "Failed to load notifications:",
@@ -110,40 +95,41 @@ export default function DashboardHeader({
       );
     }
   };
+
   const handleMarkAllRead = async () => {
-  if (unreadCount === 0) {
-    return;
-  }
-
-  try {
-    const response = await fetch(
-      "/api/notifications",
-      {
-        method: "PATCH",
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(
-        "Failed to mark notifications as read."
-      );
+    if (unreadCount === 0) {
+      return;
     }
 
-    setNotifications((current) =>
-      current.map((notification) => ({
-        ...notification,
-        isRead: true,
-      }))
-    );
+    try {
+      const response = await fetch(
+        "/api/notifications",
+        {
+          method: "PATCH",
+        }
+      );
 
-    setUnreadCount(0);
-  } catch (error) {
-    console.error(
-      "Failed to mark all notifications:",
-      error
-    );
-  }
-};
+      if (!response.ok) {
+        throw new Error(
+          "Failed to mark notifications as read."
+        );
+      }
+
+      setNotifications((current) =>
+        current.map((notification) => ({
+          ...notification,
+          isRead: true,
+        }))
+      );
+
+      setUnreadCount(0);
+    } catch (error) {
+      console.error(
+        "Failed to mark all notifications:",
+        error
+      );
+    }
+  };
 
   /*
    * =========================================================
@@ -153,12 +139,9 @@ export default function DashboardHeader({
 
   const loadProfile = async () => {
     try {
-      const response = await fetch(
-        "/api/profile",
-        {
-          cache: "no-store",
-        }
-      );
+      const response = await fetch("/api/profile", {
+        cache: "no-store",
+      });
 
       if (!response.ok) return;
 
@@ -177,7 +160,6 @@ export default function DashboardHeader({
     loadNotifications();
     loadProfile();
 
-    // Refresh notifications periodically.
     const interval = setInterval(
       loadNotifications,
       15000
@@ -301,17 +283,15 @@ export default function DashboardHeader({
   const displayName =
     profile?.fullName || fullName;
 
-  const username =
-    profile?.username || "";
+  const username = profile?.username || "";
 
-  const email =
-    profile?.email || "";
+  const email = profile?.email || "";
 
   const level1Count =
-  profile?.level1Count ?? 0;
+    profile?.level1Count ?? 0;
 
-const level2Count =
-  profile?.level2Count ?? 0;
+  const level2Count =
+    profile?.level2Count ?? 0;
 
   const initials = displayName
     .substring(0, 2)
@@ -324,7 +304,7 @@ const level2Count =
       return (
         <CheckCircle2
           size={18}
-          className="text-green-500"
+          className="text-[#18B152]"
         />
       );
     }
@@ -341,7 +321,7 @@ const level2Count =
     return (
       <Info
         size={18}
-        className="text-[#4020bd]"
+        className="text-[#18B152]"
       />
     );
   };
@@ -349,9 +329,7 @@ const level2Count =
   const formatNotificationTime = (
     date: string
   ) => {
-    const notificationDate =
-      new Date(date);
-
+    const notificationDate = new Date(date);
     const now = new Date();
 
     const difference =
@@ -370,17 +348,13 @@ const level2Count =
       return `${minutes}m ago`;
     }
 
-    const hours = Math.floor(
-      minutes / 60
-    );
+    const hours = Math.floor(minutes / 60);
 
     if (hours < 24) {
       return `${hours}h ago`;
     }
 
-    const days = Math.floor(
-      hours / 24
-    );
+    const days = Math.floor(hours / 24);
 
     if (days < 7) {
       return `${days}d ago`;
@@ -409,10 +383,10 @@ const level2Count =
         items-center
         justify-between
         border-b
-        border-[#e6e9f5]
+        border-[#DCEDE3]
         bg-white
         px-4
-        shadow-[0_2px_15px_rgba(30,45,100,0.08)]
+        shadow-[0_2px_15px_rgba(24,97,63,0.08)]
         md:px-6
         lg:px-8
       "
@@ -422,6 +396,8 @@ const level2Count =
       ========================================================= */}
 
       <div className="flex items-center gap-4 md:gap-6">
+        {/* Mobile / Sidebar Toggle */}
+
         <button
           type="button"
           onClick={toggleSidebar}
@@ -433,10 +409,10 @@ const level2Count =
             items-center
             justify-center
             rounded-xl
-            text-[#4020bd]
+            text-[#18B152]
             transition
-            hover:bg-[#eef0ff]
-            hover:text-[#063d82]
+            hover:bg-[#EAF8F0]
+            hover:text-[#18613F]
           "
         >
           <Menu
@@ -448,48 +424,61 @@ const level2Count =
         {/* Brand */}
 
         <Link
-  href="/dashboard"
-  aria-label="GrowVest — Home"
-  className="flex items-center "
->
-  <Image
-    src="/images/Brand Logo.png"
-    alt="GrowVest"
-    width={80}
-    height={80}
-    priority
-    className="h-11 w-11 shrink-0 object-contain md:h-12 md:w-12"
-  />
+          href="/dashboard"
+          aria-label="GrowVest — Home"
+          className="flex items-center"
+        >
+          <Image
+            src="/images/Brand Logo.png"
+            alt="GrowVest"
+            width={80}
+            height={80}
+            priority
+            className="
+              h-11
+              w-11
+              shrink-0
+              object-contain
+              md:h-12
+              md:w-12
+            "
+          />
 
-  <div className="flex h-11 flex-col justify-center md:h-12">
-    <Image
-      src="/images/Brand Name.png"
-      alt="GrowVest"
-      width={200}
-      height={48}
-      priority
-      className="h-6 w-auto object-contain object-left md:h-7"
-    />
+          <div className="flex h-11 flex-col justify-center md:h-12">
+            <Image
+              src="/images/Brand Name.png"
+              alt="GrowVest"
+              width={200}
+              height={48}
+              priority
+              className="
+                h-6
+                w-auto
+                object-contain
+                object-left
+                md:h-7
+              "
+            />
 
-    <span
-      className="
-        mt-0.5
-        mb-[-12]
-        hidden
-        text-[8px]
-        font-semibold
-        uppercase
-        tracking-[0.22em]
-        text-[#4b5563]
-        sm:block
-        md:text-[9px]
-        md:tracking-[0.28em]
-      "
-    >
-      Invest · Grow · Together
-    </span>
-  </div>
-</Link>
+            <span
+              className="
+                mt-0.5
+                mb-[-12px]
+                hidden
+                text-[8px]
+                font-semibold
+                uppercase
+                tracking-[0.22em]
+                text-[#18613F]
+                sm:block
+                md:text-[9px]
+                md:tracking-[0.28em]
+              "
+            >
+              Invest · Grow · Together
+            </span>
+          </div>
+        </Link>
       </div>
 
       {/* =========================================================
@@ -509,10 +498,11 @@ const level2Count =
             items-center
             justify-center
             rounded-full
-            bg-[#eef0ff]
-            text-[#4020bd]
+            bg-[#EAF8F0]
+            text-[#18B152]
             transition
-            hover:bg-[#e1e4ff]
+            hover:bg-[#D9F3E4]
+            hover:text-[#18613F]
             md:flex
           "
         >
@@ -547,10 +537,11 @@ const level2Count =
               items-center
               justify-center
               rounded-full
-              bg-[#eef0ff]
-              text-[#4020bd]
+              bg-[#EAF8F0]
+              text-[#18B152]
               transition
-              hover:bg-[#e1e4ff]
+              hover:bg-[#D9F3E4]
+              hover:text-[#18613F]
             "
           >
             <Bell
@@ -570,7 +561,7 @@ const level2Count =
                   items-center
                   justify-center
                   rounded-full
-                  bg-red-500
+                  bg-[#18B152]
                   px-1
                   text-[9px]
                   font-bold
@@ -589,184 +580,202 @@ const level2Count =
           {/* Notification Dropdown */}
 
           {showNotifications && (
-  <div
-    className="
-      absolute
-      right-0
-      top-12
-      z-[150]
-      w-[360px]
-      overflow-hidden
-      rounded-2xl
-      border
-      border-[#e5e8f4]
-      bg-white
-      shadow-[0_15px_50px_rgba(20,30,80,0.15)]
-    "
-  >
-    {/* Header */}
-    <div
-      className="
-        flex
-        items-start
-        justify-between
-        gap-3
-        border-b
-        border-[#edf0f7]
-        px-4
-        py-3.5
-      "
-    >
-      <div className="min-w-0">
-        <h3 className="text-sm font-bold text-[#111b58]">
-          Notifications
-        </h3>
-
-        <p className="mt-0.5 text-[10px] text-gray-400">
-          {unreadCount > 0
-            ? `${unreadCount} unread`
-            : "You're all caught up"}
-        </p>
-      </div>
-
-      <div className="flex shrink-0 items-center gap-1">
-        {unreadCount > 0 && (
-          <button
-            type="button"
-            onClick={handleMarkAllRead}
-            className="
-              rounded-lg
-              px-2.5
-              py-1.5
-              text-[10px]
-              font-bold
-              text-[#4020bd]
-              transition
-              hover:bg-[#eef0ff]
-            "
-          >
-            Mark all read
-          </button>
-        )}
-
-        <button
-          type="button"
-          onClick={() => setShowNotifications(false)}
-          aria-label="Close notifications"
-          className="
-            flex
-            h-7
-            w-7
-            items-center
-            justify-center
-            rounded-lg
-            text-gray-400
-            transition
-            hover:bg-gray-100
-            hover:text-gray-600
-          "
-        >
-          <X size={15} strokeWidth={2.5} />
-        </button>
-      </div>
-    </div>
-
-    {/* List */}
-    <div className="max-h-[380px] overflow-y-auto">
-      {notifications.length === 0 ? (
-        <div className="px-5 py-12 text-center">
-          <div
-            className="
-              mx-auto
-              flex
-              h-12
-              w-12
-              items-center
-              justify-center
-              rounded-full
-              bg-[#f4f3ff]
-              text-[#4020bd]
-            "
-          >
-            <Bell size={20} strokeWidth={2.2} />
-          </div>
-
-          <p className="mt-3 text-xs font-bold text-[#111b58]">
-            No notifications yet
-          </p>
-
-          <p className="mt-1 text-[10px] text-gray-400">
-            You&apos;ll see updates here.
-          </p>
-        </div>
-      ) : (
-        notifications.map((notification) => (
-          <button
-            key={notification.id}
-            type="button"
-            onClick={() =>
-              handleNotificationClick(notification)
-            }
-            className={`
-              flex
-              w-full
-              gap-3
-              border-b
-              border-[#f0f2f7]
-              px-4
-              py-3
-              text-left
-              transition
-              last:border-b-0
-              hover:bg-[#f8f8ff]
-              ${
-                !notification.isRead
-                  ? "bg-[#f6f5ff]"
-                  : "bg-white"
-              }
-            `}
-          >
             <div
               className="
-                mt-0.5
-                flex
-                h-8
-                w-8
-                shrink-0
-                items-center
-                justify-center
-                rounded-lg
-                bg-[#eef0ff]
+                absolute
+                right-0
+                top-12
+                z-[150]
+                w-[360px]
+                overflow-hidden
+                rounded-2xl
+                border
+                border-[#DCEDE3]
+                bg-white
+                shadow-[0_15px_50px_rgba(15,61,46,0.15)]
               "
             >
-              {getNotificationIcon(notification.type)}
-            </div>
+              {/* Header */}
 
-            <div className="min-w-0 flex-1">
-              <div className="flex items-start justify-between gap-2">
-                <p className="text-xs font-bold text-[#111b58]">
-                  {notification.title}
-                </p>
+              <div
+                className="
+                  flex
+                  items-start
+                  justify-between
+                  gap-3
+                  border-b
+                  border-[#E8F2EC]
+                  px-4
+                  py-3.5
+                "
+              >
+                <div className="min-w-0">
+                  <h3 className="text-sm font-bold text-[#0F3D2E]">
+                    Notifications
+                  </h3>
 
-                {!notification.isRead && (
-                  <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#4020bd]" />
-                )}
+                  <p className="mt-0.5 text-[10px] text-gray-400">
+                    {unreadCount > 0
+                      ? `${unreadCount} unread`
+                      : "You're all caught up"}
+                  </p>
+                </div>
+
+                <div className="flex shrink-0 items-center gap-1">
+                  {unreadCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleMarkAllRead}
+                      className="
+                        rounded-lg
+                        px-2.5
+                        py-1.5
+                        text-[10px]
+                        font-bold
+                        text-[#18B152]
+                        transition
+                        hover:bg-[#EAF8F0]
+                      "
+                    >
+                      Mark all read
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowNotifications(false)
+                    }
+                    aria-label="Close notifications"
+                    className="
+                      flex
+                      h-7
+                      w-7
+                      items-center
+                      justify-center
+                      rounded-lg
+                      text-gray-400
+                      transition
+                      hover:bg-[#EAF8F0]
+                      hover:text-[#18613F]
+                    "
+                  >
+                    <X
+                      size={15}
+                      strokeWidth={2.5}
+                    />
+                  </button>
+                </div>
               </div>
 
-              <p className="mt-1 text-[11px] leading-4 text-gray-500">
-                {notification.message}
-              </p>
+              {/* List */}
 
-              <p className="mt-1.5 text-[9px] font-medium text-gray-400">
-                {formatNotificationTime(notification.createdAt)}
-              </p>
+              <div className="max-h-[380px] overflow-y-auto">
+                {notifications.length === 0 ? (
+                  <div className="px-5 py-12 text-center">
+                    <div
+                      className="
+                        mx-auto
+                        flex
+                        h-12
+                        w-12
+                        items-center
+                        justify-center
+                        rounded-full
+                        bg-[#EAF8F0]
+                        text-[#18B152]
+                      "
+                    >
+                      <Bell
+                        size={20}
+                        strokeWidth={2.2}
+                      />
+                    </div>
+
+                    <p className="mt-3 text-xs font-bold text-[#0F3D2E]">
+                      No notifications yet
+                    </p>
+
+                    <p className="mt-1 text-[10px] text-gray-400">
+                      You&apos;ll see updates here.
+                    </p>
+                  </div>
+                ) : (
+                  notifications.map(
+                    (notification) => (
+                      <button
+                        key={notification.id}
+                        type="button"
+                        onClick={() =>
+                          handleNotificationClick(
+                            notification
+                          )
+                        }
+                        className={`
+                          flex
+                          w-full
+                          gap-3
+                          border-b
+                          border-[#EDF4EF]
+                          px-4
+                          py-3
+                          text-left
+                          transition
+                          last:border-b-0
+                          hover:bg-[#F5FBF7]
+                          ${
+                            !notification.isRead
+                              ? "bg-[#EAF8F0]"
+                              : "bg-white"
+                          }
+                        `}
+                      >
+                        <div
+                          className="
+                            mt-0.5
+                            flex
+                            h-8
+                            w-8
+                            shrink-0
+                            items-center
+                            justify-center
+                            rounded-lg
+                            bg-[#EAF8F0]
+                          "
+                        >
+                          {getNotificationIcon(
+                            notification.type
+                          )}
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="text-xs font-bold text-[#0F3D2E]">
+                              {notification.title}
+                            </p>
+
+                            {!notification.isRead && (
+                              <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#18B152]" />
+                            )}
+                          </div>
+
+                          <p className="mt-1 text-[11px] leading-4 text-gray-500">
+                            {notification.message}
+                          </p>
+
+                          <p className="mt-1.5 text-[9px] font-medium text-gray-400">
+                            {formatNotificationTime(
+                              notification.createdAt
+                            )}
+                          </p>
+                        </div>
+                      </button>
+                    )
+                  )
+                )}
+              </div>
             </div>
-          </button>
-        ))
-      )}
-    </div>
-  </div>
-)}
+          )}
         </div>
 
         {/* =====================================================
@@ -791,14 +800,14 @@ const level2Count =
               gap-2
               rounded-full
               border
-              border-[#e4e7f5]
+              border-[#DCEDE3]
               bg-white
               px-2
               py-1.5
               shadow-sm
               transition
-              hover:border-[#d9dcf0]
-              hover:bg-[#fafaff]
+              hover:border-[#BFE3CD]
+              hover:bg-[#F7FCF9]
               md:gap-3
               md:px-3
             "
@@ -813,8 +822,8 @@ const level2Count =
                 justify-center
                 rounded-full
                 bg-gradient-to-br
-                from-[#4020bd]
-                to-[#063d82]
+                from-[#18B152]
+                to-[#18613F]
                 text-[11px]
                 font-bold
                 text-white
@@ -828,18 +837,22 @@ const level2Count =
                 Welcome!
               </span>
 
-              <span className="mt-0.5 text-xs font-bold text-[#111b58]">
+              <span className="mt-0.5 text-xs font-bold text-[#0F3D2E]">
                 {firstName}
               </span>
             </div>
 
             <ChevronDown
               size={15}
-              className={`text-[#4020bd] transition ${
-                showProfile
-                  ? "rotate-180"
-                  : ""
-              }`}
+              className={`
+                text-[#18B152]
+                transition
+                ${
+                  showProfile
+                    ? "rotate-180"
+                    : ""
+                }
+              `}
               strokeWidth={2.5}
             />
           </button>
@@ -857,19 +870,19 @@ const level2Count =
                 overflow-hidden
                 rounded-2xl
                 border
-                border-[#e5e8f4]
+                border-[#DCEDE3]
                 bg-white
-                shadow-[0_15px_50px_rgba(20,30,80,0.15)]
+                shadow-[0_15px_50px_rgba(15,61,46,0.15)]
               "
             >
-              {/* User information */}
+              {/* User Information */}
 
               <div
                 className="
                   border-b
-                  border-[#edf0f7]
+                  border-[#E8F2EC]
                   bg-gradient-to-br
-                  from-[#f7f6ff]
+                  from-[#EAF8F0]
                   to-white
                   px-4
                   py-4
@@ -886,8 +899,8 @@ const level2Count =
                       justify-center
                       rounded-full
                       bg-gradient-to-br
-                      from-[#4020bd]
-                      to-[#063d82]
+                      from-[#18B152]
+                      to-[#18613F]
                       text-sm
                       font-bold
                       text-white
@@ -897,7 +910,7 @@ const level2Count =
                   </div>
 
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-bold text-[#111b58]">
+                    <p className="truncate text-sm font-bold text-[#0F3D2E]">
                       {displayName}
                     </p>
 
@@ -912,83 +925,85 @@ const level2Count =
                 </div>
               </div>
 
-              {/* Level */}
+              {/* Referral Network */}
 
               <div className="p-3">
-  <div
-    className="
-      rounded-xl
-      bg-[#f5f4ff]
-      px-3
-      py-3
-    "
-  >
-    <div className="mb-3 flex items-center justify-between">
-      <div>
-        <p className="text-[9px] font-medium uppercase tracking-wide text-gray-400">
-          Referral Network
-        </p>
+                <div
+                  className="
+                    rounded-xl
+                    bg-[#EAF8F0]
+                    px-3
+                    py-3
+                  "
+                >
+                  <div className="mb-3 flex items-center justify-between">
+                    <div>
+                      <p className="text-[9px] font-medium uppercase tracking-wide text-gray-400">
+                        Referral Network
+                      </p>
 
-        <p className="mt-1 text-sm font-black text-[#4020bd]">
-          My Team
-        </p>
-      </div>
+                      <p className="mt-1 text-sm font-black text-[#18613F]">
+                        My Team
+                      </p>
+                    </div>
 
-      <div
-        className="
-          flex
-          h-9
-          w-9
-          items-center
-          justify-center
-          rounded-lg
-          bg-[#e9e7ff]
-          text-xs
-          font-black
-          text-[#4020bd]
-        "
-      >
-        2L
-      </div>
-    </div>
+                    <div
+                      className="
+                        flex
+                        h-9
+                        w-9
+                        items-center
+                        justify-center
+                        rounded-lg
+                        bg-[#D4F1DF]
+                        text-xs
+                        font-black
+                        text-[#18B152]
+                      "
+                    >
+                      2L
+                    </div>
+                  </div>
 
-    <div className="grid grid-cols-2 gap-2">
-      {/* Level 1 */}
-      <div className="rounded-lg bg-white px-3 py-2.5">
-        <p className="text-[9px] font-medium uppercase tracking-wide text-gray-400">
-          Level 1
-        </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Level 1 */}
 
-        <p className="mt-1 text-base font-black text-[#111b58]">
-          {level1Count}
-        </p>
+                    <div className="rounded-lg bg-white px-3 py-2.5">
+                      <p className="text-[9px] font-medium uppercase tracking-wide text-gray-400">
+                        Level 1
+                      </p>
 
-        <p className="text-[9px] text-gray-400">
-          Direct referrals
-        </p>
-      </div>
+                      <p className="mt-1 text-base font-black text-[#0F3D2E]">
+                        {level1Count}
+                      </p>
 
-      {/* Level 2 */}
-      <div className="rounded-lg bg-white px-3 py-2.5">
-        <p className="text-[9px] font-medium uppercase tracking-wide text-gray-400">
-          Level 2
-        </p>
+                      <p className="text-[9px] text-gray-400">
+                        Direct referrals
+                      </p>
+                    </div>
 
-        <p className="mt-1 text-base font-black text-[#111b58]">
-          {level2Count}
-        </p>
+                    {/* Level 2 */}
 
-        <p className="text-[9px] text-gray-400">
-          Indirect referrals
-        </p>
-      </div>
-    </div>
-  </div>
-</div>
+                    <div className="rounded-lg bg-white px-3 py-2.5">
+                      <p className="text-[9px] font-medium uppercase tracking-wide text-gray-400">
+                        Level 2
+                      </p>
+
+                      <p className="mt-1 text-base font-black text-[#0F3D2E]">
+                        {level2Count}
+                      </p>
+
+                      <p className="text-[9px] text-gray-400">
+                        Indirect referrals
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* Logout */}
 
-              <div className="border-t border-[#edf0f7] p-2">
+              <div className="border-t border-[#E8F2EC] p-2">
                 <button
                   type="button"
                   onClick={handleLogout}
@@ -1022,7 +1037,7 @@ const level2Count =
 
         {/* Divider */}
 
-        <div className="hidden h-8 w-px bg-gray-200 lg:block" />
+        <div className="hidden h-8 w-px bg-[#DCEDE3] lg:block" />
 
         {/* Balance */}
 
@@ -1035,8 +1050,8 @@ const level2Count =
               items-center
               justify-center
               rounded-xl
-              bg-[#eef0ff]
-              text-[#4020bd]
+              bg-[#EAF8F0]
+              text-[#18B152]
             "
           >
             <Wallet size={19} />
@@ -1047,7 +1062,7 @@ const level2Count =
               Balance
             </span>
 
-            <span className="text-sm font-bold text-[#4020bd]">
+            <span className="text-sm font-bold text-[#18613F]">
               {balanceStr}
             </span>
           </div>
@@ -1055,7 +1070,7 @@ const level2Count =
 
         {/* Divider */}
 
-        <div className="hidden h-8 w-px bg-gray-200 lg:block" />
+        <div className="hidden h-8 w-px bg-[#DCEDE3] lg:block" />
 
         {/* Logout */}
 
@@ -1071,10 +1086,10 @@ const level2Count =
             rounded-xl
             px-2
             font-bold
-            text-[#4020bd]
+            text-[#18B152]
             transition
-            hover:bg-[#eef0ff]
-            hover:text-[#063d82]
+            hover:bg-[#EAF8F0]
+            hover:text-[#18613F]
             md:px-3
           "
         >

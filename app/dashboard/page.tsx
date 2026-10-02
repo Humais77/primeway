@@ -39,12 +39,59 @@ export default async function DashboardPage() {
   return (
     <main className="w-full px-4 pb-4 pt-4 md:px-6 md:pt-6 lg:px-8">
       <div className="mx-auto w-full max-w-6xl space-y-3">
-        {/* ================= ACCOUNT CARD ================= */}
-        <section className="relative overflow-hidden rounded-[22px] bg-gradient-to-br from-[#281477] via-[#4020bd] to-[#063d82] p-5 text-white shadow-[0_10px_30px_rgba(64,32,189,0.20)] md:p-6">
-          <div className="pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
-          <div className="pointer-events-none absolute -bottom-24 right-32 h-40 w-40 rounded-full bg-blue-300/10 blur-3xl" />
+
+        {/* =====================================================
+            ACCOUNT CARD
+        ===================================================== */}
+
+        <section
+          className="
+            relative
+            overflow-hidden
+            rounded-[22px]
+            bg-gradient-to-br
+            from-[#0F3D2E]
+            via-[#18613F]
+            to-[#18B152]
+            p-5
+            text-white
+            shadow-[0_10px_30px_rgba(24,97,63,0.22)]
+            md:p-6
+          "
+        >
+          {/* Decorative glow */}
+
+          <div
+            className="
+              pointer-events-none
+              absolute
+              -right-16
+              -top-20
+              h-48
+              w-48
+              rounded-full
+              bg-[#18B152]/25
+              blur-2xl
+            "
+          />
+
+          <div
+            className="
+              pointer-events-none
+              absolute
+              -bottom-24
+              right-32
+              h-40
+              w-40
+              rounded-full
+              bg-white/10
+              blur-3xl
+            "
+          />
 
           <div className="relative flex items-start justify-between gap-4">
+            {/* User */}
+
             <div className="min-w-0">
               <p className="text-xs font-medium text-white/70">
                 Welcome back
@@ -54,14 +101,60 @@ export default async function DashboardPage() {
                 {user.fullName}
               </h2>
 
-              <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-green-500/20 px-2.5 py-1 text-[11px] font-semibold text-green-100 ring-1 ring-green-300/30">
-                <span className="h-1.5 w-1.5 rounded-full bg-green-300" />
-                {user.isActive ? "Active" : "Inactive"}
+              <span
+                className="
+                  mt-3
+                  inline-flex
+                  items-center
+                  gap-1.5
+                  rounded-full
+                  bg-white/10
+                  px-2.5
+                  py-1
+                  text-[11px]
+                  font-semibold
+                  text-white
+                  ring-1
+                  ring-white/20
+                "
+              >
+                <span
+                  className={`
+                    h-1.5
+                    w-1.5
+                    rounded-full
+                    ${
+                      user.isActive
+                        ? "bg-[#18B152]"
+                        : "bg-red-400"
+                    }
+                  `}
+                />
+
+                {user.isActive
+                  ? "Active"
+                  : "Inactive"}
               </span>
             </div>
 
+            {/* Balance */}
+
             <div className="shrink-0 text-right">
-              <div className="ml-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/10">
+              <div
+                className="
+                  ml-auto
+                  mb-2
+                  flex
+                  h-10
+                  w-10
+                  items-center
+                  justify-center
+                  rounded-xl
+                  border
+                  border-white/15
+                  bg-white/10
+                "
+              >
                 <Wallet size={20} />
               </div>
 
@@ -76,17 +169,20 @@ export default async function DashboardPage() {
           </div>
 
           {/* Inline actions */}
+
           <div className="relative mt-5 grid grid-cols-3 gap-2">
             <CardAction
               href="/dashboard/deposit"
               icon={<ArrowDownToLine size={16} />}
               label="Deposit"
             />
+
             <CardAction
               href="/dashboard/withdraw"
               icon={<ArrowUpFromLine size={16} />}
               label="Withdraw"
             />
+
             <CardAction
               href="/dashboard/running-plans"
               icon={<Wallet size={16} />}
@@ -95,90 +191,209 @@ export default async function DashboardPage() {
           </div>
         </section>
 
-        {/* ================= STATS ================= */}
+        {/* =====================================================
+            STATS
+        ===================================================== */}
+
         <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+
           <StatCard
             title="Total Investment"
             value={formatPKR(user.totalInvestmentPaisa)}
             icon={<TrendingUp size={16} />}
-            iconClass="bg-purple-50 text-purple-600"
+            iconClass="bg-[#EAF8F0] text-[#18B152]"
           />
+
           <StatCard
             title="Total Profit"
             value={formatPKR(user.totalProfitPaisa)}
             icon={<Gift size={16} />}
-            iconClass="bg-green-50 text-green-600"
+            iconClass="bg-[#EAF8F0] text-[#18613F]"
           />
+
           <StatCard
             title="Referral Earnings"
             value={formatPKR(user.totalReferralPaisa)}
             icon={<Users size={16} />}
-            iconClass="bg-blue-50 text-blue-600"
+            iconClass="bg-[#EAF8F0] text-[#18B152]"
           />
+
           <StatCard
             title="Total Withdrawn"
             value={formatPKR(user.totalWithdrawnPaisa)}
             icon={<ArrowUpFromLine size={16} />}
-            iconClass="bg-orange-50 text-orange-500"
+            iconClass="bg-[#EAF8F0] text-[#18613F]"
           />
+
         </section>
 
-        {/* ================= REFERRAL ================= */}
-        <section className="rounded-[22px] border border-[#e7e8f3] bg-white p-4 shadow-[0_6px_24px_rgba(40,30,100,0.05)] md:p-5">
+        {/* =====================================================
+            REFERRAL
+        ===================================================== */}
+
+        <section
+          className="
+            rounded-[22px]
+            border
+            border-[#DCEDE3]
+            bg-white
+            p-4
+            shadow-[0_6px_24px_rgba(15,61,46,0.05)]
+            md:p-5
+          "
+        >
           <div className="flex items-center justify-between gap-3">
+
             <div className="flex items-center gap-2">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
+
+              <span
+                className="
+                  flex
+                  h-9
+                  w-9
+                  items-center
+                  justify-center
+                  rounded-xl
+                  bg-[#EAF8F0]
+                  text-[#18B152]
+                "
+              >
                 <Users size={17} />
               </span>
+
               <div>
-                <h3 className="text-sm font-black text-[#111b58]">
+                <h3 className="text-sm font-black text-[#0F3D2E]">
                   Referral Program
                 </h3>
+
                 <p className="text-[11px] text-gray-500">
                   Share your code and earn rewards
                 </p>
               </div>
+
             </div>
 
             <Link
               href="/dashboard/referral-bonus"
-              className="hidden items-center gap-1 text-xs font-semibold text-[#4020bd] hover:text-[#063d82] sm:flex"
+              className="
+                hidden
+                items-center
+                gap-1
+                text-xs
+                font-semibold
+                text-[#18B152]
+                transition
+                hover:text-[#18613F]
+                sm:flex
+              "
             >
               Details
               <ArrowRight size={13} />
             </Link>
+
           </div>
 
-          <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-dashed border-[#c9d1ff] bg-[#f5f7ff] px-3 py-3">
-            <p className="truncate font-mono text-sm font-bold tracking-wider text-[#111b58]">
+          <div
+            className="
+              mt-3
+              flex
+              items-center
+              justify-between
+              gap-3
+              rounded-xl
+              border
+              border-dashed
+              border-[#A9D9BC]
+              bg-[#F5FBF7]
+              px-3
+              py-3
+            "
+          >
+            <p
+              className="
+                truncate
+                font-mono
+                text-sm
+                font-bold
+                tracking-wider
+                text-[#18613F]
+              "
+            >
               {user.referralCode}
             </p>
-            <span className="flex items-center gap-1 text-[11px] font-semibold text-[#4020bd]">
+
+            <span
+              className="
+                flex
+                items-center
+                gap-1
+                text-[11px]
+                font-semibold
+                text-[#18B152]
+              "
+            >
               <Copy size={13} />
               Copy
             </span>
           </div>
         </section>
 
-        {/* ================= RECENT TRANSACTIONS ================= */}
-        <section className="rounded-[22px] border border-[#e7e8f3] bg-white p-4 shadow-[0_6px_24px_rgba(40,30,100,0.05)] md:p-5">
+        {/* =====================================================
+            RECENT TRANSACTIONS
+        ===================================================== */}
+
+        <section
+          className="
+            rounded-[22px]
+            border
+            border-[#DCEDE3]
+            bg-white
+            p-4
+            shadow-[0_6px_24px_rgba(15,61,46,0.05)]
+            md:p-5
+          "
+        >
           <div className="flex items-center justify-between gap-3">
+
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-black text-[#111b58] md:text-base">
+
+              <h3 className="text-sm font-black text-[#0F3D2E] md:text-base">
                 Recent Transactions
               </h3>
-              <span className="rounded-full bg-[#eef0fb] px-2 py-0.5 text-[10px] font-semibold text-[#4020bd]">
+
+              <span
+                className="
+                  rounded-full
+                  bg-[#EAF8F0]
+                  px-2
+                  py-0.5
+                  text-[10px]
+                  font-semibold
+                  text-[#18613F]
+                "
+              >
                 last 10
               </span>
+
             </div>
 
             <Link
               href="/dashboard/transactions"
-              className="flex items-center gap-1 text-xs font-semibold text-[#4020bd] hover:text-[#063d82]"
+              className="
+                flex
+                items-center
+                gap-1
+                text-xs
+                font-semibold
+                text-[#18B152]
+                transition
+                hover:text-[#18613F]
+              "
             >
               View All
               <ArrowRight size={13} />
             </Link>
+
           </div>
 
           <div className="flex min-h-[64px] items-center justify-center py-4">
@@ -188,111 +403,134 @@ export default async function DashboardPage() {
           </div>
         </section>
 
-        {/* ================= QUICK ACTIONS ================= */}
+        {/* =====================================================
+            QUICK ACTIONS
+        ===================================================== */}
+
         <section className="grid grid-cols-4 gap-2">
+
           <QuickAction
             href="/dashboard/deposit-history"
             icon={<FileText />}
             label="Deposit History"
-            iconClass="bg-purple-100 text-purple-600"
+            iconClass="bg-[#EAF8F0] text-[#18B152]"
           />
+
           <QuickAction
             href="/dashboard/withdrawal-history"
             icon={<Upload />}
             label="Withdraw History"
-            iconClass="bg-green-100 text-green-600"
+            iconClass="bg-[#EAF8F0] text-[#18613F]"
           />
+
           <QuickAction
             href="/dashboard/transactions"
             icon={<ArrowLeftRight />}
             label="Transactions"
-            iconClass="bg-orange-100 text-orange-500"
+            iconClass="bg-[#EAF8F0] text-[#18B152]"
           />
+
           <QuickAction
             href="/dashboard/running-plans"
             icon={<CalendarDays />}
             label="My Plans"
-            iconClass="bg-blue-100 text-blue-600"
+            iconClass="bg-[#EAF8F0] text-[#18613F]"
           />
+
           <QuickAction
             href="/dashboard/verification"
             icon={<BadgeCheck />}
             label="Verification"
-            iconClass="bg-pink-100 text-pink-500"
+            iconClass="bg-[#EAF8F0] text-[#18B152]"
           />
+
           <QuickAction
             href="/dashboard/my-team"
             icon={<Users />}
             label="My Team"
-            iconClass="bg-purple-100 text-purple-600"
+            iconClass="bg-[#EAF8F0] text-[#18613F]"
           />
+
           <QuickAction
             href="/dashboard/app-download"
             icon={<Download />}
             label="App"
-            iconClass="bg-blue-100 text-blue-600"
+            iconClass="bg-[#EAF8F0] text-[#18B152]"
           />
+
           <QuickAction
             href="/logout"
             icon={<LogOut />}
             label="Logout"
             iconClass="bg-gray-100 text-gray-600"
           />
+
         </section>
 
-        {/* ================= FINANCIAL SUMMARY ================= */}
+        {/* =====================================================
+            FINANCIAL SUMMARY
+        ===================================================== */}
+
         <section className="grid grid-cols-2 gap-2">
+
           <SummaryCard
             icon={<CreditCard />}
             title="Total Deposit"
             value={formatPKR(user.totalInvestmentPaisa)}
-            iconClass="bg-blue-50 text-blue-600"
-            valueClass="text-blue-600"
+            iconClass="bg-[#EAF8F0] text-[#18B152]"
+            valueClass="text-[#18B152]"
           />
+
           <SummaryCard
             icon={<ArrowUpFromLine />}
             title="Total Withdraw"
             value={formatPKR(user.totalWithdrawnPaisa)}
-            iconClass="bg-pink-50 text-pink-500"
-            valueClass="text-pink-500"
+            iconClass="bg-[#EAF8F0] text-[#18613F]"
+            valueClass="text-[#18613F]"
           />
+
           <SummaryCard
             icon={<Gift />}
             title="Team Reward"
             value={formatPKR(user.totalReferralPaisa)}
-            iconClass="bg-purple-50 text-purple-600"
-            valueClass="text-purple-600"
+            iconClass="bg-[#EAF8F0] text-[#18B152]"
+            valueClass="text-[#18B152]"
           />
+
           <SummaryCard
             icon={<CreditCard />}
             title="My Deposit"
             value={formatPKR(user.totalInvestmentPaisa)}
-            iconClass="bg-green-50 text-green-600"
-            valueClass="text-green-600"
+            iconClass="bg-[#EAF8F0] text-[#18613F]"
+            valueClass="text-[#18613F]"
           />
+
           <SummaryCard
             icon={<Users />}
             title="My Team Deposit"
             value="Rs0.00"
-            iconClass="bg-orange-50 text-orange-500"
-            valueClass="text-orange-500"
+            iconClass="bg-[#EAF8F0] text-[#18B152]"
+            valueClass="text-[#18B152]"
           />
+
           <SummaryCard
             icon={<Users />}
             title="My Team"
             value="0"
-            iconClass="bg-blue-50 text-blue-600"
-            valueClass="text-blue-600"
+            iconClass="bg-[#EAF8F0] text-[#18613F]"
+            valueClass="text-[#18613F]"
           />
+
         </section>
+
       </div>
     </main>
   );
 }
 
-/* ============================================================ */
-/* COMPONENTS */
-/* ============================================================ */
+/* ============================================================
+   COMPONENTS
+============================================================ */
 
 function CardAction({
   href,
@@ -306,7 +544,26 @@ function CardAction({
   return (
     <Link
       href={href}
-      className="flex flex-col items-center justify-center gap-1 rounded-xl border border-white/15 bg-white/10 py-2.5 text-xs font-semibold text-white transition hover:bg-white/20"
+      className="
+        flex
+        flex-col
+        items-center
+        justify-center
+        gap-1
+        rounded-xl
+        border
+        border-white/15
+        bg-white/10
+        py-2.5
+        text-xs
+        font-semibold
+        text-white
+        transition-all
+        duration-200
+        hover:-translate-y-0.5
+        hover:bg-white/20
+        hover:shadow-[0_5px_15px_rgba(0,0,0,0.12)]
+      "
     >
       {icon}
       <span>{label}</span>
@@ -326,16 +583,50 @@ function StatCard({
   iconClass: string;
 }) {
   return (
-    <div className="rounded-[22px] border border-[#e7e8f3] bg-white p-3.5 shadow-[0_6px_24px_rgba(40,30,100,0.05)] md:p-4">
+    <div
+      className="
+        rounded-[22px]
+        border
+        border-[#DCEDE3]
+        bg-white
+        p-3.5
+        shadow-[0_6px_24px_rgba(15,61,46,0.05)]
+        transition-all
+        duration-200
+        hover:-translate-y-0.5
+        hover:shadow-[0_8px_28px_rgba(15,61,46,0.08)]
+        md:p-4
+      "
+    >
       <div
-        className={`mb-2 flex h-8 w-8 items-center justify-center rounded-lg ${iconClass}`}
+        className={`
+          mb-2
+          flex
+          h-8
+          w-8
+          items-center
+          justify-center
+          rounded-lg
+          ${iconClass}
+        `}
       >
         {icon}
       </div>
 
-      <p className="text-[11px] text-gray-500">{title}</p>
+      <p className="text-[11px] text-gray-500">
+        {title}
+      </p>
 
-      <p className="mt-0.5 truncate text-sm font-black text-[#111b58] md:text-base">
+      <p
+        className="
+          mt-0.5
+          truncate
+          text-sm
+          font-black
+          text-[#0F3D2E]
+          md:text-base
+        "
+      >
         {value}
       </p>
     </div>
@@ -356,15 +647,58 @@ function QuickAction({
   return (
     <Link
       href={href}
-      className="flex min-h-[86px] flex-col items-center justify-center gap-2 rounded-[18px] border border-[#e7e8f3] bg-white p-2 shadow-[0_6px_24px_rgba(40,30,100,0.05)] transition hover:-translate-y-0.5 hover:shadow-md"
+      className="
+        group
+        flex
+        min-h-[86px]
+        flex-col
+        items-center
+        justify-center
+        gap-2
+        rounded-[18px]
+        border
+        border-[#DCEDE3]
+        bg-white
+        p-2
+        shadow-[0_6px_24px_rgba(15,61,46,0.05)]
+        transition-all
+        duration-200
+        hover:-translate-y-0.5
+        hover:border-[#B8DFC7]
+        hover:shadow-[0_8px_28px_rgba(15,61,46,0.10)]
+      "
     >
       <span
-        className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconClass}`}
+        className={`
+          flex
+          h-10
+          w-10
+          items-center
+          justify-center
+          rounded-xl
+          transition-transform
+          duration-200
+          group-hover:scale-105
+          ${iconClass}
+        `}
       >
-        {React.cloneElement(icon, { size: 19, strokeWidth: 2 })}
+        {React.cloneElement(icon, {
+          size: 19,
+          strokeWidth: 2,
+        })}
       </span>
 
-      <span className="text-center text-[10px] font-semibold leading-tight text-[#111b58]">
+      <span
+        className="
+          text-center
+          text-[10px]
+          font-semibold
+          leading-tight
+          text-[#18613F]
+          transition-colors
+          group-hover:text-[#18B152]
+        "
+      >
         {label}
       </span>
     </Link>
@@ -385,16 +719,60 @@ function SummaryCard({
   valueClass: string;
 }) {
   return (
-    <div className="flex min-h-[70px] items-center gap-2.5 rounded-[18px] border border-[#e7e8f3] bg-white px-3 py-2.5 shadow-[0_6px_24px_rgba(40,30,100,0.05)]">
+    <div
+      className="
+        group
+        flex
+        min-h-[70px]
+        items-center
+        gap-2.5
+        rounded-[18px]
+        border
+        border-[#DCEDE3]
+        bg-white
+        px-3
+        py-2.5
+        shadow-[0_6px_24px_rgba(15,61,46,0.05)]
+        transition-all
+        duration-200
+        hover:-translate-y-0.5
+        hover:border-[#B8DFC7]
+        hover:shadow-[0_8px_28px_rgba(15,61,46,0.08)]
+      "
+    >
       <span
-        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${iconClass}`}
+        className={`
+          flex
+          h-9
+          w-9
+          shrink-0
+          items-center
+          justify-center
+          rounded-xl
+          ${iconClass}
+        `}
       >
-        {React.cloneElement(icon, { size: 17, strokeWidth: 2 })}
+        {React.cloneElement(icon, {
+          size: 17,
+          strokeWidth: 2,
+        })}
       </span>
 
       <div className="min-w-0">
-        <p className="truncate text-[10px] text-gray-500">{title}</p>
-        <p className={`mt-0.5 truncate text-xs font-bold md:text-sm ${valueClass}`}>
+        <p className="truncate text-[10px] text-gray-500">
+          {title}
+        </p>
+
+        <p
+          className={`
+            mt-0.5
+            truncate
+            text-xs
+            font-bold
+            md:text-sm
+            ${valueClass}
+          `}
+        >
           {value}
         </p>
       </div>

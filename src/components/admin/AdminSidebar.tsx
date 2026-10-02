@@ -8,7 +8,6 @@ import {
   WalletCards,
   TrendingUp,
   LogOut,
-  ArrowDownToLine,
   ArrowUpFromLine,
   ReceiptText,
   Settings,
@@ -37,16 +36,16 @@ const items = [
     href: "/admin/investments",
     icon: TrendingUp,
   },
- {
-  label: "Deposits",
-  href: "/admin/deposits",
-  icon: Wallet,
-},
-{
-  label: "Payment Accounts",
-  href: "/admin/payment-accounts",
-  icon: CreditCard,
-},
+  {
+    label: "Deposits",
+    href: "/admin/deposits",
+    icon: Wallet,
+  },
+  {
+    label: "Payment Accounts",
+    href: "/admin/payment-accounts",
+    icon: CreditCard,
+  },
   {
     label: "Withdrawals",
     href: "/admin/withdrawals",
@@ -76,31 +75,29 @@ export default function AdminSidebar() {
   }
 
   return (
-    <aside className="fixed left-0 top-0 z-40 hidden h-screen w-[250px] bg-[#111b58] text-white lg:flex lg:flex-col">
+    <aside className="fixed left-0 top-0 z-40 hidden h-screen w-[250px] bg-gradient-to-b from-[#1f7a3a] via-[#2f7d32] to-[#173b20] text-white shadow-xl shadow-green-950/10 lg:flex lg:flex-col">
+      {/* Brand */}
       <div className="flex h-[72px] items-center border-b border-white/10 px-6">
         <div>
-          <p className="text-xl font-black">
+          <p className="text-xl font-black tracking-tight">
             PRIME WAY
           </p>
 
-          <p className="text-[10px] uppercase tracking-[0.2em] text-white/50">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-white/60">
             Administration
           </p>
         </div>
       </div>
 
+      {/* Navigation */}
       <nav className="flex-1 space-y-1 overflow-y-auto p-4">
         {items.map((item) => {
           const Icon = item.icon;
 
           const active =
             pathname === item.href ||
-            (
-              item.href !== "/admin" &&
-              pathname.startsWith(
-                item.href + "/"
-              )
-            );
+            (item.href !== "/admin" &&
+              pathname.startsWith(item.href + "/"));
 
           return (
             <Link
@@ -108,8 +105,8 @@ export default function AdminSidebar() {
               href={item.href}
               className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition ${
                 active
-                  ? "bg-white text-[#4020bd]"
-                  : "text-white/70 hover:bg-white/10 hover:text-white"
+                  ? "bg-white text-[#2f7d32] shadow-sm"
+                  : "text-white/75 hover:bg-white/10 hover:text-white"
               }`}
             >
               <Icon size={18} />
@@ -120,10 +117,11 @@ export default function AdminSidebar() {
         })}
       </nav>
 
+      {/* Logout */}
       <div className="border-t border-white/10 p-4">
         <button
           onClick={logout}
-          className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-white/70 transition hover:bg-red-500/20 hover:text-white"
+          className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-white/75 transition hover:bg-red-500/20 hover:text-white"
         >
           <LogOut size={18} />
           Logout

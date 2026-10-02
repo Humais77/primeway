@@ -115,12 +115,12 @@ export default function DepositHistoryPage() {
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="mb-3 flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#4020bd] to-[#063d82] text-white shadow-[0_5px_16px_rgba(64,32,189,0.25)]">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#1f7a3a] to-[#45a94a] text-white shadow-[0_5px_16px_rgba(69,169,74,0.25)]">
                 <ArrowDownToLine size={20} strokeWidth={2.4} />
               </div>
 
               <div>
-                <h1 className="text-2xl font-black text-[#111b58] md:text-3xl">
+                <h1 className="text-2xl font-black text-[#173b20] md:text-3xl">
                   Deposit History
                 </h1>
 
@@ -133,7 +133,7 @@ export default function DepositHistoryPage() {
 
           <Link
             href="/dashboard/deposit"
-            className="inline-flex w-fit items-center gap-2 rounded-xl bg-gradient-to-r from-[#4020bd] to-[#063d82] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-purple-200 transition hover:opacity-90"
+            className="inline-flex w-fit items-center gap-2 rounded-xl bg-gradient-to-r from-[#45a94a] to-[#2f7d32] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-green-200 transition hover:opacity-90"
           >
             Make New Deposit
             <ArrowRight size={16} />
@@ -149,19 +149,19 @@ export default function DepositHistoryPage() {
 
         {/* Loading */}
         {loading && (
-          <div className="rounded-[22px] border border-[#e7e8f3] bg-white p-10 text-center text-sm text-gray-500 shadow-[0_6px_24px_rgba(40,30,100,0.06)]">
+          <div className="rounded-[22px] border border-[#dceedd] bg-white p-10 text-center text-sm text-gray-500 shadow-[0_6px_24px_rgba(45,100,50,0.06)]">
             Loading deposit history...
           </div>
         )}
 
         {/* Empty */}
         {!loading && !error && deposits.length === 0 && (
-          <section className="rounded-[22px] border border-[#e7e8f3] bg-gradient-to-b from-[#f5f7ff] to-white px-6 py-14 text-center shadow-[0_6px_24px_rgba(40,30,100,0.05)]">
-            <div className="mx-auto flex h-13 w-13 items-center justify-center text-[#4020bd]">
+          <section className="rounded-[22px] border border-[#dceedd] bg-gradient-to-b from-[#f2f8f2] to-white px-6 py-14 text-center shadow-[0_6px_24px_rgba(45,100,50,0.05)]">
+            <div className="mx-auto flex h-13 w-13 items-center justify-center text-[#45a94a]">
               <ArrowDownToLine size={32} />
             </div>
 
-            <h2 className="mt-4 text-xl font-black text-[#111b58] md:text-2xl">
+            <h2 className="mt-4 text-xl font-black text-[#173b20] md:text-2xl">
               No deposits yet
             </h2>
 
@@ -171,7 +171,7 @@ export default function DepositHistoryPage() {
 
             <Link
               href="/dashboard/deposit"
-              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#4020bd] to-[#063d82] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-purple-200 transition hover:opacity-90"
+              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#45a94a] to-[#2f7d32] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-green-200 transition hover:opacity-90"
             >
               Make Your First Deposit
               <ArrowRight size={16} />
@@ -181,11 +181,11 @@ export default function DepositHistoryPage() {
 
         {/* Desktop table */}
         {!loading && deposits.length > 0 && (
-          <div className="hidden overflow-hidden rounded-[22px] border border-[#e7e8f3] bg-white shadow-[0_6px_24px_rgba(40,30,100,0.06)] md:block">
+          <div className="hidden overflow-hidden rounded-[22px] border border-[#dceedd] bg-white shadow-[0_6px_24px_rgba(45,100,50,0.06)] md:block">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="border-b border-[#eef0fb] bg-[#f8f9ff]">
-                  <tr className="text-left text-[11px] font-bold uppercase tracking-wide text-[#4020bd]">
+                <thead className="border-b border-[#e5efe5] bg-[#f5faf5]">
+                  <tr className="text-left text-[11px] font-bold uppercase tracking-wide text-[#2f7d32]">
                     <th className="px-5 py-3.5">Date</th>
                     <th className="px-5 py-3.5">Plan</th>
                     <th className="px-5 py-3.5">Amount</th>
@@ -196,7 +196,7 @@ export default function DepositHistoryPage() {
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-[#eef0fb]">
+                <tbody className="divide-y divide-[#e9f1e9]">
                   {deposits.map((deposit) => {
                     const status = getStatus(deposit.status);
                     const StatusIcon = status.icon;
@@ -204,20 +204,20 @@ export default function DepositHistoryPage() {
                     return (
                       <tr
                         key={deposit.id}
-                        className="transition hover:bg-[#f8f9ff]"
+                        className="transition hover:bg-[#f7fbf7]"
                       >
                         <td className="whitespace-nowrap px-5 py-3.5 text-xs text-gray-600">
                           {formatDateTime(deposit.createdAt)}
                         </td>
 
                         <td className="px-5 py-3.5">
-                          <div className="text-sm font-semibold text-[#111b58]">
+                          <div className="text-sm font-semibold text-[#173b20]">
                             {deposit.plan?.name || "Investment Plan"}
                           </div>
                         </td>
 
                         <td className="whitespace-nowrap px-5 py-3.5">
-                          <div className="text-sm font-bold text-[#111b58]">
+                          <div className="text-sm font-bold text-[#173b20]">
                             {formatPKR(deposit.amountPaisa)}
                           </div>
 
@@ -253,7 +253,7 @@ export default function DepositHistoryPage() {
                               href={deposit.proofUrl}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex items-center gap-1 text-xs font-bold text-[#4020bd] hover:underline"
+                              className="inline-flex items-center gap-1 text-xs font-bold text-[#45a94a] hover:text-[#2f7d32] hover:underline"
                             >
                               View
                               <ExternalLink className="h-3.5 w-3.5" />
@@ -281,10 +281,10 @@ export default function DepositHistoryPage() {
               return (
                 <article
                   key={deposit.id}
-                  className="overflow-hidden rounded-[22px] border border-[#e7e8f3] bg-white shadow-[0_6px_24px_rgba(40,30,100,0.06)]"
+                  className="overflow-hidden rounded-[22px] border border-[#dceedd] bg-white shadow-[0_6px_24px_rgba(45,100,50,0.06)]"
                 >
                   {/* Gradient header */}
-                  <div className="relative overflow-hidden bg-gradient-to-br from-[#281477] via-[#4020bd] to-[#063d82] px-4 py-3.5 text-white">
+                  <div className="relative overflow-hidden bg-gradient-to-br from-[#174d28] via-[#45a94a] to-[#2f7d32] px-4 py-3.5 text-white">
                     <div className="pointer-events-none absolute -right-8 -top-10 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
 
                     <div className="relative flex items-start justify-between gap-3">
@@ -292,6 +292,7 @@ export default function DepositHistoryPage() {
                         <p className="truncate text-sm font-black">
                           {deposit.plan?.name || "Investment Plan"}
                         </p>
+
                         <p className="mt-0.5 text-[10px] text-white/65">
                           {formatDateTime(deposit.createdAt)}
                         </p>
@@ -309,14 +310,16 @@ export default function DepositHistoryPage() {
                     <div className="grid grid-cols-2 gap-2.5">
                       <div className="rounded-xl border border-gray-100 bg-gray-50/70 p-2.5">
                         <p className="text-[10px] text-gray-500">Amount</p>
-                        <p className="mt-0.5 text-sm font-bold text-[#111b58]">
+
+                        <p className="mt-0.5 text-sm font-bold text-[#173b20]">
                           {formatPKR(deposit.amountPaisa)}
                         </p>
                       </div>
 
                       <div className="rounded-xl border border-gray-100 bg-gray-50/70 p-2.5">
                         <p className="text-[10px] text-gray-500">Method</p>
-                        <p className="mt-0.5 text-sm font-bold text-[#111b58]">
+
+                        <p className="mt-0.5 text-sm font-bold text-[#173b20]">
                           {deposit.method}
                         </p>
                       </div>
@@ -325,6 +328,7 @@ export default function DepositHistoryPage() {
                         <p className="text-[10px] text-gray-500">
                           Transaction ID
                         </p>
+
                         <p className="mt-0.5 break-all font-mono text-[11px] text-gray-600">
                           {deposit.transactionReference}
                         </p>
@@ -343,6 +347,7 @@ export default function DepositHistoryPage() {
                         <p className="text-[10px] font-bold uppercase tracking-wide text-red-700">
                           Rejection Reason
                         </p>
+
                         <p className="mt-1 text-xs text-red-600">
                           {deposit.rejectionReason}
                         </p>
@@ -354,7 +359,7 @@ export default function DepositHistoryPage() {
                         href={deposit.proofUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-[#4020bd]"
+                        className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-[#45a94a] hover:text-[#2f7d32]"
                       >
                         View Payment Proof
                         <ExternalLink className="h-3.5 w-3.5" />

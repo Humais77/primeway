@@ -54,15 +54,15 @@ export default function BottomNavigation() {
         max-w-[720px]
         -translate-x-1/2
         items-center
-        rounded-[18px]
+        rounded-[20px]
         border
-        border-white/20
+        border-white/15
         bg-gradient-to-r
-        from-[#281477]
-        via-[#4020bd]
-        to-[#063d82]
+        from-[#0F3D2E]
+        via-[#18613F]
+        to-[#18B152]
         p-1
-        shadow-[0_8px_30px_rgba(30,20,100,0.30)]
+        shadow-[0_8px_30px_rgba(15,61,46,0.30)]
         backdrop-blur-xl
         lg:hidden
       "
@@ -74,12 +74,19 @@ export default function BottomNavigation() {
           item.href === "/dashboard"
             ? pathname === "/dashboard"
             : pathname === item.href ||
-              pathname.startsWith(`${item.href}/`);
+              pathname.startsWith(
+                `${item.href}/`
+              );
 
         return (
           <div
             key={item.href}
-            className="flex h-full flex-1 items-center"
+            className="
+              flex
+              h-full
+              flex-1
+              items-center
+            "
           >
             <Link
               href={item.href}
@@ -89,16 +96,16 @@ export default function BottomNavigation() {
                 w-full
                 items-center
                 justify-center
-                rounded-[14px]
+                rounded-[16px]
                 transition-all
                 duration-200
                 ${
                   isActive
                     ? `
                       border
-                      border-white/40
-                      bg-white/[0.18]
-                      shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]
+                      border-white/35
+                      bg-white/[0.20]
+                      shadow-[inset_0_1px_0_rgba(255,255,255,0.30)]
                       backdrop-blur-md
                     `
                     : `
@@ -112,8 +119,14 @@ export default function BottomNavigation() {
               <div className="flex flex-col items-center justify-center gap-1">
                 <Icon
                   size={19}
-                  strokeWidth={isActive ? 2.6 : 2.2}
-                  className="text-white"
+                  strokeWidth={
+                    isActive ? 2.7 : 2.2
+                  }
+                  className="
+                    text-white
+                    transition-transform
+                    duration-200
+                  "
                 />
 
                 <span
@@ -134,8 +147,16 @@ export default function BottomNavigation() {
             </Link>
 
             {/* Separator */}
+
             {index < navItems.length - 1 && (
-              <div className="h-7 w-px shrink-0 bg-white/25" />
+              <div
+                className="
+                  h-7
+                  w-px
+                  shrink-0
+                  bg-white/20
+                "
+              />
             )}
           </div>
         );

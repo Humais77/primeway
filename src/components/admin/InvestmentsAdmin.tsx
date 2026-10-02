@@ -209,19 +209,25 @@ export default function InvestmentsAdmin({
       {editing && (
         <form
           onSubmit={updateInvestment}
-          className="mb-7 rounded-3xl bg-white p-6 shadow-sm"
+          className="mb-7 rounded-3xl border border-[#dceedd] bg-white p-6 shadow-sm"
         >
           <div className="mb-6 flex justify-between">
-            <h2 className="text-xl font-black text-[#111b58]">
-              Edit Investment
-            </h2>
+            <div>
+              <h2 className="text-xl font-black text-[#173b20]">
+                Edit Investment
+              </h2>
+
+              <p className="mt-1 text-xs text-gray-500">
+                Update investment amount, rate, profit and status.
+              </p>
+            </div>
 
             <button
               type="button"
               onClick={() =>
                 setEditing(null)
               }
-              className="text-sm text-gray-500"
+              className="rounded-lg px-3 py-2 text-sm font-semibold text-gray-500 transition hover:bg-[#eff8f0] hover:text-[#2f7d32]"
             >
               Cancel
             </button>
@@ -283,7 +289,7 @@ export default function InvestmentsAdmin({
                       event.target.value,
                   })
                 }
-                className="h-11 w-full rounded-xl border px-3"
+                className="h-11 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none transition focus:border-[#45a94a] focus:ring-2 focus:ring-[#45a94a]/10"
               >
                 <option value="ACTIVE">
                   Active
@@ -300,16 +306,16 @@ export default function InvestmentsAdmin({
             </label>
           </div>
 
-          <button className="mt-6 rounded-xl bg-[#4020bd] px-6 py-3 text-sm font-bold text-white">
+          <button className="mt-6 rounded-xl bg-[#45a94a] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#2f7d32]">
             Save Investment
           </button>
         </form>
       )}
 
-      <div className="overflow-hidden rounded-3xl bg-white shadow-sm">
+      <div className="overflow-hidden rounded-3xl border border-[#dceedd] bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1100px] text-left">
-            <thead className="bg-[#f7f7ff] text-xs uppercase text-gray-500">
+            <thead className="bg-[#f4faf4] text-xs uppercase tracking-wider text-[#2f7d32]">
               <tr>
                 <th className="px-5 py-4">
                   User
@@ -346,10 +352,10 @@ export default function InvestmentsAdmin({
                 (investment) => (
                   <tr
                     key={investment.id}
-                    className="border-t border-gray-100"
+                    className="border-t border-[#edf4ed] transition hover:bg-[#f9fcf9]"
                   >
                     <td className="px-5 py-4">
-                      <p className="font-bold text-[#111b58]">
+                      <p className="font-bold text-[#173b20]">
                         {
                           investment.user
                             ?.fullName
@@ -365,48 +371,51 @@ export default function InvestmentsAdmin({
                       </p>
                     </td>
 
-                    <td className="px-5 py-4 text-sm font-semibold">
+                    <td className="px-5 py-4 text-sm font-semibold text-[#173b20]">
                       {
                         investment.plan
                           ?.name
                       }
                     </td>
 
-                    <td className="px-5 py-4 text-sm font-bold">
+                    <td className="px-5 py-4 text-sm font-bold text-[#173b20]">
                       {money(
                         investment.amountPaisa
                       )}
                     </td>
 
-                    <td className="px-5 py-4 text-sm text-green-600">
+                    <td className="px-5 py-4 text-sm font-semibold text-[#45a94a]">
                       {investment.profitRateBps /
                         100}
                       %
                     </td>
 
-                    <td className="px-5 py-4 text-sm text-green-600">
+                    <td className="px-5 py-4 text-sm font-semibold text-[#45a94a]">
                       {money(
                         investment.earnedProfitPaisa
                       )}
                     </td>
 
                     <td className="px-5 py-4">
-                      <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-600">
-                        {
+                      <Status
+                        status={
                           investment.status
                         }
-                      </span>
+                      />
                     </td>
 
                     <td className="px-5 py-4">
                       <div className="flex gap-2">
                         <button
+                          type="button"
                           onClick={() =>
                             openEdit(
                               investment
                             )
                           }
-                          className="rounded-lg bg-blue-50 p-2 text-blue-600"
+                          className="rounded-lg bg-[#eff8f0] p-2 text-[#2f7d32] transition hover:bg-[#e4f4e5]"
+                          title="Edit investment"
+                          aria-label="Edit investment"
                         >
                           <Pencil
                             size={16}
@@ -414,12 +423,15 @@ export default function InvestmentsAdmin({
                         </button>
 
                         <button
+                          type="button"
                           onClick={() =>
                             deleteInvestment(
                               investment
                             )
                           }
-                          className="rounded-lg bg-red-50 p-2 text-red-600"
+                          className="rounded-lg bg-red-50 p-2 text-red-600 transition hover:bg-red-100"
+                          title="Delete investment"
+                          aria-label="Delete investment"
                         >
                           <Trash2
                             size={16}
@@ -451,6 +463,30 @@ export default function InvestmentsAdmin({
   );
 }
 
+function Status({
+  status,
+}: {
+  status:
+    | "ACTIVE"
+    | "COMPLETED"
+    | "CANCELLED";
+}) {
+  const classes =
+    status === "ACTIVE"
+      ? "bg-green-100 text-green-700"
+      : status === "COMPLETED"
+        ? "bg-[#eff8f0] text-[#2f7d32]"
+        : "bg-red-100 text-red-700";
+
+  return (
+    <span
+      className={`rounded-full px-3 py-1 text-xs font-bold ${classes}`}
+    >
+      {status}
+    </span>
+  );
+}
+
 function Field({
   label,
   value,
@@ -478,7 +514,7 @@ function Field({
         onChange={(event) =>
           onChange(event.target.value)
         }
-        className="h-11 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-purple-500"
+        className="h-11 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none transition focus:border-[#45a94a] focus:ring-2 focus:ring-[#45a94a]/10"
       />
     </label>
   );

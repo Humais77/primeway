@@ -1,6 +1,11 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+} from "react";
+
 import DashboardSidebar from "./DashboardSidebar";
 
 type DashboardUIContextType = {
@@ -11,7 +16,9 @@ type DashboardUIContextType = {
 };
 
 const DashboardUIContext =
-  createContext<DashboardUIContextType | null>(null);
+  createContext<DashboardUIContextType | null>(
+    null
+  );
 
 export function DashboardUIProvider({
   children,
@@ -23,26 +30,30 @@ export function DashboardUIProvider({
   userId: string;
 }) {
   // Sidebar is OPEN when dashboard loads
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] =
+    useState(true);
 
   return (
     <DashboardUIContext.Provider
       value={{
         sidebarOpen,
 
-        openSidebar: () => setSidebarOpen(true),
+        openSidebar: () =>
+          setSidebarOpen(true),
 
-        closeSidebar: () => setSidebarOpen(false),
+        closeSidebar: () =>
+          setSidebarOpen(false),
 
         toggleSidebar: () =>
           setSidebarOpen((prev) => !prev),
       }}
     >
-      <div className="min-h-screen w-full bg-[#f5f7fb]">
+      <div className="min-h-screen w-full bg-[#F5F8F5]">
         {/* ======================================================
             SIDEBAR
             Starts BELOW the header
         ====================================================== */}
+
         <DashboardSidebar
           open={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
@@ -53,8 +64,9 @@ export function DashboardUIProvider({
         {/* ======================================================
             PAGE CONTENT
         ====================================================== */}
+
         <div
-          className={`min-h-screen transition-[padding] duration-300 ease-in-out ${
+          className={`min-h-screen bg-[#F5F8F5] transition-[padding] duration-300 ease-in-out ${
             sidebarOpen
               ? "lg:pl-[245px]"
               : "lg:pl-0"
@@ -68,7 +80,9 @@ export function DashboardUIProvider({
 }
 
 export function useDashboardUI() {
-  const context = useContext(DashboardUIContext);
+  const context = useContext(
+    DashboardUIContext
+  );
 
   if (!context) {
     throw new Error(

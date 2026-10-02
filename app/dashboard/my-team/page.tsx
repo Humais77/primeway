@@ -111,7 +111,7 @@ export default function MyTeamPage() {
     <div className="mx-auto w-full max-w-6xl space-y-6 p-4 md:p-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">
+        <h1 className="text-2xl font-bold text-[#173b20]">
           My Team
         </h1>
 
@@ -121,10 +121,10 @@ export default function MyTeamPage() {
       </div>
 
       {/* Referral Code */}
-      <div className="rounded-2xl bg-[#06141f] p-5 text-white shadow-sm">
+      <div className="rounded-2xl bg-gradient-to-br from-[#174d28] via-[#1f7a3a] to-[#2f7d32] p-5 text-white shadow-[0_8px_24px_rgba(45,100,50,0.14)]">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
-            <p className="text-sm text-slate-300">
+            <p className="text-sm text-green-100">
               Your Referral Code
             </p>
 
@@ -132,14 +132,14 @@ export default function MyTeamPage() {
               {data.referralCode}
             </p>
 
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-green-100/75">
               Share this code with people you want to refer.
             </p>
           </div>
 
           <button
             onClick={copyReferralCode}
-            className="flex items-center justify-center gap-2 rounded-xl bg-[#16c784] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+            className="flex items-center justify-center gap-2 rounded-xl bg-[#45a94a] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#388e3c]"
           >
             {copied ? (
               <>
@@ -196,10 +196,10 @@ export default function MyTeamPage() {
       {/* Referral Bonus Link */}
       <Link
         href="/dashboard/referral-bonus"
-        className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-[#16c784]"
+        className="flex items-center justify-between rounded-2xl border border-[#dceedd] bg-white p-5 shadow-sm transition hover:border-[#45a94a] hover:bg-[#f7fbf7]"
       >
         <div>
-          <h3 className="font-semibold text-slate-900">
+          <h3 className="font-semibold text-[#173b20]">
             View Referral Bonuses
           </h3>
 
@@ -208,7 +208,7 @@ export default function MyTeamPage() {
           </p>
         </div>
 
-        <ChevronRight className="h-5 w-5 text-slate-400" />
+        <ChevronRight className="h-5 w-5 text-[#45a94a]" />
       </Link>
     </div>
   );
@@ -224,16 +224,18 @@ function StatCard({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border border-[#dceedd] bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       <div className="flex items-center justify-between">
-        <div className="rounded-xl bg-slate-100 p-3 text-slate-700">
+        <div className="rounded-xl bg-[#eff8f0] p-3 text-[#45a94a]">
           {icon}
         </div>
       </div>
 
-      <p className="mt-4 text-sm text-slate-500">{title}</p>
+      <p className="mt-4 text-sm text-slate-500">
+        {title}
+      </p>
 
-      <p className="mt-1 text-2xl font-bold text-slate-900">
+      <p className="mt-1 text-2xl font-bold text-[#173b20]">
         {value}
       </p>
     </div>
@@ -252,9 +254,9 @@ function TeamSection({
   emptyMessage: string;
 }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 p-5">
-        <h2 className="text-lg font-semibold text-slate-900">
+    <div className="overflow-hidden rounded-2xl border border-[#dceedd] bg-white shadow-sm">
+      <div className="border-b border-[#e5efe5] p-5">
+        <h2 className="text-lg font-semibold text-[#173b20]">
           {title}
         </h2>
 
@@ -268,19 +270,19 @@ function TeamSection({
           {emptyMessage}
         </div>
       ) : (
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-[#edf3ed]">
           {members.map((member) => (
             <div
               key={member.id}
               className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 font-semibold text-slate-700">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#eff8f0] font-semibold text-[#2f7d32]">
                   {member.fullName.charAt(0).toUpperCase()}
                 </div>
 
                 <div>
-                  <p className="font-medium text-slate-900">
+                  <p className="font-medium text-[#173b20]">
                     {member.fullName}
                   </p>
 

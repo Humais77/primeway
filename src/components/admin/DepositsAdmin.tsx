@@ -150,11 +150,11 @@ export default function DepositsAdmin({
   }
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-3xl border border-[#dceedd] bg-white shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[1250px] text-left">
-          <thead className="bg-[#f7f7ff]">
-            <tr className="text-xs uppercase tracking-wider text-gray-500">
+          <thead className="bg-[#f4faf4]">
+            <tr className="text-xs uppercase tracking-wider text-[#2f7d32]">
               <th className="px-5 py-4">
                 User
               </th>
@@ -197,10 +197,10 @@ export default function DepositsAdmin({
               return (
                 <tr
                   key={deposit.id}
-                  className="border-t border-gray-100"
+                  className="border-t border-[#edf4ed] transition hover:bg-[#f9fcf9]"
                 >
                   <td className="px-5 py-4">
-                    <p className="font-bold text-[#111b58]">
+                    <p className="font-bold text-[#173b20]">
                       {
                         deposit.user
                           ?.fullName
@@ -216,7 +216,7 @@ export default function DepositsAdmin({
                     </p>
                   </td>
 
-                  <td className="px-5 py-4 text-sm font-semibold">
+                  <td className="px-5 py-4 text-sm font-semibold text-[#173b20]">
                     {
                       deposit.plan
                         ?.name
@@ -224,13 +224,13 @@ export default function DepositsAdmin({
                   </td>
 
                   <td className="px-5 py-4">
-                    <span className="rounded-full bg-purple-50 px-3 py-1 text-xs font-bold text-purple-600">
+                    <span className="rounded-full border border-[#dceedd] bg-[#eff8f0] px-3 py-1 text-xs font-bold text-[#2f7d32]">
                       {deposit.method}
                     </span>
                   </td>
 
                   <td className="px-5 py-4">
-                    <p className="font-bold text-[#111b58]">
+                    <p className="font-bold text-[#173b20]">
                       {money(
                         deposit.amountPaisa
                       )}
@@ -244,7 +244,7 @@ export default function DepositsAdmin({
                     </p>
                   </td>
 
-                  <td className="px-5 py-4 font-mono text-sm">
+                  <td className="px-5 py-4 font-mono text-sm text-[#173b20]">
                     {
                       deposit.transactionReference
                     }
@@ -257,10 +257,12 @@ export default function DepositsAdmin({
                       }
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-blue-600 hover:bg-blue-100"
+                      className="inline-flex items-center gap-2 rounded-lg border border-[#dceedd] bg-[#eff8f0] px-3 py-2 text-xs font-bold text-[#2f7d32] transition hover:bg-[#e4f4e5]"
                     >
                       <Eye size={15} />
+
                       Preview
+
                       <ExternalLink
                         size={13}
                       />
@@ -287,7 +289,7 @@ export default function DepositsAdmin({
                               "APPROVE"
                             )
                           }
-                          className="flex items-center gap-1.5 rounded-lg bg-green-50 px-3 py-2 text-xs font-bold text-green-600 hover:bg-green-100 disabled:opacity-50"
+                          className="flex items-center gap-1.5 rounded-lg bg-green-50 px-3 py-2 text-xs font-bold text-green-600 transition hover:bg-green-100 disabled:opacity-50"
                         >
                           {busy ? (
                             <Loader2
@@ -299,6 +301,7 @@ export default function DepositsAdmin({
                               size={14}
                             />
                           )}
+
                           Approve
                         </button>
 
@@ -310,9 +313,10 @@ export default function DepositsAdmin({
                               "REJECT"
                             )
                           }
-                          className="flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-100 disabled:opacity-50"
+                          className="flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-2 text-xs font-bold text-red-600 transition hover:bg-red-100 disabled:opacity-50"
                         >
                           <X size={14} />
+
                           Reject
                         </button>
                       </div>

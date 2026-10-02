@@ -43,7 +43,10 @@ function calculateProgress(
 
   return Math.min(
     100,
-    Math.max(0, Math.round(((now - start) / (end - start)) * 100))
+    Math.max(
+      0,
+      Math.round(((now - start) / (end - start)) * 100)
+    )
   );
 }
 
@@ -102,7 +105,7 @@ export default async function RunningPlansPage({
         {/* Header */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-3xl font-black text-[#111b58] md:text-4xl">
+            <h1 className="text-3xl font-black text-[#173b20] md:text-4xl">
               My Running Plans
             </h1>
 
@@ -113,7 +116,7 @@ export default async function RunningPlansPage({
 
           <Link
             href="/dashboard/invest-plan"
-            className="inline-flex w-fit items-center gap-2 rounded-xl bg-gradient-to-r from-[#4020bd] to-[#063d82] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-purple-200 transition hover:opacity-90"
+            className="inline-flex w-fit items-center gap-2 rounded-xl bg-gradient-to-r from-[#45a94a] to-[#2f7d32] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-green-200 transition hover:opacity-90"
           >
             Explore Plans
             <ArrowRight size={17} />
@@ -121,17 +124,19 @@ export default async function RunningPlansPage({
         </div>
 
         {/* Status Tabs */}
-        <div className="mb-6 inline-flex flex-wrap gap-2 rounded-2xl border border-[#e7e8f3] bg-white p-2 shadow-[0_8px_30px_rgba(40,30,100,0.05)]">
+        <div className="mb-6 inline-flex flex-wrap gap-2 rounded-2xl border border-[#dceedd] bg-white p-2 shadow-[0_8px_30px_rgba(45,100,50,0.05)]">
           <StatusTab
             href="/dashboard/running-plans?status=ACTIVE"
             active={selectedStatus === "ACTIVE"}
             label={`Running (${activeInvestments.length})`}
           />
+
           <StatusTab
             href="/dashboard/running-plans?status=COMPLETED"
             active={selectedStatus === "COMPLETED"}
             label={`Completed (${completedInvestments.length})`}
           />
+
           <StatusTab
             href="/dashboard/running-plans?status=ALL"
             active={selectedStatus === "ALL"}
@@ -155,12 +160,13 @@ export default async function RunningPlansPage({
               return (
                 <article
                   key={investment.id}
-                  className="group relative overflow-hidden rounded-[22px] border border-[#e7e8f3] bg-white shadow-[0_6px_24px_rgba(40,30,100,0.06)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(40,30,100,0.10)]"
+                  className="group relative overflow-hidden rounded-[22px] border border-[#dceedd] bg-white shadow-[0_6px_24px_rgba(45,100,50,0.06)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(45,100,50,0.10)]"
                 >
                   {/* Gradient top */}
-                  <div className="relative overflow-hidden bg-gradient-to-br from-[#281477] via-[#4020bd] to-[#063d82] px-4 py-4 text-white">
+                  <div className="relative overflow-hidden bg-gradient-to-br from-[#174d28] via-[#45a94a] to-[#2f7d32] px-4 py-4 text-white">
                     <div className="pointer-events-none absolute -right-8 -top-10 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
-                    <div className="pointer-events-none absolute -bottom-12 left-10 h-20 w-20 rounded-full bg-blue-300/10 blur-3xl" />
+
+                    <div className="pointer-events-none absolute -bottom-12 left-10 h-20 w-20 rounded-full bg-green-200/10 blur-3xl" />
 
                     <div className="relative flex items-start justify-between gap-3">
                       <div className="min-w-0">
@@ -206,25 +212,27 @@ export default async function RunningPlansPage({
                       <PlanDetail
                         icon={<Coins size={15} />}
                         label="Profit Rate"
-                        value={`${(investment.profitRateBps / 100).toFixed(2)}%`}
-                        iconClass="bg-purple-50 text-purple-600"
-                        valueClass="text-purple-600"
+                        value={`${(
+                          investment.profitRateBps / 100
+                        ).toFixed(2)}%`}
+                        iconClass="bg-[#eff8f0] text-[#2f7d32]"
+                        valueClass="text-[#2f7d32]"
                       />
 
                       <PlanDetail
                         icon={<TrendingUp size={15} />}
                         label="Earned Profit"
                         value={formatPKR(investment.earnedProfitPaisa)}
-                        iconClass="bg-green-50 text-green-600"
-                        valueClass="text-green-600"
+                        iconClass="bg-green-50 text-[#45a94a]"
+                        valueClass="text-[#45a94a]"
                       />
 
                       <PlanDetail
                         icon={<CalendarDays size={15} />}
                         label="Frequency"
                         value={investment.frequency}
-                        iconClass="bg-blue-50 text-blue-600"
-                        valueClass="text-[#111b58]"
+                        iconClass="bg-[#f0f8f1] text-[#388e3c]"
+                        valueClass="text-[#173b20]"
                       />
 
                       <PlanDetail
@@ -241,8 +249,8 @@ export default async function RunningPlansPage({
                             ? formatDate(investment.nextProfitAt)
                             : formatDate(investment.endDate)
                         }
-                        iconClass="bg-orange-50 text-orange-500"
-                        valueClass="text-orange-500"
+                        iconClass="bg-[#eff8f0] text-[#45a94a]"
+                        valueClass="text-[#2f7d32]"
                       />
                     </div>
 
@@ -252,31 +260,32 @@ export default async function RunningPlansPage({
                         <span className="text-xs font-semibold text-gray-600">
                           Investment Progress
                         </span>
-                        <span className="text-xs font-black text-[#111b58]">
+
+                        <span className="text-xs font-black text-[#173b20]">
                           {progress}%
                         </span>
                       </div>
 
-                      <div className="h-2 overflow-hidden rounded-full bg-[#eef0fb]">
+                      <div className="h-2 overflow-hidden rounded-full bg-[#e8f1e8]">
                         <div
-                          className="h-full rounded-full bg-gradient-to-r from-[#4020bd] to-[#063d82] transition-all"
+                          className="h-full rounded-full bg-gradient-to-r from-[#45a94a] to-[#2f7d32] transition-all"
                           style={{ width: `${progress}%` }}
                         />
                       </div>
                     </div>
 
                     {/* Dates */}
-                    <div className="mt-4 flex flex-col gap-1.5 border-t border-[#eef0fb] pt-4 text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="mt-4 flex flex-col gap-1.5 border-t border-[#e8f1e8] pt-4 text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between">
                       <span>
                         Started:{" "}
-                        <strong className="text-[#111b58]">
+                        <strong className="text-[#173b20]">
                           {formatDate(investment.startDate)}
                         </strong>
                       </span>
 
                       <span>
                         Ends:{" "}
-                        <strong className="text-[#111b58]">
+                        <strong className="text-[#173b20]">
                           {formatDate(investment.endDate)}
                         </strong>
                       </span>
@@ -289,12 +298,13 @@ export default async function RunningPlansPage({
         )}
 
         {/* Recent Profit Credits */}
-        <section className="mt-8 overflow-hidden rounded-[22px] border border-[#e7e8f3] bg-white shadow-[0_6px_24px_rgba(40,30,100,0.06)]">
-          <div className="flex items-center justify-between gap-4 bg-gradient-to-r from-[#281477] via-[#4020bd] to-[#063d82] px-4 py-4 text-white md:px-5">
+        <section className="mt-8 overflow-hidden rounded-[22px] border border-[#dceedd] bg-white shadow-[0_6px_24px_rgba(45,100,50,0.06)]">
+          <div className="flex items-center justify-between gap-4 bg-gradient-to-r from-[#174d28] via-[#45a94a] to-[#2f7d32] px-4 py-4 text-white md:px-5">
             <div>
               <h2 className="text-base font-black md:text-lg">
                 Recent Profit Credits
               </h2>
+
               <p className="mt-0.5 text-[11px] text-white/70">
                 Your latest investment profit credits.
               </p>
@@ -311,7 +321,7 @@ export default async function RunningPlansPage({
 
           {profitTransactions.length === 0 ? (
             <div className="px-5 py-10 text-center">
-              <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-[#eef0fb] text-[#4020bd]">
+              <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-[#eff8f0] text-[#45a94a]">
                 <Coins size={20} />
               </div>
 
@@ -321,28 +331,29 @@ export default async function RunningPlansPage({
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-[#eef0fb] px-4 md:px-5">
+            <div className="divide-y divide-[#e8f1e8] px-4 md:px-5">
               {profitTransactions.slice(0, 5).map((transaction) => (
                 <div
                   key={transaction.id}
                   className="flex items-center justify-between gap-4 py-3.5"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50 text-green-600">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50 text-[#45a94a]">
                       <TrendingUp size={15} />
                     </div>
 
                     <div>
-                      <p className="text-sm font-semibold text-[#111b58]">
+                      <p className="text-sm font-semibold text-[#173b20]">
                         Profit Credit
                       </p>
+
                       <p className="mt-0.5 text-[11px] text-gray-500">
                         {formatDate(transaction.createdAt)}
                       </p>
                     </div>
                   </div>
 
-                  <p className="text-sm font-black text-green-600">
+                  <p className="text-sm font-black text-[#45a94a]">
                     +{formatPKR(transaction.amountPaisa)}
                   </p>
                 </div>
@@ -352,7 +363,7 @@ export default async function RunningPlansPage({
 
           <Link
             href="/dashboard/transactions"
-            className="flex items-center justify-center gap-2 border-t border-[#eef0fb] px-4 py-3.5 text-sm font-semibold text-[#4020bd] hover:bg-[#f8f9ff] sm:hidden"
+            className="flex items-center justify-center gap-2 border-t border-[#e8f1e8] px-4 py-3.5 text-sm font-semibold text-[#45a94a] hover:bg-[#f7fbf7] sm:hidden"
           >
             View all transactions
             <ArrowRight size={15} />
@@ -381,8 +392,8 @@ function StatusTab({
       href={href}
       className={`rounded-xl px-3.5 py-2 text-center text-xs font-bold transition md:text-sm ${
         active
-          ? "bg-gradient-to-r from-[#4020bd] to-[#063d82] text-white shadow-md shadow-purple-200"
-          : "text-gray-600 hover:bg-[#f3f4fb]"
+          ? "bg-gradient-to-r from-[#45a94a] to-[#2f7d32] text-white shadow-md shadow-green-200"
+          : "text-gray-600 hover:bg-[#f2f8f2]"
       }`}
     >
       {label}
@@ -415,7 +426,9 @@ function PlanDetail({
         {icon}
       </div>
 
-      <p className="text-[10px] text-gray-500">{label}</p>
+      <p className="text-[10px] text-gray-500">
+        {label}
+      </p>
 
       <p className={`mt-0.5 truncate text-xs font-bold ${valueClass}`}>
         {value}
@@ -430,12 +443,12 @@ function PlanDetail({
 
 function EmptyPlans() {
   return (
-    <section className="rounded-[22px] border border-[#e7e8f3] bg-gradient-to-b from-[#f5f7ff] to-white px-6 py-14 text-center shadow-[0_6px_24px_rgba(40,30,100,0.05)]">
-      <div className="mx-auto flex h-13 w-13 items-center justify-center text-[#4020bd]">
+    <section className="rounded-[22px] border border-[#dceedd] bg-gradient-to-b from-[#f2f8f2] to-white px-6 py-14 text-center shadow-[0_6px_24px_rgba(45,100,50,0.05)]">
+      <div className="mx-auto flex h-13 w-13 items-center justify-center text-[#45a94a]">
         <Sprout size={32} />
       </div>
 
-      <h2 className="mt-4 text-xl font-black text-[#111b58] md:text-2xl">
+      <h2 className="mt-4 text-xl font-black text-[#173b20] md:text-2xl">
         No running plans yet
       </h2>
 
@@ -445,7 +458,7 @@ function EmptyPlans() {
 
       <Link
         href="/dashboard/invest-plan"
-        className="mt-5 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#4020bd] to-[#063d82] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-purple-200 transition hover:opacity-90"
+        className="mt-5 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#45a94a] to-[#2f7d32] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-green-200 transition hover:opacity-90"
       >
         Explore Plans
         <ArrowRight size={16} />

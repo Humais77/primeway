@@ -15,10 +15,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-type Gateway =
-  | "EASYPAISA"
-  | "BANK"
-  | "RAAST";
+type Gateway = "EASYPAISA" | "BANK" | "RAAST";
 
 type Props = {
   plan: {
@@ -39,9 +36,7 @@ type Account = {
 };
 
 function money(paisa: number) {
-  return `Rs ${(
-    paisa / 100
-  ).toLocaleString("en-PK")}`;
+  return `Rs ${(paisa / 100).toLocaleString("en-PK")}`;
 }
 
 export default function DepositUI({
@@ -50,32 +45,20 @@ export default function DepositUI({
 }: Props) {
   const router = useRouter();
 
-  const [method, setMethod] =
-    useState<Gateway | null>(
-      initialMethod === "EASYPAISA" ||
-        initialMethod === "BANK" ||
-        initialMethod === "RAAST"
-        ? initialMethod
-        : null
-    );
+  const [method, setMethod] = useState<Gateway | null>(
+    initialMethod === "EASYPAISA" ||
+      initialMethod === "BANK" ||
+      initialMethod === "RAAST"
+      ? initialMethod
+      : null
+  );
 
-  const [account, setAccount] =
-    useState<Account | null>(null);
-
-  const [loadingAccount, setLoadingAccount] =
-    useState(false);
-
-  const [transactionId, setTransactionId] =
-    useState("");
-
-  const [screenshot, setScreenshot] =
-    useState<File | null>(null);
-
-  const [submitting, setSubmitting] =
-    useState(false);
-
-  const [success, setSuccess] =
-    useState(false);
+  const [account, setAccount] = useState<Account | null>(null);
+  const [loadingAccount, setLoadingAccount] = useState(false);
+  const [transactionId, setTransactionId] = useState("");
+  const [screenshot, setScreenshot] = useState<File | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     if (!method) {
@@ -91,13 +74,10 @@ export default function DepositUI({
           `/api/deposit/accounts?gateway=${method}`
         );
 
-        const data =
-          await response.json();
+        const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(
-            data.message
-          );
+          throw new Error(data.message);
         }
 
         setAccount(data.account);
@@ -117,9 +97,7 @@ export default function DepositUI({
     loadAccount();
   }, [method]);
 
-  function selectMethod(
-    selected: Gateway
-  ) {
+  function selectMethod(selected: Gateway) {
     setMethod(selected);
 
     if (plan) {
@@ -129,92 +107,64 @@ export default function DepositUI({
     }
   }
 
-  async function submit(
-    event: React.FormEvent
-  ) {
+  async function submit(event: React.FormEvent) {
     event.preventDefault();
 
     if (!plan) {
-      alert(
-        "Please select an investment plan first."
-      );
+      alert("Please select an investment plan first.");
       return;
     }
 
     if (!method || !account) {
-      alert(
-        "Please select a payment method."
-      );
+      alert("Please select a payment method.");
       return;
     }
 
     if (!transactionId.trim()) {
-      alert(
-        "Transaction ID is required."
-      );
+      alert("Transaction ID is required.");
       return;
     }
 
     if (!screenshot) {
-      alert(
-        "Payment screenshot is required."
-      );
+      alert("Payment screenshot is required.");
       return;
     }
 
     setSubmitting(true);
 
     try {
-      const uploadData =
-        new FormData();
+      const uploadData = new FormData();
 
-      uploadData.append(
-        "screenshot",
-        screenshot
-      );
+      uploadData.append("screenshot", screenshot);
 
-      const uploadResponse =
-        await fetch(
-          "/api/deposit/upload",
-          {
-            method: "POST",
-            body: uploadData,
-          }
-        );
+      const uploadResponse = await fetch("/api/deposit/upload", {
+        method: "POST",
+        body: uploadData,
+      });
 
-      const uploadResult =
-        await uploadResponse.json();
+      const uploadResult = await uploadResponse.json();
 
       if (!uploadResponse.ok) {
-        throw new Error(
-          uploadResult.message
-        );
+        throw new Error(uploadResult.message);
       }
 
-      const response =
-        await fetch("/api/deposits", {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            planId: plan.id,
-            gateway: method,
-            transactionReference:
-              transactionId.trim(),
-            proofUrl:
-              uploadResult.url,
-          }),
-        });
+      const response = await fetch("/api/deposits", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          planId: plan.id,
+          gateway: method,
+          transactionReference: transactionId.trim(),
+          proofUrl: uploadResult.url,
+        }),
+      });
 
-      const data =
-        await response.json();
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.message
-        );
+        throw new Error(data.message);
       }
 
       setSuccess(true);
@@ -231,28 +181,25 @@ export default function DepositUI({
 
   if (!plan) {
     return (
-      <div className="rounded-3xl bg-white p-10 text-center shadow-sm">
+      <div className="rounded-3xl border border-[#DDEBDD] bg-white p-10 text-center shadow-sm">
         <Wallet
-          className="mx-auto text-purple-600"
+          className="mx-auto text-[#45A94A]"
           size={42}
         />
 
-        <h1 className="mt-5 text-2xl font-black text-[#111b58]">
+        <h1 className="mt-5 text-2xl font-black text-[#163B20]">
           Select an Investment Plan
         </h1>
 
         <p className="mt-2 text-sm text-gray-500">
-          Please select an investment plan
-          before making a deposit.
+          Please select an investment plan before making a deposit.
         </p>
 
         <button
           onClick={() =>
-            router.push(
-              "/dashboard/invest-plan"
-            )
+            router.push("/dashboard/invest-plan")
           }
-          className="mt-6 rounded-xl bg-[#4020bd] px-6 py-3 text-sm font-bold text-white"
+          className="mt-6 rounded-xl bg-[#45A94A] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#2F7D32]"
         >
           View Investment Plans
         </button>
@@ -266,40 +213,36 @@ export default function DepositUI({
 
   if (success) {
     return (
-      <div className="rounded-3xl bg-white p-10 text-center shadow-sm">
+      <div className="rounded-3xl border border-[#DDEBDD] bg-white p-10 text-center shadow-sm">
         <CheckCircle2
           size={58}
-          className="mx-auto text-green-500"
+          className="mx-auto text-[#45A94A]"
         />
 
-        <h1 className="mt-5 text-2xl font-black text-[#111b58]">
+        <h1 className="mt-5 text-2xl font-black text-[#163B20]">
           Deposit Submitted
         </h1>
 
         <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-gray-500">
-          Your deposit request has been
-          submitted successfully. The admin
-          will review your transaction and
-          screenshot.
+          Your deposit request has been submitted successfully.
+          The admin will review your transaction and screenshot.
         </p>
 
-        <div className="mx-auto mt-6 max-w-md rounded-2xl bg-green-50 p-5">
-          <p className="text-xs font-bold uppercase text-green-600">
+        <div className="mx-auto mt-6 max-w-md rounded-2xl bg-[#EFF8F0] p-5">
+          <p className="text-xs font-bold uppercase text-[#45A94A]">
             Amount Submitted
           </p>
 
-          <p className="mt-1 text-2xl font-black text-green-700">
+          <p className="mt-1 text-2xl font-black text-[#2F7D32]">
             {money(plan.amountPaisa)}
           </p>
         </div>
 
         <button
           onClick={() =>
-            router.push(
-              "/dashboard/deposit-history"
-            )
+            router.push("/dashboard/deposit-history")
           }
-          className="mt-6 rounded-xl bg-[#4020bd] px-6 py-3 text-sm font-bold text-white"
+          className="mt-6 rounded-xl bg-[#45A94A] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#2F7D32]"
         >
           View Deposit History
         </button>
@@ -310,25 +253,25 @@ export default function DepositUI({
   return (
     <div>
       <div className="mb-7">
-        <h1 className="text-3xl font-black text-[#111b58] md:text-4xl">
+        <h1 className="text-3xl font-black text-[#163B20] md:text-4xl">
           Make a Deposit
         </h1>
 
         <p className="mt-2 text-sm text-gray-500">
-          Complete your payment to activate
-          your selected investment plan.
+          Complete your payment to activate your selected
+          investment plan.
         </p>
       </div>
 
       {/* Selected Plan */}
-      <div className="mb-6 rounded-3xl border border-purple-100 bg-purple-50/60 p-5">
-        <p className="text-xs font-bold uppercase tracking-wider text-purple-600">
+      <div className="mb-6 rounded-3xl border border-green-100 bg-[#EFF8F0] p-5">
+        <p className="text-xs font-bold uppercase tracking-wider text-[#45A94A]">
           Selected Plan
         </p>
 
         <div className="mt-2 flex items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-black text-[#111b58]">
+            <h2 className="text-xl font-black text-[#163B20]">
               {plan.name}
             </h2>
 
@@ -337,21 +280,20 @@ export default function DepositUI({
             </p>
           </div>
 
-          <p className="text-2xl font-black text-purple-600">
+          <p className="text-2xl font-black text-[#45A94A]">
             {money(plan.amountPaisa)}
           </p>
         </div>
       </div>
 
       {/* Payment Methods */}
-      <section className="rounded-3xl bg-white p-5 shadow-sm md:p-7">
-        <h2 className="text-xl font-black text-[#111b58]">
+      <section className="rounded-3xl border border-[#DDEBDD] bg-white p-5 shadow-sm md:p-7">
+        <h2 className="text-xl font-black text-[#163B20]">
           Choose Your Payment Method
         </h2>
 
         <p className="mt-1 text-sm text-gray-500">
-          Select where you want to make your
-          payment.
+          Select where you want to make your payment.
         </p>
 
         <div className="mt-5 grid gap-4 md:grid-cols-3">
@@ -359,12 +301,8 @@ export default function DepositUI({
             title="EasyPaisa"
             description="Pay through EasyPaisa"
             icon={<Smartphone size={23} />}
-            active={
-              method === "EASYPAISA"
-            }
-            onClick={() =>
-              selectMethod("EASYPAISA")
-            }
+            active={method === "EASYPAISA"}
+            onClick={() => selectMethod("EASYPAISA")}
           />
 
           <MethodCard
@@ -372,9 +310,7 @@ export default function DepositUI({
             description="Direct bank transfer"
             icon={<Building2 size={23} />}
             active={method === "BANK"}
-            onClick={() =>
-              selectMethod("BANK")
-            }
+            onClick={() => selectMethod("BANK")}
           />
 
           <MethodCard
@@ -382,31 +318,29 @@ export default function DepositUI({
             description="Pay through Raast"
             icon={<CreditCard size={23} />}
             active={method === "RAAST"}
-            onClick={() =>
-              selectMethod("RAAST")
-            }
+            onClick={() => selectMethod("RAAST")}
           />
         </div>
       </section>
 
       {method && (
-        <section className="mt-6 rounded-3xl bg-white p-5 shadow-sm md:p-7">
+        <section className="mt-6 rounded-3xl border border-[#DDEBDD] bg-white p-5 shadow-sm md:p-7">
           {loadingAccount ? (
             <div className="flex items-center justify-center py-16">
               <Loader2
                 size={28}
-                className="animate-spin text-purple-600"
+                className="animate-spin text-[#45A94A]"
               />
             </div>
           ) : !account ? (
             <div className="rounded-2xl bg-red-50 p-6 text-center text-sm font-semibold text-red-600">
-              No active account is currently
-              available for this payment method.
+              No active account is currently available for this
+              payment method.
             </div>
           ) : (
             <>
               {/* Account details */}
-              <div className="rounded-2xl bg-gradient-to-br from-[#111b58] to-[#4020bd] p-6 text-white">
+              <div className="rounded-2xl bg-gradient-to-br from-[#1F6B32] via-[#45A94A] to-[#2F7D32] p-6 text-white">
                 <p className="text-xs font-bold uppercase tracking-wider text-white/60">
                   Payment Account
                 </p>
@@ -447,7 +381,7 @@ export default function DepositUI({
                             account.accountNumber
                           )
                         }
-                        className="rounded-lg bg-white/10 p-2 hover:bg-white/20"
+                        className="rounded-lg bg-white/10 p-2 transition hover:bg-white/20"
                       >
                         <Copy size={14} />
                       </button>
@@ -457,11 +391,8 @@ export default function DepositUI({
               </div>
 
               {/* Payment form */}
-              <form
-                onSubmit={submit}
-                className="mt-7"
-              >
-                <h2 className="text-xl font-black text-[#111b58]">
+              <form onSubmit={submit} className="mt-7">
+                <h2 className="text-xl font-black text-[#163B20]">
                   Enter Payment Details
                 </h2>
 
@@ -473,9 +404,7 @@ export default function DepositUI({
 
                   <SummaryField
                     label="Plan Amount"
-                    value={money(
-                      plan.amountPaisa
-                    )}
+                    value={money(plan.amountPaisa)}
                   />
 
                   <SummaryField
@@ -487,9 +416,7 @@ export default function DepositUI({
 
                   <SummaryField
                     label="Exact Amount to Pay"
-                    value={money(
-                      exactAmount
-                    )}
+                    value={money(exactAmount)}
                     highlight
                   />
                 </div>
@@ -504,12 +431,10 @@ export default function DepositUI({
                       required
                       value={transactionId}
                       onChange={(event) =>
-                        setTransactionId(
-                          event.target.value
-                        )
+                        setTransactionId(event.target.value)
                       }
                       placeholder="Enter your transaction ID"
-                      className="h-12 w-full rounded-xl border border-gray-200 px-4 text-sm outline-none focus:border-purple-500"
+                      className="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm outline-none transition focus:border-[#45A94A] focus:bg-white focus:ring-1 focus:ring-[#45A94A]"
                     />
                   </label>
                 </div>
@@ -522,21 +447,17 @@ export default function DepositUI({
 
                     <div className="rounded-2xl border-2 border-dashed border-gray-200 p-5">
                       <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
-                          <ImageIcon
-                            size={22}
-                          />
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#EFF8F0] text-[#45A94A]">
+                          <ImageIcon size={22} />
                         </div>
 
                         <div className="flex-1">
                           <p className="text-sm font-bold text-gray-700">
-                            Upload payment
-                            screenshot
+                            Upload payment screenshot
                           </p>
 
                           <p className="mt-1 text-xs text-gray-400">
-                            JPG, PNG or WEBP · Max
-                            5MB
+                            JPG, PNG or WEBP · Max 5MB
                           </p>
                         </div>
 
@@ -546,9 +467,7 @@ export default function DepositUI({
                           accept="image/jpeg,image/png,image/webp"
                           onChange={(event) =>
                             setScreenshot(
-                              event.target
-                                .files?.[0] ||
-                                null
+                              event.target.files?.[0] || null
                             )
                           }
                           className="max-w-[180px] text-xs"
@@ -556,9 +475,8 @@ export default function DepositUI({
                       </div>
 
                       {screenshot && (
-                        <p className="mt-3 text-xs font-semibold text-green-600">
-                          Selected:{" "}
-                          {screenshot.name}
+                        <p className="mt-3 text-xs font-semibold text-[#45A94A]">
+                          Selected: {screenshot.name}
                         </p>
                       )}
                     </div>
@@ -567,7 +485,7 @@ export default function DepositUI({
 
                 <button
                   disabled={submitting}
-                  className="mt-7 flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#4020bd] to-[#063d82] text-sm font-bold text-white shadow-lg disabled:opacity-60"
+                  className="mt-7 flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#45A94A] to-[#2F7D32] text-sm font-bold text-white shadow-lg transition hover:from-[#2F7D32] hover:to-[#1F6B32] disabled:opacity-60"
                 >
                   {submitting ? (
                     <>
@@ -580,9 +498,7 @@ export default function DepositUI({
                   ) : (
                     <>
                       Submit Deposit
-                      <ArrowRight
-                        size={18}
-                      />
+                      <ArrowRight size={18} />
                     </>
                   )}
                 </button>
@@ -614,21 +530,21 @@ function MethodCard({
       onClick={onClick}
       className={`rounded-2xl border p-5 text-left transition ${
         active
-          ? "border-purple-500 bg-purple-50 shadow-md"
-          : "border-gray-100 bg-gray-50 hover:border-purple-200 hover:bg-purple-50/40"
+          ? "border-[#45A94A] bg-[#EFF8F0] shadow-md ring-1 ring-[#45A94A]"
+          : "border-gray-100 bg-gray-50 hover:border-green-200 hover:bg-[#F5FAF5]"
       }`}
     >
       <div
         className={`flex h-11 w-11 items-center justify-center rounded-xl ${
           active
-            ? "bg-purple-600 text-white"
-            : "bg-white text-purple-600"
+            ? "bg-[#45A94A] text-white"
+            : "bg-white text-[#45A94A]"
         }`}
       >
         {icon}
       </div>
 
-      <h3 className="mt-4 font-black text-[#111b58]">
+      <h3 className="mt-4 font-black text-[#163B20]">
         {title}
       </h3>
 
@@ -652,19 +568,17 @@ function SummaryField({
     <div
       className={`rounded-2xl border p-4 ${
         highlight
-          ? "border-green-100 bg-green-50"
+          ? "border-green-100 bg-[#EFF8F0]"
           : "border-gray-100 bg-gray-50"
       }`}
     >
-      <p className="text-xs text-gray-500">
-        {label}
-      </p>
+      <p className="text-xs text-gray-500">{label}</p>
 
       <p
         className={`mt-1 text-base font-black ${
           highlight
-            ? "text-green-600"
-            : "text-[#111b58]"
+            ? "text-[#2F7D32]"
+            : "text-[#163B20]"
         }`}
       >
         {value}

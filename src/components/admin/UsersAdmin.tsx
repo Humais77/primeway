@@ -305,13 +305,14 @@ export default function UsersAdmin({
           <form
             onSubmit={createUser}
             onClick={(e) => e.stopPropagation()}
-            className="my-8 w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl"
+            className="my-8 w-full max-w-2xl rounded-3xl border border-[#dceedd] bg-white p-6 shadow-2xl"
           >
             <div className="mb-6 flex items-start justify-between">
               <div>
-                <h2 className="text-xl font-black text-[#111b58]">
+                <h2 className="text-xl font-black text-[#173b20]">
                   Create User
                 </h2>
+
                 <p className="mt-1 text-xs text-gray-500">
                   Add a new Prime Way account.
                 </p>
@@ -320,7 +321,7 @@ export default function UsersAdmin({
               <button
                 type="button"
                 onClick={closeCreate}
-                className="rounded-lg p-2 text-gray-400 hover:bg-gray-100"
+                className="rounded-lg p-2 text-gray-400 transition hover:bg-[#eff8f0] hover:text-[#2f7d32]"
               >
                 <X size={18} />
               </button>
@@ -390,6 +391,7 @@ export default function UsersAdmin({
                 <span className="mb-2 block text-xs font-bold text-gray-600">
                   Role
                 </span>
+
                 <select
                   value={createForm.role}
                   onChange={(event) =>
@@ -398,7 +400,7 @@ export default function UsersAdmin({
                       role: event.target.value,
                     })
                   }
-                  className="h-11 w-full rounded-xl border border-gray-200 px-3 text-sm"
+                  className="h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm outline-none focus:border-[#45a94a] focus:ring-2 focus:ring-[#45a94a]/10"
                 >
                   <option value="USER">User</option>
                   <option value="ADMIN">Admin</option>
@@ -406,7 +408,7 @@ export default function UsersAdmin({
               </label>
             </div>
 
-            <label className="mt-5 flex items-center gap-2 text-sm font-semibold">
+            <label className="mt-5 flex items-center gap-2 text-sm font-semibold text-[#173b20]">
               <input
                 type="checkbox"
                 checked={createForm.isActive}
@@ -416,6 +418,7 @@ export default function UsersAdmin({
                     isActive: event.target.checked,
                   })
                 }
+                className="accent-[#45a94a]"
               />
               Account Active
             </label>
@@ -424,19 +427,25 @@ export default function UsersAdmin({
               <button
                 type="button"
                 onClick={closeCreate}
-                className="rounded-xl border border-gray-200 px-5 py-3 text-sm font-bold text-gray-600"
+                className="rounded-xl border border-gray-200 px-5 py-3 text-sm font-bold text-gray-600 transition hover:bg-gray-50"
               >
                 Cancel
               </button>
 
               <button
                 disabled={creatingSaving}
-                className="flex items-center gap-2 rounded-xl bg-[#4020bd] px-6 py-3 text-sm font-bold text-white disabled:opacity-60"
+                className="flex items-center gap-2 rounded-xl bg-[#45a94a] px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#2f7d32] disabled:opacity-60"
               >
                 {creatingSaving && (
-                  <Loader2 size={16} className="animate-spin" />
+                  <Loader2
+                    size={16}
+                    className="animate-spin"
+                  />
                 )}
-                {creatingSaving ? "Creating..." : "Create User"}
+
+                {creatingSaving
+                  ? "Creating..."
+                  : "Create User"}
               </button>
             </div>
           </form>
@@ -452,13 +461,14 @@ export default function UsersAdmin({
           <form
             onSubmit={saveUser}
             onClick={(e) => e.stopPropagation()}
-            className="my-8 w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl"
+            className="my-8 w-full max-w-2xl rounded-3xl border border-[#dceedd] bg-white p-6 shadow-2xl"
           >
             <div className="mb-6 flex items-start justify-between">
               <div>
-                <h2 className="text-xl font-black text-[#111b58]">
+                <h2 className="text-xl font-black text-[#173b20]">
                   Edit User
                 </h2>
+
                 <p className="mt-1 text-xs text-gray-500">
                   Update {editing.fullName}&apos;s account details.
                 </p>
@@ -467,7 +477,7 @@ export default function UsersAdmin({
               <button
                 type="button"
                 onClick={closeEdit}
-                className="rounded-lg p-2 text-gray-400 hover:bg-gray-100"
+                className="rounded-lg p-2 text-gray-400 transition hover:bg-[#eff8f0] hover:text-[#2f7d32]"
               >
                 <X size={18} />
               </button>
@@ -546,7 +556,7 @@ export default function UsersAdmin({
                       role: event.target.value,
                     })
                   }
-                  className="h-11 w-full rounded-xl border border-gray-200 px-3 text-sm"
+                  className="h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm outline-none focus:border-[#45a94a] focus:ring-2 focus:ring-[#45a94a]/10"
                 >
                   <option value="USER">User</option>
                   <option value="ADMIN">Admin</option>
@@ -554,7 +564,7 @@ export default function UsersAdmin({
               </label>
             </div>
 
-            <label className="mt-5 flex items-center gap-2 text-sm font-semibold">
+            <label className="mt-5 flex items-center gap-2 text-sm font-semibold text-[#173b20]">
               <input
                 type="checkbox"
                 checked={form.isActive}
@@ -564,6 +574,7 @@ export default function UsersAdmin({
                     isActive: event.target.checked,
                   })
                 }
+                className="accent-[#45a94a]"
               />
               Account Active
             </label>
@@ -572,18 +583,22 @@ export default function UsersAdmin({
               <button
                 type="button"
                 onClick={closeEdit}
-                className="rounded-xl border border-gray-200 px-5 py-3 text-sm font-bold text-gray-600"
+                className="rounded-xl border border-gray-200 px-5 py-3 text-sm font-bold text-gray-600 transition hover:bg-gray-50"
               >
                 Cancel
               </button>
 
               <button
                 disabled={saving}
-                className="flex items-center gap-2 rounded-xl bg-[#4020bd] px-6 py-3 text-sm font-bold text-white disabled:opacity-60"
+                className="flex items-center gap-2 rounded-xl bg-[#45a94a] px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#2f7d32] disabled:opacity-60"
               >
                 {saving && (
-                  <Loader2 size={16} className="animate-spin" />
+                  <Loader2
+                    size={16}
+                    className="animate-spin"
+                  />
                 )}
+
                 {saving ? "Saving..." : "Save Changes"}
               </button>
             </div>
@@ -597,13 +612,13 @@ export default function UsersAdmin({
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           placeholder="Search users..."
-          className="h-12 w-full max-w-md rounded-xl border border-gray-200 bg-white px-4 text-sm outline-none focus:border-purple-500"
+          className="h-12 w-full max-w-md rounded-xl border border-[#dceedd] bg-white px-4 text-sm text-[#173b20] outline-none transition placeholder:text-gray-400 focus:border-[#45a94a] focus:ring-2 focus:ring-[#45a94a]/10"
         />
 
         <button
           type="button"
           onClick={openCreate}
-          className="flex h-12 items-center gap-2 rounded-xl bg-[#4020bd] px-5 text-sm font-bold text-white shadow-sm transition hover:opacity-90"
+          className="flex h-12 items-center gap-2 rounded-xl bg-[#45a94a] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#2f7d32]"
         >
           <Plus size={18} />
           Create User
@@ -611,10 +626,10 @@ export default function UsersAdmin({
       </div>
 
       {/* TABLE */}
-      <div className="overflow-hidden rounded-3xl bg-white shadow-sm">
+      <div className="overflow-hidden rounded-3xl border border-[#dceedd] bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1050px] text-left">
-            <thead className="bg-[#f7f7ff] text-xs uppercase text-gray-500">
+            <thead className="bg-[#f4faf4] text-xs uppercase text-[#2f7d32]">
               <tr>
                 <th className="px-5 py-4">User</th>
                 <th className="px-5 py-4">Email</th>
@@ -628,19 +643,24 @@ export default function UsersAdmin({
 
             <tbody>
               {filtered.map((user) => {
-                const isToggling = togglingId === user.id;
-                const isDeleting = deletingId === user.id;
-                const rowBusy = isToggling || isDeleting;
+                const isToggling =
+                  togglingId === user.id;
+
+                const isDeleting =
+                  deletingId === user.id;
+
+                const rowBusy =
+                  isToggling || isDeleting;
 
                 return (
                   <tr
                     key={user.id}
-                    className={`border-t border-gray-100 transition ${
+                    className={`border-t border-[#edf4ed] transition hover:bg-[#f9fcf9] ${
                       rowBusy ? "opacity-60" : ""
                     }`}
                   >
                     <td className="px-5 py-4">
-                      <p className="font-bold text-[#111b58]">
+                      <p className="font-bold text-[#173b20]">
                         {user.fullName}
                       </p>
 
@@ -653,11 +673,11 @@ export default function UsersAdmin({
                       {user.email}
                     </td>
 
-                    <td className="px-5 py-4 text-sm font-bold">
+                    <td className="px-5 py-4 text-sm font-bold text-[#173b20]">
                       {money(user.balancePaisa)}
                     </td>
 
-                    <td className="px-5 py-4 text-sm">
+                    <td className="px-5 py-4 text-sm text-gray-700">
                       {money(user.totalInvestmentPaisa)}
                     </td>
 
@@ -673,7 +693,9 @@ export default function UsersAdmin({
                             : "bg-red-100 text-red-600"
                         }`}
                       >
-                        {user.isActive ? "Active" : "Disabled"}
+                        {user.isActive
+                          ? "Active"
+                          : "Disabled"}
                       </span>
                     </td>
 
@@ -685,7 +707,7 @@ export default function UsersAdmin({
                           disabled={rowBusy}
                           title="Edit user"
                           aria-label="Edit user"
-                          className="rounded-lg bg-blue-50 p-2 text-blue-600 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="rounded-lg border border-[#dceedd] bg-[#eff8f0] p-2 text-[#2f7d32] transition hover:bg-[#e4f4e5] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           <Pencil size={16} />
                         </button>
@@ -704,7 +726,7 @@ export default function UsersAdmin({
                               ? "Deactivate user"
                               : "Activate user"
                           }
-                          className="rounded-lg bg-purple-50 p-2 text-purple-600 transition hover:bg-purple-100 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="rounded-lg border border-[#dceedd] bg-[#f4faf4] p-2 text-[#45a94a] transition hover:bg-[#e4f4e5] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           {isToggling ? (
                             <Loader2
@@ -738,6 +760,17 @@ export default function UsersAdmin({
                   </tr>
                 );
               })}
+
+              {filtered.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={7}
+                    className="px-5 py-14 text-center text-sm text-gray-500"
+                  >
+                    No users found.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -759,7 +792,8 @@ function Field({
   type?: string;
   required?: boolean;
 }) {
-  const isRequired = required ?? label !== "New Password";
+  const isRequired =
+    required ?? label !== "New Password";
 
   return (
     <label>
@@ -771,8 +805,10 @@ function Field({
         required={isRequired}
         type={type}
         value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="h-11 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-purple-500"
+        onChange={(event) =>
+          onChange(event.target.value)
+        }
+        className="h-11 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none transition focus:border-[#45a94a] focus:ring-2 focus:ring-[#45a94a]/10"
       />
     </label>
   );

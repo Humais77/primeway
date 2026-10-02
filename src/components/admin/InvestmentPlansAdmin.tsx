@@ -114,7 +114,9 @@ export default function InvestmentPlansAdmin({
           : "/api/admin/investment-plans",
         {
           method: editing ? "PATCH" : "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify(payload),
         }
       );
@@ -157,7 +159,9 @@ export default function InvestmentPlansAdmin({
         `/api/admin/investment-plans/${plan.id}`,
         {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({
             name: plan.name,
             minAmountPaisa: plan.minAmountPaisa,
@@ -205,7 +209,9 @@ export default function InvestmentPlansAdmin({
     try {
       const response = await fetch(
         `/api/admin/investment-plans/${plan.id}`,
-        { method: "DELETE" }
+        {
+          method: "DELETE",
+        }
       );
 
       const data = await response.json();
@@ -234,7 +240,7 @@ export default function InvestmentPlansAdmin({
       <div className="mb-5 flex justify-end">
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 rounded-xl bg-[#4020bd] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-purple-200 transition hover:opacity-90"
+          className="flex items-center gap-2 rounded-xl bg-[#45a94a] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-green-200 transition hover:bg-[#2f7d32]"
         >
           <Plus size={18} />
           Create Plan
@@ -250,11 +256,11 @@ export default function InvestmentPlansAdmin({
           <form
             onSubmit={submit}
             onClick={(e) => e.stopPropagation()}
-            className="my-8 w-full max-w-3xl rounded-3xl bg-white p-6 shadow-2xl"
+            className="my-8 w-full max-w-3xl rounded-3xl border border-[#dceedd] bg-white p-6 shadow-2xl"
           >
             <div className="mb-6 flex items-start justify-between">
               <div>
-                <h2 className="text-xl font-black text-[#111b58]">
+                <h2 className="text-xl font-black text-[#173b20]">
                   {editing
                     ? "Edit Investment Plan"
                     : "Create Investment Plan"}
@@ -270,7 +276,7 @@ export default function InvestmentPlansAdmin({
               <button
                 type="button"
                 onClick={closeForm}
-                className="rounded-lg p-2 text-gray-400 hover:bg-gray-100"
+                className="rounded-lg p-2 text-gray-400 transition hover:bg-[#eff8f0] hover:text-[#2f7d32]"
               >
                 <X size={18} />
               </button>
@@ -281,7 +287,10 @@ export default function InvestmentPlansAdmin({
                 label="Plan Name"
                 value={form.name}
                 onChange={(value) =>
-                  setForm({ ...form, name: value })
+                  setForm({
+                    ...form,
+                    name: value,
+                  })
                 }
               />
 
@@ -290,7 +299,10 @@ export default function InvestmentPlansAdmin({
                 type="number"
                 value={form.minAmount}
                 onChange={(value) =>
-                  setForm({ ...form, minAmount: value })
+                  setForm({
+                    ...form,
+                    minAmount: value,
+                  })
                 }
               />
 
@@ -299,7 +311,10 @@ export default function InvestmentPlansAdmin({
                 type="number"
                 value={form.maxAmount}
                 onChange={(value) =>
-                  setForm({ ...form, maxAmount: value })
+                  setForm({
+                    ...form,
+                    maxAmount: value,
+                  })
                 }
               />
 
@@ -309,7 +324,10 @@ export default function InvestmentPlansAdmin({
                 step="0.01"
                 value={form.profitRate}
                 onChange={(value) =>
-                  setForm({ ...form, profitRate: value })
+                  setForm({
+                    ...form,
+                    profitRate: value,
+                  })
                 }
               />
 
@@ -319,7 +337,10 @@ export default function InvestmentPlansAdmin({
                 step="0.01"
                 value={form.referralBonus}
                 onChange={(value) =>
-                  setForm({ ...form, referralBonus: value })
+                  setForm({
+                    ...form,
+                    referralBonus: value,
+                  })
                 }
               />
 
@@ -328,7 +349,10 @@ export default function InvestmentPlansAdmin({
                 type="number"
                 value={form.durationDays}
                 onChange={(value) =>
-                  setForm({ ...form, durationDays: value })
+                  setForm({
+                    ...form,
+                    durationDays: value,
+                  })
                 }
               />
 
@@ -345,7 +369,7 @@ export default function InvestmentPlansAdmin({
                       frequency: event.target.value,
                     })
                   }
-                  className="h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm outline-none focus:border-purple-500"
+                  className="h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm outline-none transition focus:border-[#45a94a] focus:ring-2 focus:ring-[#45a94a]/10"
                 >
                   <option value="DAILY">Daily</option>
                   <option value="WEEKLY">Weekly</option>
@@ -363,8 +387,9 @@ export default function InvestmentPlansAdmin({
                       isActive: event.target.checked,
                     })
                   }
-                  className="h-4 w-4"
+                  className="h-4 w-4 accent-[#45a94a]"
                 />
+
                 Active Plan
               </label>
             </div>
@@ -373,18 +398,22 @@ export default function InvestmentPlansAdmin({
               <button
                 type="button"
                 onClick={closeForm}
-                className="rounded-xl border border-gray-200 px-5 py-3 text-sm font-bold text-gray-600"
+                className="rounded-xl border border-gray-200 px-5 py-3 text-sm font-bold text-gray-600 transition hover:border-[#dceedd] hover:bg-[#f4faf4]"
               >
                 Cancel
               </button>
 
               <button
                 disabled={loading}
-                className="flex items-center gap-2 rounded-xl bg-[#4020bd] px-6 py-3 text-sm font-bold text-white disabled:opacity-60"
+                className="flex items-center gap-2 rounded-xl bg-[#45a94a] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#2f7d32] disabled:opacity-60"
               >
                 {loading && (
-                  <Loader2 size={16} className="animate-spin" />
+                  <Loader2
+                    size={16}
+                    className="animate-spin"
+                  />
                 )}
+
                 {loading
                   ? "Saving..."
                   : editing
@@ -397,11 +426,11 @@ export default function InvestmentPlansAdmin({
       )}
 
       {/* TABLE */}
-      <div className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-3xl border border-[#dceedd] bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] text-left">
-            <thead className="bg-[#f7f7ff]">
-              <tr className="text-xs uppercase tracking-wider text-gray-500">
+            <thead className="bg-[#f4faf4]">
+              <tr className="text-xs uppercase tracking-wider text-[#2f7d32]">
                 <th className="px-5 py-4">Plan</th>
                 <th className="px-5 py-4">Investment</th>
                 <th className="px-5 py-4">Profit</th>
@@ -414,43 +443,60 @@ export default function InvestmentPlansAdmin({
 
             <tbody>
               {plans.map((plan) => {
-                const isToggling = togglingId === plan.id;
-                const isDeleting = deletingId === plan.id;
-                const rowBusy = isToggling || isDeleting;
+                const isToggling =
+                  togglingId === plan.id;
+
+                const isDeleting =
+                  deletingId === plan.id;
+
+                const rowBusy =
+                  isToggling || isDeleting;
 
                 return (
                   <tr
                     key={plan.id}
-                    className={`border-t border-gray-100 transition ${
-                      rowBusy ? "opacity-60" : ""
+                    className={`border-t border-[#edf4ed] transition hover:bg-[#f9fcf9] ${
+                      rowBusy
+                        ? "opacity-60"
+                        : ""
                     }`}
                   >
-                    <td className="px-5 py-4 font-bold text-[#111b58]">
+                    <td className="px-5 py-4 font-bold text-[#173b20]">
                       {plan.name}
                     </td>
 
-                    <td className="px-5 py-4 text-sm">
-                      {formatPKR(plan.minAmountPaisa)}
+                    <td className="px-5 py-4 text-sm text-gray-700">
+                      {formatPKR(
+                        plan.minAmountPaisa
+                      )}
                       {" - "}
-                      {formatPKR(plan.maxAmountPaisa)}
+                      {formatPKR(
+                        plan.maxAmountPaisa
+                      )}
                     </td>
 
-                    <td className="px-5 py-4 text-sm font-semibold text-green-600">
-                      {plan.profitRateBps / 100}%
+                    <td className="px-5 py-4 text-sm font-semibold text-[#45a94a]">
+                      {plan.profitRateBps /
+                        100}
+                      %
                     </td>
 
-                    <td className="px-5 py-4 text-sm font-semibold text-orange-500">
-                      {plan.referralBonusBps / 100}%
+                    <td className="px-5 py-4 text-sm font-semibold text-[#d97706]">
+                      {plan.referralBonusBps /
+                        100}
+                      %
                     </td>
 
-                    <td className="px-5 py-4 text-sm">
+                    <td className="px-5 py-4 text-sm text-gray-700">
                       {plan.durationDays} days
                     </td>
 
                     <td className="px-5 py-4">
                       <button
                         type="button"
-                        onClick={() => togglePlan(plan)}
+                        onClick={() =>
+                          togglePlan(plan)
+                        }
                         disabled={rowBusy}
                         title={
                           plan.isActive
@@ -474,7 +520,10 @@ export default function InvestmentPlansAdmin({
                             className="animate-spin"
                           />
                         )}
-                        {plan.isActive ? "Active" : "Inactive"}
+
+                        {plan.isActive
+                          ? "Active"
+                          : "Inactive"}
                       </button>
                     </td>
 
@@ -482,18 +531,22 @@ export default function InvestmentPlansAdmin({
                       <div className="flex gap-2">
                         <button
                           type="button"
-                          onClick={() => openEdit(plan)}
+                          onClick={() =>
+                            openEdit(plan)
+                          }
                           disabled={rowBusy}
                           title="Edit plan"
                           aria-label="Edit plan"
-                          className="rounded-lg bg-blue-50 p-2 text-blue-600 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="rounded-lg bg-[#eff8f0] p-2 text-[#2f7d32] transition hover:bg-[#e4f4e5] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           <Pencil size={16} />
                         </button>
 
                         <button
                           type="button"
-                          onClick={() => togglePlan(plan)}
+                          onClick={() =>
+                            togglePlan(plan)
+                          }
                           disabled={rowBusy}
                           title={
                             plan.isActive
@@ -505,7 +558,7 @@ export default function InvestmentPlansAdmin({
                               ? "Deactivate plan"
                               : "Activate plan"
                           }
-                          className="rounded-lg bg-purple-50 p-2 text-purple-600 transition hover:bg-purple-100 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="rounded-lg bg-[#eff8f0] p-2 text-[#45a94a] transition hover:bg-[#e4f4e5] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           {isToggling ? (
                             <Loader2
@@ -519,7 +572,9 @@ export default function InvestmentPlansAdmin({
 
                         <button
                           type="button"
-                          onClick={() => deletePlan(plan)}
+                          onClick={() =>
+                            deletePlan(plan)
+                          }
                           disabled={rowBusy}
                           title="Delete plan"
                           aria-label="Delete plan"
@@ -581,9 +636,11 @@ function Input({
         type={type}
         step={step}
         value={value}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={(event) =>
+          onChange(event.target.value)
+        }
         required
-        className="h-11 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-purple-500"
+        className="h-11 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none transition focus:border-[#45a94a] focus:ring-2 focus:ring-[#45a94a]/10"
       />
     </label>
   );

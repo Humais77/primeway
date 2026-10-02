@@ -279,7 +279,7 @@ export default function PaymentAccountsAdmin({
       <div className="mb-5 flex justify-end">
         <button
           onClick={createAccount}
-          className="flex items-center gap-2 rounded-xl bg-[#4020bd] px-5 py-3 text-sm font-bold text-white"
+          className="flex items-center gap-2 rounded-xl bg-[#45a94a] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-green-200 transition hover:bg-[#2f7d32]"
         >
           <Plus size={18} />
           Add Payment Account
@@ -288,7 +288,7 @@ export default function PaymentAccountsAdmin({
 
       {showForm && (
         <div
-          className="fixed inset-0 z-[200] flex items-start justify-center overflow-y-auto bg-black/50 p-4"
+          className="fixed inset-0 z-[200] flex items-start justify-center overflow-y-auto bg-black/50 p-4 backdrop-blur-sm"
           onClick={closeForm}
         >
           <form
@@ -296,11 +296,11 @@ export default function PaymentAccountsAdmin({
             onClick={(event) =>
               event.stopPropagation()
             }
-            className="my-8 w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl"
+            className="my-8 w-full max-w-2xl rounded-3xl border border-[#dceedd] bg-white p-6 shadow-2xl"
           >
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-black text-[#111b58]">
+                <h2 className="text-xl font-black text-[#173b20]">
                   {editing
                     ? "Edit Payment Account"
                     : "Add Payment Account"}
@@ -315,6 +315,7 @@ export default function PaymentAccountsAdmin({
               <button
                 type="button"
                 onClick={closeForm}
+                className="rounded-lg p-2 text-gray-400 transition hover:bg-[#eff8f0] hover:text-[#2f7d32]"
               >
                 <X size={20} />
               </button>
@@ -336,7 +337,7 @@ export default function PaymentAccountsAdmin({
                           .value as Gateway,
                     })
                   }
-                  className="h-11 w-full rounded-xl border px-3 text-sm"
+                  className="h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm outline-none transition focus:border-[#45a94a] focus:ring-2 focus:ring-[#45a94a]/10"
                 >
                   <option value="EASYPAISA">
                     EasyPaisa
@@ -409,6 +410,7 @@ export default function PaymentAccountsAdmin({
                         .checked,
                   })
                 }
+                className="h-4 w-4 accent-[#45a94a]"
               />
 
               Make this account active
@@ -418,14 +420,14 @@ export default function PaymentAccountsAdmin({
               <button
                 type="button"
                 onClick={closeForm}
-                className="rounded-xl border px-5 py-3 text-sm font-bold"
+                className="rounded-xl border border-gray-200 px-5 py-3 text-sm font-bold text-gray-600 transition hover:border-[#dceedd] hover:bg-[#f4faf4]"
               >
                 Cancel
               </button>
 
               <button
                 disabled={loading}
-                className="flex items-center gap-2 rounded-xl bg-[#4020bd] px-6 py-3 text-sm font-bold text-white disabled:opacity-60"
+                className="flex items-center gap-2 rounded-xl bg-[#45a94a] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#2f7d32] disabled:opacity-60"
               >
                 {loading && (
                   <Loader2
@@ -447,19 +449,19 @@ export default function PaymentAccountsAdmin({
         {accounts.map((account) => (
           <div
             key={account.id}
-            className={`rounded-3xl border bg-white p-6 shadow-sm ${
+            className={`rounded-3xl border bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
               account.isActive
-                ? "border-green-200"
-                : "border-gray-100"
+                ? "border-[#b9dfbb] shadow-green-100/50"
+                : "border-[#dceedd]"
             }`}
           >
             <div className="flex items-start justify-between">
               <div>
-                <span className="rounded-full bg-purple-50 px-3 py-1 text-xs font-bold text-purple-600">
+                <span className="rounded-full border border-[#dceedd] bg-[#eff8f0] px-3 py-1 text-xs font-bold text-[#2f7d32]">
                   {account.gateway}
                 </span>
 
-                <h3 className="mt-4 text-lg font-black text-[#111b58]">
+                <h3 className="mt-4 text-lg font-black text-[#173b20]">
                   {
                     account.accountName
                   }
@@ -485,12 +487,12 @@ export default function PaymentAccountsAdmin({
               </span>
             </div>
 
-            <div className="mt-5 rounded-2xl bg-gray-50 p-4">
+            <div className="mt-5 rounded-2xl border border-[#e7efe7] bg-[#f8fbf8] p-4">
               <p className="text-xs text-gray-500">
                 Processing Charge
               </p>
 
-              <p className="mt-1 font-bold text-[#111b58]">
+              <p className="mt-1 font-bold text-[#173b20]">
                 {money(
                   account.processingChargePaisa
                 )}
@@ -502,7 +504,7 @@ export default function PaymentAccountsAdmin({
                 onClick={() =>
                   editAccount(account)
                 }
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-50 py-3 text-xs font-bold text-blue-600"
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#eff8f0] py-3 text-xs font-bold text-[#2f7d32] transition hover:bg-[#e4f4e5]"
               >
                 <Pencil size={15} />
                 Edit
@@ -512,13 +514,14 @@ export default function PaymentAccountsAdmin({
                 onClick={() =>
                   activate(account)
                 }
-                className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-3 text-xs font-bold ${
+                className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-3 text-xs font-bold transition ${
                   account.isActive
-                    ? "bg-gray-100 text-gray-500"
-                    : "bg-green-50 text-green-600"
+                    ? "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                    : "bg-green-50 text-green-600 hover:bg-green-100"
                 }`}
               >
                 <Power size={15} />
+
                 {account.isActive
                   ? "Active"
                   : "Activate"}
@@ -528,9 +531,8 @@ export default function PaymentAccountsAdmin({
         ))}
 
         {accounts.length === 0 && (
-          <div className="col-span-full rounded-3xl border border-dashed p-12 text-center text-sm text-gray-500">
-            No payment accounts created
-            yet.
+          <div className="col-span-full rounded-3xl border border-dashed border-[#cfe5d0] bg-white p-12 text-center text-sm text-gray-500">
+            No payment accounts created yet.
           </div>
         )}
       </div>
@@ -565,7 +567,7 @@ function Input({
         onChange={(event) =>
           onChange(event.target.value)
         }
-        className="h-11 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-purple-500"
+        className="h-11 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none transition focus:border-[#45a94a] focus:ring-2 focus:ring-[#45a94a]/10"
       />
     </label>
   );
