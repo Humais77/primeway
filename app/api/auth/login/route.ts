@@ -32,6 +32,19 @@ export async function POST(request: Request) {
         }
       );
     }
+    if (!user.isEmailVerified) {
+  return NextResponse.json(
+    {
+      message:
+        "Please verify your email before logging in.",
+      email: user.email,
+      requiresEmailVerification: true,
+    },
+    {
+      status: 403,
+    }
+  );
+}
 
     if (!user.isActive) {
       return NextResponse.json(

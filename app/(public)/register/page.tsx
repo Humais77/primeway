@@ -44,70 +44,73 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>
-  ) {
-    event.preventDefault();
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  event.preventDefault();
 
-    setError("");
-    setSuccess("");
+  setError("");
+  setSuccess("");
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
+  if (password !== confirmPassword) {
+    setError("Passwords do not match.");
+    return;
+  }
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters.");
-      return;
-    }
+  if (password.length < 8) {
+    setError("Password must be at least 8 characters.");
+    return;
+  }
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fullName,
-          username,
-          email,
-          password,
-          referralCode: referralCode || undefined,
-        }),
-      });
+  try {
+    const response = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        fullName: fullName.trim(),
+        username: username.trim(),
+        email: email.trim().toLowerCase(),
+        password,
+        referralCode: referralCode.trim()
+          ? referralCode.trim().toUpperCase()
+          : undefined,
+      }),
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (!response.ok) {
-        if (data.errors?.length) {
-          setError(data.errors[0].message);
-        } else {
-          setError(
-            data.message || "Registration failed."
-          );
-        }
-
-        return;
+    if (!response.ok) {
+      if (data.errors?.length) {
+        setError(data.errors[0].message);
+      } else {
+        setError(data.message || "Registration failed.");
       }
 
-      setSuccess(
-        "Account created successfully. Redirecting to login..."
-      );
-
-      setTimeout(() => {
-        router.push("/login");
-      }, 1200);
-    } catch {
-      setError(
-        "Unable to connect to the server. Please try again."
-      );
-    } finally {
-      setLoading(false);
+      return;
     }
+
+    setSuccess(
+      data.emailSent === false
+        ? "Account created. Please use the resend option to verify your email."
+        : "Account created successfully. Redirecting to email verification..."
+    );
+
+    setTimeout(() => {
+      router.push(
+        `/verify-email?email=${encodeURIComponent(
+          data.email || email.trim().toLowerCase()
+        )}`
+      );
+    }, 800);
+  } catch (error) {
+    console.error("Registration error:", error);
+    setError("Unable to connect to the server. Please try again.");
+  } finally {
+    setLoading(false);
   }
+}
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#031f18] text-white">

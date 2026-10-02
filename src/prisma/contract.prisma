@@ -43,7 +43,10 @@ enum PaymentGateway {
   BANK
   RAAST
 } 
-
+enum VerificationTokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+}
 model PaymentAccount {
   id String @id @default(uuid())
 
@@ -84,6 +87,8 @@ model User {
   totalWithdrawnPaisa Int @default(0)
 
   isActive Boolean @default(true)
+  isEmailVerified Boolean @default(false)
+  emailVerifiedAt TimestamptzString?
 
   createdAt TimestamptzString @default(now())
   updatedAt TimestamptzString @default(now())
@@ -103,6 +108,7 @@ model User {
   reviewedWithdrawals Withdrawal[] @relation("WithdrawalReviewer")
 
   notifications Notification[]
+  verificationTokens VerificationToken[]
 }
 
 model InvestmentPlan {
@@ -426,4 +432,30 @@ model WithdrawalSetting {
   minWithdrawalPaisa Int @default(50000)
 
   updatedAt TimestamptzString @default(now())
+}
+
+model VerificationToken {
+  id String @id @default(uuid())
+
+  userId String
+
+  tokenHash String @unique
+
+  type VerificationTokenType
+
+  expiresAt TimestamptzString
+
+  usedAt TimestamptzString?
+
+  createdAt TimestamptzString @default(now())
+
+  user User @relation(
+    fields: [userId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  @@index([userId])
+  @@index([type])
+  @@index([expiresAt])
 }

@@ -49,9 +49,19 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.message || "Login failed");
-        return;
-      }
+  if (data.requiresEmailVerification) {
+    router.push(
+      `/verify-email?email=${encodeURIComponent(
+        data.email || email.trim().toLowerCase()
+      )}`
+    );
+
+    return;
+  }
+
+  setError(data.message || "Login failed");
+  return;
+}
 
       if (data.role === "ADMIN") {
         router.push("/admin");

@@ -45,6 +45,8 @@ export async function GET(
         username: user.username,
         email: user.email,
         role: user.role,
+        isEmailVerified: user.isEmailVerified,
+        emailVerifiedAt: user.emailVerifiedAt,
         referralCode: user.referralCode,
         balancePaisa: user.balancePaisa,
         totalInvestmentPaisa:

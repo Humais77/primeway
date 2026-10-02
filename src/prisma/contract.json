@@ -44,6 +44,10 @@
       "model": "User",
       "namespace": "public"
     },
+    "VerificationToken": {
+      "model": "VerificationToken",
+      "namespace": "public"
+    },
     "Withdrawal": {
       "model": "Withdrawal",
       "namespace": "public"
@@ -164,6 +168,19 @@
               {
                 "name": "ADMIN",
                 "value": "ADMIN"
+              }
+            ]
+          },
+          "VerificationTokenType": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "EMAIL_VERIFICATION",
+                "value": "EMAIL_VERIFICATION"
+              },
+              {
+                "name": "PASSWORD_RESET",
+                "value": "PASSWORD_RESET"
               }
             ]
           },
@@ -1578,6 +1595,13 @@
                   "kind": "scalar"
                 }
               },
+              "emailVerifiedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
               "fullName": {
                 "nullable": false,
                 "type": {
@@ -1593,6 +1617,13 @@
                 }
               },
               "isActive": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "isEmailVerified": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/bool@1",
@@ -1820,6 +1851,21 @@
                   "namespace": "public"
                 }
               },
+              "verificationTokens": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "userId"
+                  ]
+                },
+                "to": {
+                  "model": "VerificationToken",
+                  "namespace": "public"
+                }
+              },
               "withdrawals": {
                 "cardinality": "1:N",
                 "on": {
@@ -1847,6 +1893,9 @@
                 "email": {
                   "column": "email"
                 },
+                "emailVerifiedAt": {
+                  "column": "emailVerifiedAt"
+                },
                 "fullName": {
                   "column": "fullName"
                 },
@@ -1855,6 +1904,9 @@
                 },
                 "isActive": {
                   "column": "isActive"
+                },
+                "isEmailVerified": {
+                  "column": "isEmailVerified"
                 },
                 "passwordHash": {
                   "column": "passwordHash"
@@ -1886,6 +1938,110 @@
               },
               "namespaceId": "public",
               "table": "User"
+            }
+          },
+          "VerificationToken": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "expiresAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "tokenHash": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "type": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "VerificationTokenType",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "usedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "user": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "userId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "expiresAt": {
+                  "column": "expiresAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "tokenHash": {
+                  "column": "tokenHash"
+                },
+                "type": {
+                  "column": "type"
+                },
+                "usedAt": {
+                  "column": "usedAt"
+                },
+                "userId": {
+                  "column": "userId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "VerificationToken"
             }
           },
           "Withdrawal": {
@@ -3380,6 +3536,11 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "emailVerifiedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
                 "fullName": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -3395,6 +3556,15 @@
                   "default": {
                     "kind": "literal",
                     "value": true
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "isEmailVerified": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
                   },
                   "nativeType": "bool",
                   "nullable": false
@@ -3496,6 +3666,119 @@
                 {
                   "columns": [
                     "referralCode"
+                  ]
+                }
+              ]
+            },
+            "VerificationToken": {
+              "checks": [
+                {
+                  "expression": "\"type\" IN ('EMAIL_VERIFICATION', 'PASSWORD_RESET')",
+                  "name": "VerificationToken_type_check_5a4470d6",
+                  "prefix": "VerificationToken_type_check"
+                }
+              ],
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "expiresAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "tokenHash": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "type": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "VerificationTokenType",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "usedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "userId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "userId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "VerificationToken"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "User"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "expiresAt"
+                  ],
+                  "name": "VerificationToken_expiresAt_idx_6b6b8c10",
+                  "prefix": "VerificationToken_expiresAt_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "type"
+                  ],
+                  "name": "VerificationToken_type_idx_b6b604ea",
+                  "prefix": "VerificationToken_type_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "userId"
+                  ],
+                  "name": "VerificationToken_userId_idx_a489d58a",
+                  "prefix": "VerificationToken_userId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "tokenHash"
                   ]
                 }
               ]
@@ -3738,6 +4021,13 @@
                 "ADMIN"
               ]
             },
+            "VerificationTokenType": {
+              "kind": "valueSet",
+              "values": [
+                "EMAIL_VERIFICATION",
+                "PASSWORD_RESET"
+              ]
+            },
             "WithdrawalStatus": {
               "kind": "valueSet",
               "values": [
@@ -3752,10 +4042,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "065d03938893f85469f1e270cfb6769bad9ced32c477dda138ee5cf3c2d4c6d0"
+    "storageHash": "c86b6080627e0dca3609cf5d20d1058eae98be3b3f49f00c813fc32bb77822bc"
   },
   "execution": {
-    "executionHash": "62dc92bd5bb17d62e8d1871f5a3850b2e26ae747c0143d4788512e278f85dfd8",
+    "executionHash": "4873380d813b7ec401c6b0a3c7210c05fe2262d591a72c72bc80a196b79aeab1",
     "mutations": {
       "defaults": [
         {
@@ -3855,6 +4145,17 @@
             "column": "id",
             "namespace": "public",
             "table": "User"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "VerificationToken"
           }
         },
         {

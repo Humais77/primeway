@@ -27,6 +27,8 @@ export async function GET() {
         username: user.username,
         email: user.email,
         role: user.role,
+        isEmailVerified: user.isEmailVerified,
+        emailVerifiedAt: user.emailVerifiedAt,
         referralCode: user.referralCode,
         balancePaisa: user.balancePaisa,
         totalInvestmentPaisa: user.totalInvestmentPaisa,
@@ -157,6 +159,8 @@ export async function POST(request: Request) {
       referralCode,
       isActive,
       balancePaisa,
+      isEmailVerified: true,
+      emailVerifiedAt: new Date().toISOString(),
     });
 
     return NextResponse.json(

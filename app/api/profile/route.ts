@@ -41,6 +41,8 @@ export async function GET() {
         username: user.username,
         email: user.email,
         role: user.role,
+        isEmailVerified: user.isEmailVerified,
+        emailVerifiedAt: user.emailVerifiedAt,
 
         balancePaisa: user.balancePaisa,
 
