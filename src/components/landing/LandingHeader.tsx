@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowUpRight, Menu, Sprout } from "lucide-react";
+import Image from "next/image";
+import { ArrowUpRight, Menu } from "lucide-react";
 
 export function LandingHeader() {
   return (
@@ -9,25 +10,44 @@ export function LandingHeader() {
           {/* Logo */}
           <Link
             href="/"
-            className="group flex items-center gap-2.5"
-            aria-label="Grow Vest Home"
+            className="flex items-center"
+            aria-label="GrowVest — Home"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#45d86a] to-[#16a34a] shadow-lg shadow-green-950/30">
-              <Sprout
-                size={23}
-                strokeWidth={2.5}
-                className="text-white"
+            <Image
+              src="/images/Brand Logo.png"
+              alt="GrowVest"
+              width={80}
+              height={80}
+              priority
+              className="h-11 w-11 shrink-0 object-contain md:h-12 md:w-12"
+            />
+
+            <div className="flex h-11 flex-col justify-center md:h-12">
+              <Image
+                src="/images/Brand Name.png"
+                alt="GrowVest"
+                width={200}
+                height={48}
+                priority
+                className="h-6 w-auto object-contain object-left md:h-7"
               />
-            </div>
 
-            <div className="leading-none">
-              <p className="text-lg font-black tracking-tight text-white sm:text-xl">
-                Grow<span className="text-[#45d86a]">Vest</span>
-              </p>
-
-              <p className="mt-1 hidden text-[8px] font-medium tracking-[0.2em] text-white/50 sm:block">
-                INVEST TODAY · EARN TOMORROW
-              </p>
+              <span
+                className="
+                  mt-0.5
+                  hidden
+                  text-[8px]
+                  font-semibold
+                  uppercase
+                  tracking-[0.22em]
+                  text-white/60
+                  sm:block
+                  md:text-[9px]
+                  md:tracking-[0.28em]
+                "
+              >
+                Invest · Grow · Together
+              </span>
             </div>
           </Link>
 

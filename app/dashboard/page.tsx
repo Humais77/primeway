@@ -25,6 +25,7 @@ import { db } from "@/src/prisma/db";
 import { getSession } from "@/src/lib/auth";
 import { formatPKR } from "@/src/lib/money";
 import HelpSupport from "@/src/components/help-support";
+import ReferralCodeCard from "@/src/components/dashboard/ReferralCodeCard";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -231,112 +232,7 @@ export default async function DashboardPage() {
             REFERRAL
         ===================================================== */}
 
-        <section
-          className="
-            rounded-[22px]
-            border
-            border-[#DCEDE3]
-            bg-white
-            p-4
-            shadow-[0_6px_24px_rgba(15,61,46,0.05)]
-            md:p-5
-          "
-        >
-          <div className="flex items-center justify-between gap-3">
-
-            <div className="flex items-center gap-2">
-
-              <span
-                className="
-                  flex
-                  h-9
-                  w-9
-                  items-center
-                  justify-center
-                  rounded-xl
-                  bg-[#EAF8F0]
-                  text-[#18B152]
-                "
-              >
-                <Users size={17} />
-              </span>
-
-              <div>
-                <h3 className="text-sm font-black text-[#0F3D2E]">
-                  Referral Program
-                </h3>
-
-                <p className="text-[11px] text-gray-500">
-                  Share your code and earn rewards
-                </p>
-              </div>
-
-            </div>
-
-            <Link
-              href="/dashboard/referral-bonus"
-              className="
-                hidden
-                items-center
-                gap-1
-                text-xs
-                font-semibold
-                text-[#18B152]
-                transition
-                hover:text-[#18613F]
-                sm:flex
-              "
-            >
-              Details
-              <ArrowRight size={13} />
-            </Link>
-
-          </div>
-
-          <div
-            className="
-              mt-3
-              flex
-              items-center
-              justify-between
-              gap-3
-              rounded-xl
-              border
-              border-dashed
-              border-[#A9D9BC]
-              bg-[#F5FBF7]
-              px-3
-              py-3
-            "
-          >
-            <p
-              className="
-                truncate
-                font-mono
-                text-sm
-                font-bold
-                tracking-wider
-                text-[#18613F]
-              "
-            >
-              {user.referralCode}
-            </p>
-
-            <span
-              className="
-                flex
-                items-center
-                gap-1
-                text-[11px]
-                font-semibold
-                text-[#18B152]
-              "
-            >
-              <Copy size={13} />
-              Copy
-            </span>
-          </div>
-        </section>
+        <ReferralCodeCard referralCode={user.referralCode} />
 
         {/* =====================================================
             RECENT TRANSACTIONS
@@ -437,12 +333,12 @@ export default async function DashboardPage() {
             iconClass="bg-[#EAF8F0] text-[#18613F]"
           />
 
-          <QuickAction
-            href="/dashboard/verification"
-            icon={<BadgeCheck />}
-            label="Verification"
-            iconClass="bg-[#EAF8F0] text-[#18B152]"
-          />
+        <QuickAction
+  href="/dashboard/invest-plan"
+  icon={<TrendingUp />}
+  label="Invest Plan"
+  iconClass="bg-[#EAF8F0] text-[#18B152]"
+/>
 
           <QuickAction
             href="/dashboard/my-team"

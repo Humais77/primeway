@@ -190,26 +190,6 @@ export default function DashboardSidebar({
     },
     {
       icon: (
-        <RotateCcw
-          size={21}
-          strokeWidth={2.2}
-        />
-      ),
-      label: "Salary Rewards",
-      href: "/dashboard/salary-rewards",
-    },
-    {
-      icon: (
-        <BadgeCheck
-          size={21}
-          strokeWidth={2.2}
-        />
-      ),
-      label: "Rankings",
-      href: "/dashboard/rankings",
-    },
-    {
-      icon: (
         <History
           size={21}
           strokeWidth={2.2}
@@ -237,16 +217,6 @@ export default function DashboardSidebar({
       ),
       label: "Referral Bonus",
       href: "/dashboard/referral-bonus",
-    },
-    {
-      icon: (
-        <ShieldCheck
-          size={21}
-          strokeWidth={2.2}
-        />
-      ),
-      label: "Verification",
-      href: "/dashboard/verification",
     },
   ];
 
