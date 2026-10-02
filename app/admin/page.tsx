@@ -55,7 +55,7 @@ export default async function AdminDashboardPage() {
         {/* Header */}
         <div className="mb-8">
           <p className="text-sm font-bold uppercase tracking-wide text-[#45a94a]">
-            PRIME WAY ADMIN
+            Grow Vest ADMIN
           </p>
 
           <h1 className="mt-1 text-3xl font-black text-[#173b20]">

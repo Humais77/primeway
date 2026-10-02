@@ -11,7 +11,7 @@ export default function HomePage() {
 
         {/* Brand */}
         <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-[#111b58]">
-          Prime Way
+          Grow Vest
         </h1>
 
         <p className="text-[9px] font-medium tracking-[0.28em] text-gray-500">
@@ -27,7 +27,7 @@ export default function HomePage() {
               </p>
 
               <p className="text-[7px] tracking-[0.2em] text-yellow-300">
-                PRIME WAY
+                Grow Vest
               </p>
             </div>
           </div>
@@ -35,7 +35,7 @@ export default function HomePage() {
 
         {/* Description */}
         <p className="mt-5 max-w-sm text-center text-[11px] leading-5 text-gray-500">
-          Prime Way is your trusted digital platform for a
+          Grow Vest is your trusted digital platform for a
           simple, secure and professional experience. Access
           your account easily, view clear records, manage your
           activity smoothly and stay connected through a modern

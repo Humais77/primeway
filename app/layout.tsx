@@ -3,11 +3,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Prime Way",
-    template: "%s | Prime Way",
+    default: "Grow Vest",
+    template: "%s | Grow Vest",
   },
   description:
-    "Prime Way is a digital investment platform offering investment plans, account management, referrals, and financial tracking.",
+    "Grow Vest is a digital investment platform offering investment plans, account management, referrals, and financial tracking.",
 };
 
 export default function RootLayout({

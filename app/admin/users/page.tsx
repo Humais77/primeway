@@ -15,7 +15,7 @@ export default async function AdminUsersPage() {
           </h1>
 
           <p className="mt-2 text-sm text-gray-500">
-            Manage Prime Way user accounts, balances and account status.
+            Manage Grow Vest user accounts, balances and account status.
           </p>
         </div>
 

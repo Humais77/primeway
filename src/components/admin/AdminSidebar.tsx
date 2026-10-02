@@ -80,7 +80,7 @@ export default function AdminSidebar() {
       <div className="flex h-[72px] items-center border-b border-white/10 px-6">
         <div>
           <p className="text-xl font-black tracking-tight">
-            PRIME WAY
+            Grow Vest
           </p>
 
           <p className="text-[10px] uppercase tracking-[0.2em] text-white/60">

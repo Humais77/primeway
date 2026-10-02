@@ -15,7 +15,7 @@ export default async function AdminInvestmentPlansPage() {
           </h1>
 
           <p className="mt-2 text-sm text-gray-500">
-            Create, update, activate and manage Prime Way investment plans.
+            Create, update, activate and manage Grow Vest investment plans.
           </p>
         </div>
 

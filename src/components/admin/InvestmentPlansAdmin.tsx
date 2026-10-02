@@ -269,7 +269,7 @@ export default function InvestmentPlansAdmin({
                 <p className="mt-1 text-xs text-gray-500">
                   {editing
                     ? "Update this plan's terms."
-                    : "Define a new Prime Way investment plan."}
+                    : "Define a new Grow Vest investment plan."}
                 </p>
               </div>
 

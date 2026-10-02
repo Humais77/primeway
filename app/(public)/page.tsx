@@ -105,7 +105,7 @@ export default function RegisterPage() {
           </div>
 
           <h1 className="mt-2 text-2xl font-extrabold text-[#111b58]">
-            Prime Way
+            Grow Vest
           </h1>
 
           <p className="text-[8px] font-medium tracking-[0.28em] text-gray-500">
@@ -125,7 +125,7 @@ export default function RegisterPage() {
             </h2>
 
             <p className="mt-1 text-sm text-gray-500">
-              Create your Prime Way account to get started.
+              Create your Grow Vest account to get started.
             </p>
           </div>
 
@@ -383,7 +383,7 @@ export default function RegisterPage() {
           href="/"
           className="mt-5 text-center text-xs text-gray-500 hover:text-purple-600"
         >
-          ← Back to Prime Way
+          ← Back to Grow Vest
         </Link>
       </div>
     </main>

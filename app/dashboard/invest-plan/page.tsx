@@ -53,7 +53,7 @@ export default async function InvestPlanPage() {
               </h1>
 
               <p className="mt-2 max-w-xl text-sm leading-6 text-gray-500 md:text-base">
-                Explore the available Prime Way investment plans and review
+                Explore the available Grow Vest investment plans and review
                 their terms before investing.
               </p>
             </div>

@@ -41,26 +41,26 @@ export async function sendVerificationEmail({
   await transporter.sendMail({
     from: getFrom(),
     to: email,
-    subject: "Verify your Prime Way email",
+    subject: "Verify your Grow Vest email",
 
     text: `Hello ${fullName},
 
-Your Prime Way email verification code is:
+Your Grow Vest email verification code is:
 
 ${code}
 
 This code expires in 15 minutes.
 
-If you did not create a Prime Way account, you can safely ignore this email.`,
+If you did not create a Grow Vest account, you can safely ignore this email.`,
 
     html: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:30px">
-        <h2 style="color:#06141f;">Verify your Prime Way email</h2>
+        <h2 style="color:#06141f;">Verify your Grow Vest email</h2>
 
         <p>Hello ${escapeHtml(fullName)},</p>
 
         <p>
-          Thank you for registering with Prime Way.
+          Thank you for registering with Grow Vest.
           Use the verification code below to verify your email address.
         </p>
 
@@ -83,7 +83,7 @@ If you did not create a Prime Way account, you can safely ignore this email.`,
         </p>
 
         <p style="color:#777;font-size:13px;">
-          If you did not create a Prime Way account,
+          If you did not create a Grow Vest account,
           you can safely ignore this email.
         </p>
       </div>
@@ -106,11 +106,11 @@ export async function sendPasswordResetEmail({
   await transporter.sendMail({
     from: getFrom(),
     to: email,
-    subject: "Reset your Prime Way password",
+    subject: "Reset your Grow Vest password",
 
     text: `Hello ${fullName},
 
-We received a request to reset your Prime Way password.
+We received a request to reset your Grow Vest password.
 
 Use the following link:
 
@@ -122,12 +122,12 @@ If you did not request a password reset, you can safely ignore this email.`,
 
     html: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:30px">
-        <h2 style="color:#06141f;">Reset your Prime Way password</h2>
+        <h2 style="color:#06141f;">Reset your Grow Vest password</h2>
 
         <p>Hello ${escapeHtml(fullName)},</p>
 
         <p>
-          We received a request to reset your Prime Way password.
+          We received a request to reset your Grow Vest password.
         </p>
 
         <div style="margin:30px 0;text-align:center;">

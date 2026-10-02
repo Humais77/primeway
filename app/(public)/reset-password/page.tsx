@@ -139,7 +139,7 @@ export default function ResetPasswordPage() {
         </h1>
 
         <p className="mt-2 text-sm text-slate-500">
-          Create a new password for your Prime Way
+          Create a new password for your Grow Vest
           account.
         </p>
 

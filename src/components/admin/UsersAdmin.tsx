@@ -314,7 +314,7 @@ export default function UsersAdmin({
                 </h2>
 
                 <p className="mt-1 text-xs text-gray-500">
-                  Add a new Prime Way account.
+                  Add a new Grow Vest account.
                 </p>
               </div>
 

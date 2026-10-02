@@ -90,7 +90,7 @@ export async function POST(request: Request) {
         title: "Login successful",
 
         message:
-          "You have successfully logged in to your Prime Way account.",
+          "You have successfully logged in to your Grow Vest account.",
 
         type: "LOGIN",
 
