@@ -24,6 +24,7 @@ import React from "react";
 import { db } from "@/src/prisma/db";
 import { getSession } from "@/src/lib/auth";
 import { formatPKR } from "@/src/lib/money";
+import HelpSupport from "@/src/components/help-support";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -59,8 +60,6 @@ export default async function DashboardPage() {
             md:p-6
           "
         >
-          {/* Decorative glow */}
-
           <div
             className="
               pointer-events-none
@@ -90,8 +89,6 @@ export default async function DashboardPage() {
           />
 
           <div className="relative flex items-start justify-between gap-4">
-            {/* User */}
-
             <div className="min-w-0">
               <p className="text-xs font-medium text-white/70">
                 Welcome back
@@ -137,8 +134,6 @@ export default async function DashboardPage() {
               </span>
             </div>
 
-            {/* Balance */}
-
             <div className="shrink-0 text-right">
               <div
                 className="
@@ -168,8 +163,6 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          {/* Inline actions */}
-
           <div className="relative mt-5 grid grid-cols-3 gap-2">
             <CardAction
               href="/dashboard/deposit"
@@ -190,6 +183,7 @@ export default async function DashboardPage() {
             />
           </div>
         </section>
+        
 
         {/* =====================================================
             STATS
@@ -226,6 +220,12 @@ export default async function DashboardPage() {
           />
 
         </section>
+
+        {/* =====================================================
+            HELP & SUPPORT
+        ===================================================== */}
+
+        <HelpSupport />
 
         {/* =====================================================
             REFERRAL
