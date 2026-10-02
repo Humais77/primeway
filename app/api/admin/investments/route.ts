@@ -4,29 +4,47 @@ import { db } from "@/src/prisma/db";
 import { requireAdmin } from "@/src/lib/admin";
 import { createReferralCommissions } from "@/src/lib/referrals";
 
+type ProfitFrequency =
+  | "DAILY"
+  | "WEEKLY"
+  | "MONTHLY";
+
+type InvestmentStatus =
+  | "ACTIVE"
+  | "COMPLETED"
+  | "CANCELLED";
+
 function addDays(
   date: Date,
   days: number
 ) {
   const result = new Date(date);
-  result.setDate(
-    result.getDate() + days
+
+  result.setUTCDate(
+    result.getUTCDate() + days
   );
+
   return result;
 }
 
 function getNextProfitDate(
   start: Date,
-  frequency: "DAILY" | "WEEKLY" | "MONTHLY"
+  frequency: ProfitFrequency
 ) {
   const date = new Date(start);
 
   if (frequency === "DAILY") {
-    date.setDate(date.getDate() + 1);
+    date.setUTCDate(
+      date.getUTCDate() + 1
+    );
   } else if (frequency === "WEEKLY") {
-    date.setDate(date.getDate() + 7);
+    date.setUTCDate(
+      date.getUTCDate() + 7
+    );
   } else {
-    date.setMonth(date.getMonth() + 1);
+    date.setUTCMonth(
+      date.getUTCMonth() + 1
+    );
   }
 
   return date;
@@ -38,8 +56,12 @@ export async function GET() {
 
     if (!admin) {
       return NextResponse.json(
-        { message: "Unauthorized." },
-        { status: 401 }
+        {
+          message: "Unauthorized.",
+        },
+        {
+          status: 401,
+        }
       );
     }
 
@@ -66,7 +88,9 @@ export async function GET() {
         message:
           "Unable to load investments.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }
@@ -79,8 +103,12 @@ export async function POST(
 
     if (!admin) {
       return NextResponse.json(
-        { message: "Unauthorized." },
-        { status: 401 }
+        {
+          message: "Unauthorized.",
+        },
+        {
+          status: 401,
+        }
       );
     }
 
@@ -94,25 +122,51 @@ export async function POST(
       status,
     } = body;
 
+    /*
+     * ----------------------------------------------------------
+     * Validate user
+     * ----------------------------------------------------------
+     */
+
     if (
       typeof userId !== "string" ||
       !userId
     ) {
       return NextResponse.json(
-        { message: "User is required." },
-        { status: 400 }
+        {
+          message: "User is required.",
+        },
+        {
+          status: 400,
+        }
       );
     }
+
+    /*
+     * ----------------------------------------------------------
+     * Validate plan
+     * ----------------------------------------------------------
+     */
 
     if (
       typeof planId !== "string" ||
       !planId
     ) {
       return NextResponse.json(
-        { message: "Plan is required." },
-        { status: 400 }
+        {
+          message: "Plan is required.",
+        },
+        {
+          status: 400,
+        }
       );
     }
+
+    /*
+     * ----------------------------------------------------------
+     * Validate amount
+     * ----------------------------------------------------------
+     */
 
     if (
       !Number.isInteger(amountPaisa) ||
@@ -123,9 +177,17 @@ export async function POST(
           message:
             "Investment amount must be positive.",
         },
-        { status: 400 }
+        {
+          status: 400,
+        }
       );
     }
+
+    /*
+     * ----------------------------------------------------------
+     * Find user
+     * ----------------------------------------------------------
+     */
 
     const user =
       await db.orm.public.User.first({
@@ -134,10 +196,20 @@ export async function POST(
 
     if (!user) {
       return NextResponse.json(
-        { message: "User not found." },
-        { status: 404 }
+        {
+          message: "User not found.",
+        },
+        {
+          status: 404,
+        }
       );
     }
+
+    /*
+     * ----------------------------------------------------------
+     * Find plan
+     * ----------------------------------------------------------
+     */
 
     const plan =
       await db.orm.public.InvestmentPlan.first({
@@ -150,9 +222,29 @@ export async function POST(
           message:
             "Investment plan not found.",
         },
-        { status: 404 }
+        {
+          status: 404,
+        }
       );
     }
+
+    if (!plan.isActive) {
+      return NextResponse.json(
+        {
+          message:
+            "Investment plan is inactive.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    /*
+     * ----------------------------------------------------------
+     * Validate amount against plan
+     * ----------------------------------------------------------
+     */
 
     if (
       amountPaisa <
@@ -165,24 +257,41 @@ export async function POST(
           message:
             "Investment amount is outside the plan limits.",
         },
-        { status: 400 }
+        {
+          status: 400,
+        }
       );
     }
 
-    const start =
-      startDate
-        ? new Date(startDate)
-        : new Date();
+    /*
+     * ----------------------------------------------------------
+     * Start date
+     * ----------------------------------------------------------
+     */
 
-    if (Number.isNaN(start.getTime())) {
+    const start = startDate
+      ? new Date(startDate)
+      : new Date();
+
+    if (
+      Number.isNaN(start.getTime())
+    ) {
       return NextResponse.json(
         {
           message:
             "Invalid start date.",
         },
-        { status: 400 }
+        {
+          status: 400,
+        }
       );
     }
+
+    /*
+     * ----------------------------------------------------------
+     * Investment dates
+     * ----------------------------------------------------------
+     */
 
     const end = addDays(
       start,
@@ -196,80 +305,118 @@ export async function POST(
       );
 
     /*
-     * Create investment and referral
-     * commissions in one transaction.
+     * ----------------------------------------------------------
+     * Validate requested status
+     * ----------------------------------------------------------
      */
 
-    const existingInvestment =
-  await db.orm.public.Investment.first({
-    userId,
-    planId,
-    status: "ACTIVE",
-  });
+    const investmentStatus: InvestmentStatus =
+      status === "COMPLETED" ||
+      status === "CANCELLED"
+        ? status
+        : "ACTIVE";
 
-if (existingInvestment) {
-  return NextResponse.json(
-    {
-      message:
-        "User already has an active investment in this plan.",
-    },
-    { status: 409 }
-  );
-}
-    const investment =
-      await db.transaction(async (tx) => {
-        const createdInvestment =
-          await tx.orm.public.Investment.create({
+    /*
+     * ----------------------------------------------------------
+     * Prevent duplicate active investment
+     * ----------------------------------------------------------
+     */
+
+    if (
+      investmentStatus === "ACTIVE"
+    ) {
+      const existingInvestment =
+        await db.orm.public.Investment.first(
+          {
             userId,
             planId,
-            amountPaisa,
+            status: "ACTIVE",
+          }
+        );
 
-            profitRateBps:
-              plan.profitRateBps,
+      if (existingInvestment) {
+        return NextResponse.json(
+          {
+            message:
+              "User already has an active investment in this plan.",
+          },
+          {
+            status: 409,
+          }
+        );
+      }
+    }
 
-            frequency:
-              plan.frequency,
+    /*
+     * ----------------------------------------------------------
+     * Create investment
+     * ----------------------------------------------------------
+     */
 
-            startDate:
-              start.toISOString(),
+    const investment =
+      await db.transaction(
+        async (tx) => {
+          const createdInvestment =
+            await tx.orm.public.Investment.create(
+              {
+                userId,
 
-            endDate:
-              end.toISOString(),
+                planId,
 
-            nextProfitAt:
-              nextProfit.toISOString(),
+                amountPaisa,
 
-            status:
-              status ?? "ACTIVE",
-          });
+                profitRateBps:
+                  plan.profitRateBps,
 
-        /*
-         * Referral commission should only
-         * be generated for an ACTIVE investment.
-         */
-        if (
-          (status ?? "ACTIVE") ===
-          "ACTIVE"
-        ) {
-          await createReferralCommissions(
-            tx,
-            userId,
-            createdInvestment.id,
-            createdInvestment.amountPaisa
-          );
+                frequency:
+                  plan.frequency,
+
+                startDate:
+                  start.toISOString(),
+
+                endDate:
+                  end.toISOString(),
+
+                nextProfitAt:
+                  nextProfit.toISOString(),
+
+                earnedProfitPaisa: 0,
+
+                status:
+                  investmentStatus,
+              }
+            );
+
+          /*
+           * Referral commission is generated
+           * only for active investments.
+           */
+
+          if (
+            investmentStatus === "ACTIVE"
+          ) {
+            await createReferralCommissions(
+              tx,
+              userId,
+              createdInvestment.id,
+              createdInvestment.amountPaisa
+            );
+          }
+
+          return createdInvestment;
         }
-
-        return createdInvestment;
-      });
-      
+      );
 
     return NextResponse.json(
       {
         message:
           "Investment created successfully.",
+
         investment,
       },
-      { status: 201 }
+      {
+        status: 201,
+      }
     );
   } catch (error) {
     console.error(
@@ -282,7 +429,9 @@ if (existingInvestment) {
         message:
           "Unable to create investment.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }

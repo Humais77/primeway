@@ -21,6 +21,20 @@ const frequencies = [
   "MONTHLY",
 ] as const;
 
+function isValidDateString(
+  value: unknown
+): value is string {
+  if (typeof value !== "string") {
+    return false;
+  }
+
+  const date = new Date(value);
+
+  return !Number.isNaN(
+    date.getTime()
+  );
+}
+
 export async function GET(
   request: Request,
   { params }: Params
@@ -30,8 +44,12 @@ export async function GET(
 
     if (!admin) {
       return NextResponse.json(
-        { message: "Unauthorized." },
-        { status: 401 }
+        {
+          message: "Unauthorized.",
+        },
+        {
+          status: 401,
+        }
       );
     }
 
@@ -49,7 +67,9 @@ export async function GET(
           message:
             "Investment not found.",
         },
-        { status: 404 }
+        {
+          status: 404,
+        }
       );
     }
 
@@ -67,7 +87,9 @@ export async function GET(
         message:
           "Unable to load investment.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }
@@ -81,8 +103,12 @@ export async function PATCH(
 
     if (!admin) {
       return NextResponse.json(
-        { message: "Unauthorized." },
-        { status: 401 }
+        {
+          message: "Unauthorized.",
+        },
+        {
+          status: 401,
+        }
       );
     }
 
@@ -99,7 +125,9 @@ export async function PATCH(
           message:
             "Investment not found.",
         },
-        { status: 404 }
+        {
+          status: 404,
+        }
       );
     }
 
@@ -109,6 +137,10 @@ export async function PATCH(
       string,
       unknown
     > = {};
+
+    /*
+     * Amount
+     */
 
     if (
       typeof body.amountPaisa ===
@@ -122,6 +154,10 @@ export async function PATCH(
         body.amountPaisa;
     }
 
+    /*
+     * Profit rate
+     */
+
     if (
       Number.isInteger(
         body.profitRateBps
@@ -132,6 +168,10 @@ export async function PATCH(
         body.profitRateBps;
     }
 
+    /*
+     * Frequency
+     */
+
     if (
       frequencies.includes(
         body.frequency
@@ -141,36 +181,61 @@ export async function PATCH(
         body.frequency;
     }
 
+    /*
+     * Status
+     */
+
     if (
-      statuses.includes(body.status)
+      statuses.includes(
+        body.status
+      )
     ) {
       update.status =
         body.status;
     }
 
+    /*
+     * Dates
+     *
+     * Store ISO timestamps.
+     */
+
     if (
-      typeof body.startDate ===
-      "string"
+      isValidDateString(
+        body.startDate
+      )
     ) {
       update.startDate =
-        body.startDate;
+        new Date(
+          body.startDate
+        ).toISOString();
     }
 
     if (
-      typeof body.endDate ===
-      "string"
+      isValidDateString(
+        body.endDate
+      )
     ) {
       update.endDate =
-        body.endDate;
+        new Date(
+          body.endDate
+        ).toISOString();
     }
 
     if (
-      typeof body.nextProfitAt ===
-      "string"
+      isValidDateString(
+        body.nextProfitAt
+      )
     ) {
       update.nextProfitAt =
-        body.nextProfitAt;
+        new Date(
+          body.nextProfitAt
+        ).toISOString();
     }
+
+    /*
+     * Earned profit
+     */
 
     if (
       Number.isInteger(
@@ -182,6 +247,20 @@ export async function PATCH(
         body.earnedProfitPaisa;
     }
 
+    if (
+      Object.keys(update).length === 0
+    ) {
+      return NextResponse.json(
+        {
+          message:
+            "No valid changes were provided.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
     const investment =
       await db.orm.public.Investment
         .where({ id })
@@ -190,6 +269,7 @@ export async function PATCH(
     return NextResponse.json({
       message:
         "Investment updated successfully.",
+
       investment,
     });
   } catch (error) {
@@ -203,7 +283,9 @@ export async function PATCH(
         message:
           "Unable to update investment.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }
@@ -217,8 +299,12 @@ export async function DELETE(
 
     if (!admin) {
       return NextResponse.json(
-        { message: "Unauthorized." },
-        { status: 401 }
+        {
+          message: "Unauthorized.",
+        },
+        {
+          status: 401,
+        }
       );
     }
 
@@ -235,7 +321,9 @@ export async function DELETE(
           message:
             "Investment not found.",
         },
-        { status: 404 }
+        {
+          status: 404,
+        }
       );
     }
 
@@ -258,7 +346,9 @@ export async function DELETE(
         message:
           "Unable to delete investment.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }
