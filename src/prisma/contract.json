@@ -1644,6 +1644,13 @@
                   "kind": "scalar"
                 }
               },
+              "referralLevel": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "role": {
                 "nullable": false,
                 "type": {
@@ -1913,6 +1920,9 @@
                 },
                 "referralCode": {
                   "column": "referralCode"
+                },
+                "referralLevel": {
+                  "column": "referralLevel"
                 },
                 "role": {
                   "column": "role"
@@ -3246,7 +3256,8 @@
               "uniques": [
                 {
                   "columns": [
-                    "investmentId",
+                    "receiverId",
+                    "sourceUserId",
                     "level"
                   ]
                 }
@@ -3577,6 +3588,15 @@
                 "referralCode": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
+                  "nullable": false
+                },
+                "referralLevel": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 1
+                  },
+                  "nativeType": "int4",
                   "nullable": false
                 },
                 "role": {
@@ -4042,7 +4062,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "c86b6080627e0dca3609cf5d20d1058eae98be3b3f49f00c813fc32bb77822bc"
+    "storageHash": "158f8cab4889383800ceeb8a68e7d629353bd49e8e6f3a7d90c71103f018b372"
   },
   "execution": {
     "executionHash": "4873380d813b7ec401c6b0a3c7210c05fe2262d591a72c72bc80a196b79aeab1",

@@ -928,78 +928,73 @@ export default function DashboardHeader({
               {/* Referral Network */}
 
               <div className="p-3">
-                <div
-                  className="
-                    rounded-xl
-                    bg-[#EAF8F0]
-                    px-3
-                    py-3
-                  "
-                >
-                  <div className="mb-3 flex items-center justify-between">
-                    <div>
-                      <p className="text-[9px] font-medium uppercase tracking-wide text-gray-400">
-                        Referral Network
-                      </p>
+  <div className="rounded-xl bg-[#EAF8F0] px-3 py-3">
+    <div className="mb-3 flex items-center justify-between">
+      <div>
+        <p className="text-[9px] font-medium uppercase tracking-wide text-gray-400">
+          Referral Network
+        </p>
 
-                      <p className="mt-1 text-sm font-black text-[#18613F]">
-                        My Team
-                      </p>
-                    </div>
+        <p className="mt-1 text-sm font-black text-[#18613F]">
+          My Team
+        </p>
+      </div>
 
-                    <div
-                      className="
-                        flex
-                        h-9
-                        w-9
-                        items-center
-                        justify-center
-                        rounded-lg
-                        bg-[#D4F1DF]
-                        text-xs
-                        font-black
-                        text-[#18B152]
-                      "
-                    >
-                      2L
-                    </div>
-                  </div>
+      <div
+        className="
+          flex
+          h-9
+          w-9
+          items-center
+          justify-center
+          rounded-lg
+          bg-[#D4F1DF]
+          text-xs
+          font-black
+          text-[#18B152]
+        "
+      >
+        2L
+      </div>
+    </div>
 
-                  <div className="grid grid-cols-2 gap-2">
-                    {/* Level 1 */}
+    <div className="grid grid-cols-2 gap-2">
+      {/* Level 1 */}
+      <div className="rounded-lg bg-white px-3 py-2.5">
+        <p className="text-[9px] font-medium uppercase tracking-wide text-gray-400">
+          Level 1
+        </p>
 
-                    <div className="rounded-lg bg-white px-3 py-2.5">
-                      <p className="text-[9px] font-medium uppercase tracking-wide text-gray-400">
-                        Level 1
-                      </p>
+        <p className="mt-1 text-base font-black text-[#0F3D2E]">
+          {level1Count}
+        </p>
 
-                      <p className="mt-1 text-base font-black text-[#0F3D2E]">
-                        {level1Count}
-                      </p>
+        <p className="text-[9px] text-gray-400">
+          Direct referrals
+        </p>
+      </div>
 
-                      <p className="text-[9px] text-gray-400">
-                        Direct referrals
-                      </p>
-                    </div>
+      {/* Level 2 */}
+      <div className="rounded-lg bg-white px-3 py-2.5">
+        <p className="text-[9px] font-medium uppercase tracking-wide text-gray-400">
+          Level 2
+        </p>
 
-                    {/* Level 2 */}
+        <p className="mt-1 text-base font-black text-[#0F3D2E]">
+          {level2Count}
+        </p>
 
-                    <div className="rounded-lg bg-white px-3 py-2.5">
-                      <p className="text-[9px] font-medium uppercase tracking-wide text-gray-400">
-                        Level 2
-                      </p>
+        <p className="text-[9px] text-gray-400">
+          Indirect referrals
+        </p>
+      </div>
+    </div>
 
-                      <p className="mt-1 text-base font-black text-[#0F3D2E]">
-                        {level2Count}
-                      </p>
-
-                      <p className="text-[9px] text-gray-400">
-                        Indirect referrals
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+    <p className="mt-3 text-[9px] leading-4 text-gray-400">
+      Referral rewards are credited once per eligible referral.
+    </p>
+  </div>
+</div>
 
               {/* Logout */}
 

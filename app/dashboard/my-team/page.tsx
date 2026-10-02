@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Loader2,
   AlertCircle,
+  Gift,
 } from "lucide-react";
 
 type TeamMember = {
@@ -42,6 +43,7 @@ export default function MyTeamPage() {
     async function loadTeam() {
       try {
         setLoading(true);
+        setError("");
 
         const response = await fetch("/api/referrals", {
           cache: "no-store",
@@ -73,6 +75,7 @@ export default function MyTeamPage() {
 
     try {
       await navigator.clipboard.writeText(data.referralCode);
+
       setCopied(true);
 
       setTimeout(() => {
@@ -87,7 +90,7 @@ export default function MyTeamPage() {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="flex items-center gap-3 text-slate-500">
-          <Loader2 className="h-5 w-5 animate-spin" />
+          <Loader2 className="h-5 w-5 animate-spin text-[#18B152]" />
           Loading your team...
         </div>
       </div>
@@ -116,7 +119,7 @@ export default function MyTeamPage() {
         </h1>
 
         <p className="mt-1 text-sm text-slate-500">
-          View your Level 1 and Level 2 referral network.
+          View the users in your two-level referral network.
         </p>
       </div>
 
@@ -133,11 +136,12 @@ export default function MyTeamPage() {
             </p>
 
             <p className="mt-1 text-xs text-green-100/75">
-              Share this code with people you want to refer.
+              Share your code to invite new users.
             </p>
           </div>
 
           <button
+            type="button"
             onClick={copyReferralCode}
             className="flex items-center justify-center gap-2 rounded-xl bg-[#45a94a] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#388e3c]"
           >
@@ -153,6 +157,27 @@ export default function MyTeamPage() {
               </>
             )}
           </button>
+        </div>
+      </div>
+
+      {/* Referral Rule */}
+      <div className="rounded-2xl border border-[#dceedd] bg-white p-5 shadow-sm">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#eff8f0] text-[#45a94a]">
+            <Gift className="h-5 w-5" />
+          </div>
+
+          <div>
+            <h2 className="font-semibold text-[#173b20]">
+              Referral Rewards
+            </h2>
+
+            <p className="mt-1 text-sm leading-6 text-slate-500">
+              Referral rewards are credited once for each eligible
+              referred user. A user keeps the same referral level
+              throughout the network.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -188,7 +213,7 @@ export default function MyTeamPage() {
       {/* Level 2 */}
       <TeamSection
         title="Level 2"
-        description="Users referred by your Level 1 team members."
+        description="Users who registered using the referral code of your Level 1 members."
         members={data.team.level2}
         emptyMessage="No Level 2 referrals yet."
       />
@@ -204,7 +229,7 @@ export default function MyTeamPage() {
           </h3>
 
           <p className="mt-1 text-sm text-slate-500">
-            Check your Level 1 and Level 2 commission history.
+            View the one-time referral rewards you have earned.
           </p>
         </div>
 

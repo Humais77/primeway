@@ -79,6 +79,8 @@ model User {
 
   referralCode String @unique
 
+  referralLevel Int @default(1)
+
   balancePaisa Int @default(0)
 
   totalInvestmentPaisa Int @default(0)
@@ -342,7 +344,9 @@ model Referral {
     onDelete: Cascade
   )
 
+
   @@unique([referredUserId, level])
+
   @@index([referrerId])
   @@index([referredUserId])
   @@index([level])
@@ -385,13 +389,13 @@ model ReferralCommission {
     references: [id]
   )
 
-  @@unique([investmentId, level])
+  @@unique([receiverId, sourceUserId, level])
+
   @@index([receiverId])
   @@index([sourceUserId])
   @@index([investmentId])
   @@index([createdAt])
 }
-
 model ReferralSetting {
   id String @id @default("default")
 

@@ -7,6 +7,7 @@ import {
   TrendingUp,
   Loader2,
   AlertCircle,
+  Gift,
 } from "lucide-react";
 
 type Commission = {
@@ -33,7 +34,9 @@ type ReferralResponse = {
 };
 
 export default function ReferralBonusPage() {
-  const [data, setData] = useState<ReferralResponse | null>(null);
+  const [data, setData] =
+    useState<ReferralResponse | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -41,6 +44,7 @@ export default function ReferralBonusPage() {
     async function loadBonuses() {
       try {
         setLoading(true);
+        setError("");
 
         const response = await fetch("/api/referrals", {
           cache: "no-store",
@@ -50,7 +54,8 @@ export default function ReferralBonusPage() {
 
         if (!response.ok) {
           throw new Error(
-            result.error || "Failed to load referral bonuses"
+            result.error ||
+              "Failed to load referral bonuses"
           );
         }
 
@@ -115,7 +120,8 @@ export default function ReferralBonusPage() {
         </h1>
 
         <p className="mt-1 text-sm text-[#6b7d6e]">
-          Track commissions earned from your referral network.
+          Track the one-time rewards earned from your referral
+          network.
         </p>
       </div>
 
@@ -140,38 +146,99 @@ export default function ReferralBonusPage() {
         />
       </div>
 
-      {/* Explanation */}
+      {/* How It Works */}
       <div className="rounded-2xl border border-[#dceedd] bg-white p-5 shadow-sm">
-        <h2 className="font-semibold text-[#173b20]">
-          How referral bonuses work
-        </h2>
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#eff8f0] text-[#45a94a]">
+            <Gift className="h-5 w-5" />
+          </div>
 
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <div>
+            <h2 className="font-semibold text-[#173b20]">
+              How referral bonuses work
+            </h2>
+
+            <p className="mt-1 text-sm leading-6 text-[#6b7d6e]">
+              Referral bonuses are awarded once for each eligible
+              referral. Your referral level is determined when the
+              user joins your network and does not change later.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
+          {/* Level 1 */}
           <div className="rounded-xl border border-[#e1efe2] bg-[#f5faf5] p-4">
-            <p className="font-medium text-[#173b20]">
-              Level 1
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-[#45a94a]" />
+
+              <p className="font-medium text-[#173b20]">
+                Level 1
+              </p>
+            </div>
+
+            <p className="mt-2 text-sm leading-6 text-[#6b7d6e]">
+              You receive the Level 1 referral bonus when a user
+              registers directly using your referral code.
             </p>
 
-            <p className="mt-1 text-sm text-[#6b7d6e]">
-              You earn the configured Level 1 commission when a
-              directly referred user makes an active investment.
+            <p className="mt-2 text-xs font-medium text-[#45a94a]">
+              One-time reward per direct referral
             </p>
           </div>
 
+          {/* Level 2 */}
           <div className="rounded-xl border border-[#e1efe2] bg-[#f5faf5] p-4">
-            <p className="font-medium text-[#173b20]">
-              Level 2
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-[#45a94a]" />
+
+              <p className="font-medium text-[#173b20]">
+                Level 2
+              </p>
+            </div>
+
+            <p className="mt-2 text-sm leading-6 text-[#6b7d6e]">
+              You receive the Level 2 referral bonus when a user
+              joins through one of your Level 1 referrals.
             </p>
 
-            <p className="mt-1 text-sm text-[#6b7d6e]">
-              You earn the configured Level 2 commission when a
-              Level 2 user makes an active investment.
+            <p className="mt-2 text-xs font-medium text-[#45a94a]">
+              One-time reward per indirect referral
+            </p>
+          </div>
+        </div>
+
+        {/* Example */}
+        <div className="mt-5 rounded-xl border border-[#dceedd] bg-white p-4">
+          <p className="text-sm font-semibold text-[#173b20]">
+            Example
+          </p>
+
+          <div className="mt-3 space-y-2 text-sm text-[#6b7d6e]">
+            <p>
+              <span className="font-semibold text-[#173b20]">
+                User A → User B:
+              </span>{" "}
+              A receives a Level 1 bonus once.
+            </p>
+
+            <p>
+              <span className="font-semibold text-[#173b20]">
+                User B → User C:
+              </span>{" "}
+              B receives a Level 1 bonus once and A receives a
+              Level 2 bonus once.
+            </p>
+
+            <p>
+              Further investments by B or C do not create another
+              referral bonus for the same referral relationship.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Commission History */}
+      {/* Bonus History */}
       <div className="overflow-hidden rounded-2xl border border-[#dceedd] bg-white shadow-sm">
         <div className="border-b border-[#e5eee5] p-5">
           <h2 className="text-lg font-semibold text-[#173b20]">
@@ -179,7 +246,7 @@ export default function ReferralBonusPage() {
           </h2>
 
           <p className="mt-1 text-sm text-[#6b7d6e]">
-            Your referral commission transactions.
+            Your one-time referral reward history.
           </p>
         </div>
 
@@ -192,8 +259,8 @@ export default function ReferralBonusPage() {
             </p>
 
             <p className="mt-1 text-sm text-[#708272]">
-              Your commissions will appear here after eligible
-              investments are activated.
+              Your referral rewards will appear here when eligible
+              users join your network.
             </p>
           </div>
         ) : (
@@ -204,7 +271,7 @@ export default function ReferralBonusPage() {
                 <thead className="border-b border-[#e5eee5] bg-[#f5faf5]">
                   <tr>
                     <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#58705b]">
-                      User
+                      Referred User
                     </th>
 
                     <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#58705b]">
@@ -212,7 +279,7 @@ export default function ReferralBonusPage() {
                     </th>
 
                     <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#58705b]">
-                      Investment
+                      Base Amount
                     </th>
 
                     <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#58705b]">
@@ -260,7 +327,9 @@ export default function ReferralBonusPage() {
                       </td>
 
                       <td className="px-5 py-4 text-sm text-[#536455]">
-                        {formatPKR(commission.baseAmountPaisa)}
+                        {formatPKR(
+                          commission.baseAmountPaisa
+                        )}
                       </td>
 
                       <td className="px-5 py-4 text-sm text-[#536455]">
@@ -270,7 +339,9 @@ export default function ReferralBonusPage() {
                       </td>
 
                       <td className="px-5 py-4 font-semibold text-[#45a94a]">
-                        +{formatPKR(commission.commissionAmountPaisa)}
+                        +{formatPKR(
+                          commission.commissionAmountPaisa
+                        )}
                       </td>
 
                       <td className="px-5 py-4 text-sm text-[#718273]">
@@ -310,7 +381,7 @@ export default function ReferralBonusPage() {
                   <div className="mt-4 grid grid-cols-2 gap-3">
                     <div className="rounded-xl border border-[#edf2ed] bg-[#f8faf8] p-3">
                       <p className="text-xs text-[#718273]">
-                        Investment
+                        Base Amount
                       </p>
 
                       <p className="mt-1 text-sm font-medium text-[#173b20]">
@@ -385,7 +456,9 @@ function BonusCard({
         <div className="h-2 w-2 rounded-full bg-[#45a94a]" />
       </div>
 
-      <p className="mt-4 text-sm text-[#6b7d6e]">{title}</p>
+      <p className="mt-4 text-sm text-[#6b7d6e]">
+        {title}
+      </p>
 
       <p className="mt-1 text-2xl font-bold text-[#173b20]">
         {amount}
