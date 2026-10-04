@@ -149,24 +149,19 @@ export default function RegisterPage() {
             className="h-14 w-14 object-contain sm:h-16 sm:w-16"
           />
 
-          <div className="flex flex-col">
-            <Image
-              src="/images/Brand Name.png"
-              alt="GrowVest"
-              width={220}
-              height={55}
-              priority
-              className="h-8 w-auto object-contain object-left sm:h-9"
-            />
+           <div className="flex flex-col">
+  <h1 className="text-2xl font-black leading-none tracking-tight text-[#35e889] sm:text-3xl">
+    Grow<span className="text-[#35e889]">Vest</span>
+  </h1>
 
-            <div className="mt-0.5 flex items-center gap-2 text-[8px] font-medium uppercase tracking-[0.3em] text-[#8edbb0] sm:text-[9px]">
-              <span>Invest</span>
-              <span>•</span>
-              <span>Grow</span>
-              <span>•</span>
-              <span>Together</span>
-            </div>
-          </div>
+  <div className="mt-1.5 flex items-center gap-2 text-[8px] font-medium uppercase tracking-[0.3em] text-[#8edbb0] sm:text-[9px]">
+    <span>Invest</span>
+    <span>•</span>
+    <span>Grow</span>
+    <span>•</span>
+    <span>Together</span>
+  </div>
+</div>
         </Link>
 
         {/* Login */}
