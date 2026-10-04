@@ -248,20 +248,30 @@ export default function DepositHistoryPage() {
                         </td>
 
                         <td className="px-5 py-3.5">
-                          {deposit.proofUrl ? (
-                            <a
-                              href={deposit.proofUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center gap-1 text-xs font-bold text-[#45a94a] hover:text-[#2f7d32] hover:underline"
-                            >
-                              View
-                              <ExternalLink className="h-3.5 w-3.5" />
-                            </a>
-                          ) : (
-                            <span className="text-xs text-gray-400">—</span>
-                          )}
-                        </td>
+  {deposit.proofUrl ? (
+    <a
+      href={deposit.proofUrl}
+      target="_blank"
+      rel="noreferrer"
+      className="group inline-flex items-center gap-2"
+    >
+      <img
+        src={deposit.proofUrl}
+        alt="Payment proof"
+        className="h-12 w-16 rounded-lg border border-[#dceedd] object-cover transition group-hover:opacity-80"
+      />
+
+      <span className="inline-flex items-center gap-1 text-xs font-bold text-[#45a94a] hover:text-[#2f7d32]">
+        View
+        <ExternalLink className="h-3.5 w-3.5" />
+      </span>
+    </a>
+  ) : (
+    <span className="text-xs text-gray-400">
+      —
+    </span>
+  )}
+</td>
                       </tr>
                     );
                   })}

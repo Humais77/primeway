@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
+import { Readable } from "stream";
 import { randomUUID } from "crypto";
 
 import { getSession } from "@/src/lib/auth";
+import cloudinary from "@/src/lib/cloudinary";
 
 export const runtime = "nodejs";
 
@@ -15,16 +15,78 @@ const allowedTypes = [
   "image/webp",
 ];
 
+function uploadToCloudinary(
+  buffer: Buffer,
+  userId: string,
+  extension: string
+): Promise<{
+  secure_url: string;
+  public_id: string;
+}> {
+  return new Promise((resolve, reject) => {
+    const publicId = `${userId}-${randomUUID()}`;
+
+    const uploadStream =
+      cloudinary.uploader.upload_stream(
+        {
+          folder: "primeway/deposit-proofs",
+          public_id: publicId,
+          resource_type: "image",
+          format: extension,
+          type: "upload",
+        },
+        (error, result) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+
+          if (!result) {
+            reject(
+              new Error(
+                "Cloudinary did not return an upload result."
+              )
+            );
+            return;
+          }
+
+          resolve({
+            secure_url: result.secure_url,
+            public_id: result.public_id,
+          });
+        }
+      );
+
+    Readable.from(buffer).pipe(uploadStream);
+  });
+}
+
 export async function POST(request: Request) {
   try {
+    /*
+     * ------------------------------------------------------------
+     * 1. Authenticate user
+     * ------------------------------------------------------------
+     */
+
     const session = await getSession();
 
     if (!session) {
       return NextResponse.json(
-        { message: "Unauthorized." },
-        { status: 401 }
+        {
+          message: "Unauthorized.",
+        },
+        {
+          status: 401,
+        }
       );
     }
+
+    /*
+     * ------------------------------------------------------------
+     * 2. Read uploaded file
+     * ------------------------------------------------------------
+     */
 
     const formData = await request.formData();
 
@@ -35,9 +97,17 @@ export async function POST(request: Request) {
         {
           message: "Screenshot is required.",
         },
-        { status: 400 }
+        {
+          status: 400,
+        }
       );
     }
+
+    /*
+     * ------------------------------------------------------------
+     * 3. Validate file type
+     * ------------------------------------------------------------
+     */
 
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
@@ -45,9 +115,17 @@ export async function POST(request: Request) {
           message:
             "Only JPG, PNG and WEBP screenshots are allowed.",
         },
-        { status: 400 }
+        {
+          status: 400,
+        }
       );
     }
+
+    /*
+     * ------------------------------------------------------------
+     * 4. Validate file size
+     * ------------------------------------------------------------
+     */
 
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
@@ -55,9 +133,17 @@ export async function POST(request: Request) {
           message:
             "Screenshot must be smaller than 5MB.",
         },
-        { status: 400 }
+        {
+          status: 400,
+        }
       );
     }
+
+    /*
+     * ------------------------------------------------------------
+     * 5. Determine extension
+     * ------------------------------------------------------------
+     */
 
     const extension =
       file.type === "image/png"
@@ -66,46 +152,63 @@ export async function POST(request: Request) {
           ? "webp"
           : "jpg";
 
-    const directory = path.join(
-      process.cwd(),
-      "public",
-      "uploads",
-      "deposits"
-    );
-
-    await mkdir(directory, {
-      recursive: true,
-    });
-
-    const filename = `${session.userId}-${randomUUID()}.${extension}`;
-
-    const filepath = path.join(
-      directory,
-      filename
-    );
+    /*
+     * ------------------------------------------------------------
+     * 6. Convert File -> Buffer
+     * ------------------------------------------------------------
+     */
 
     const bytes = await file.arrayBuffer();
 
-    await writeFile(
-      filepath,
-      Buffer.from(bytes)
-    );
+    const buffer = Buffer.from(bytes);
+
+    /*
+     * ------------------------------------------------------------
+     * 7. Upload to Cloudinary
+     * ------------------------------------------------------------
+     */
+
+    const uploaded =
+      await uploadToCloudinary(
+        buffer,
+        session.userId,
+        extension
+      );
+
+    /*
+     * ------------------------------------------------------------
+     * 8. Return Cloudinary URL
+     *
+     * The frontend will send this URL to /api/deposits.
+     * The Deposit.proofUrl field will store this URL.
+     * ------------------------------------------------------------
+     */
 
     return NextResponse.json({
-      url: `/uploads/deposits/${filename}`,
+      url: uploaded.secure_url,
+      publicId: uploaded.public_id,
     });
-  } catch (error) {
+    } catch (error: any) {
     console.error(
-      "Deposit screenshot upload error:",
-      error
+      "Deposit screenshot Cloudinary upload error:",
+      {
+        message: error?.message,
+        http_code: error?.http_code,
+        name: error?.name,
+        error: error?.error,
+      }
     );
 
     return NextResponse.json(
       {
         message:
+          error?.error?.message ||
+          error?.message ||
           "Unable to upload screenshot.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }

@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-
+import { images } from "@/src/lib/images";
 type DashboardHeaderProps = {
   fullName?: string;
   balanceStr?: string;
@@ -472,36 +472,36 @@ export default function DashboardHeader({
           className="flex items-center"
         >
           <Image
-            src="/images/Brand Logo.png"
-            alt="GrowVest"
-            width={80}
-            height={80}
-            priority
-            className="
-              h-11
-              w-11
-              shrink-0
-              object-contain
-              md:h-12
-              md:w-12
-            "
-          />
+  src={images.brandLogo}
+  alt="GrowVest"
+  width={80}
+  height={80}
+  priority
+  className="
+    h-11
+    w-11
+    shrink-0
+    object-contain
+    md:h-12
+    md:w-12
+  "
+/>
 
           <div className="flex h-11 flex-col justify-center md:h-12">
             <Image
-              src="/images/Brand Name.png"
-              alt="GrowVest"
-              width={200}
-              height={48}
-              priority
-              className="
-                h-6
-                w-auto
-                object-contain
-                object-left
-                md:h-7
-              "
-            />
+  src={images.brandName}
+  alt="GrowVest"
+  width={200}
+  height={48}
+  priority
+  className="
+    h-6
+    w-auto
+    object-contain
+    object-left
+    md:h-7
+  "
+/>
 
             <span
               className="
@@ -530,31 +530,6 @@ export default function DashboardHeader({
 
       <div className="flex items-center gap-2 md:gap-4">
 
-        {/* Settings */}
-
-        <button
-          type="button"
-          aria-label="Settings"
-          className="
-            hidden
-            h-10
-            w-10
-            items-center
-            justify-center
-            rounded-full
-            bg-[#EAF8F0]
-            text-[#18B152]
-            transition
-            hover:bg-[#D9F3E4]
-            hover:text-[#18613F]
-            md:flex
-          "
-        >
-          <Settings
-            size={18}
-            strokeWidth={2.4}
-          />
-        </button>
 
         {/* =====================================================
             NOTIFICATIONS

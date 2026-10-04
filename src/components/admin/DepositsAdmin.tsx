@@ -251,23 +251,31 @@ export default function DepositsAdmin({
                   </td>
 
                   <td className="px-5 py-4">
-                    <a
-                      href={
-                        deposit.proofUrl
-                      }
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 rounded-lg border border-[#dceedd] bg-[#eff8f0] px-3 py-2 text-xs font-bold text-[#2f7d32] transition hover:bg-[#e4f4e5]"
-                    >
-                      <Eye size={15} />
+  {deposit.proofUrl ? (
+    <a
+      href={deposit.proofUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group inline-flex items-center gap-2"
+    >
+      <img
+        src={deposit.proofUrl}
+        alt="Payment proof"
+        className="h-14 w-20 rounded-lg border border-[#dceedd] object-cover transition group-hover:opacity-80"
+      />
 
-                      Preview
-
-                      <ExternalLink
-                        size={13}
-                      />
-                    </a>
-                  </td>
+      <span className="inline-flex items-center gap-1 text-xs font-bold text-[#2f7d32]">
+        <Eye size={14} />
+        View
+        <ExternalLink size={12} />
+      </span>
+    </a>
+  ) : (
+    <span className="text-xs text-gray-400">
+      No proof
+    </span>
+  )}
+</td>
 
                   <td className="px-5 py-4">
                     <Status
