@@ -13,6 +13,7 @@ import {
   Settings,
   Wallet,
   CreditCard,
+  Gift,
 } from "lucide-react";
 
 const items = [
@@ -55,7 +56,12 @@ const items = [
     label: "Transactions",
     href: "/admin/transactions",
     icon: ReceiptText,
-  }
+  },
+  {
+    label: "Referral Settings",
+    href: "/admin/referral-settings",
+    icon: Gift,
+  },
 ];
 
 export default function AdminSidebar() {
