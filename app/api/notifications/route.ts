@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-
 import { db } from "@/src/prisma/db";
 import { getSession } from "@/src/lib/auth";
 
@@ -9,21 +8,21 @@ export async function GET() {
 
     if (!session) {
       return NextResponse.json(
-        {
-          message: "Unauthorized.",
-        },
+        { message: "Unauthorized." },
         { status: 401 }
       );
     }
 
-    const notifications = await db.orm.public.Notification
-      .where({
-        userId: session.userId,
-      })
-      .orderBy((notification) =>
-        notification.createdAt.desc()
-      )
-      .all();
+    const notifications =
+      await db.orm.public.Notification
+        .where({
+          userId: session.userId,
+        })
+        .orderBy(
+          (notification) =>
+            notification.createdAt.desc()
+        )
+        .all();
 
     const unreadCount = notifications.filter(
       (notification) => !notification.isRead
@@ -41,36 +40,52 @@ export async function GET() {
 
     return NextResponse.json(
       {
-        message: "Unable to load notifications.",
+        message:
+          "Unable to load notifications.",
       },
       { status: 500 }
     );
   }
 }
+
 export async function PATCH() {
   try {
     const session = await getSession();
 
     if (!session) {
       return NextResponse.json(
-        {
-          message: "Unauthorized.",
-        },
+        { message: "Unauthorized." },
         { status: 401 }
       );
     }
 
-    await db.orm.public.Notification
-      .where({
-        userId: session.userId,
-        isRead: false,
-      })
-      .update({
-        isRead: true,
-      });
+    // Get all unread notifications belonging
+    // to the currently logged-in user.
+    const unreadNotifications =
+      await db.orm.public.Notification
+        .where({
+          userId: session.userId,
+          isRead: false,
+        })
+        .all();
+
+    // Update each notification individually
+    // using its unique ID.
+    for (const notification of unreadNotifications) {
+      await db.orm.public.Notification
+        .where({
+          id: notification.id,
+        })
+        .update({
+          isRead: true,
+        });
+    }
 
     return NextResponse.json({
-      message: "All notifications marked as read.",
+      message:
+        "All notifications marked as read.",
+      updatedCount:
+        unreadNotifications.length,
     });
   } catch (error) {
     console.error(
@@ -80,7 +95,8 @@ export async function PATCH() {
 
     return NextResponse.json(
       {
-        message: "Unable to mark notifications as read.",
+        message:
+          "Unable to mark notifications as read.",
       },
       { status: 500 }
     );

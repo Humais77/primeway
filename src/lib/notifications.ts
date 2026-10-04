@@ -1,5 +1,7 @@
 import { db } from "@/src/prisma/db";
 
+type NotificationClient = typeof db;
+
 type CreateNotificationInput = {
   userId: string;
   title: string;
@@ -7,6 +9,11 @@ type CreateNotificationInput = {
   type?: string;
 };
 
+/**
+ * Create a notification using the normal database client.
+ *
+ * Use this outside a transaction.
+ */
 export async function createNotification({
   userId,
   title,

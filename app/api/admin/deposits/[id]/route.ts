@@ -10,12 +10,17 @@ type Params = {
   }>;
 };
 
-type ProfitFrequency = "DAILY" | "WEEKLY" | "MONTHLY";
+type ProfitFrequency =
+  | "DAILY"
+  | "WEEKLY"
+  | "MONTHLY";
 
 function addDays(date: Date, days: number) {
   const result = new Date(date);
 
-  result.setUTCDate(result.getUTCDate() + days);
+  result.setUTCDate(
+    result.getUTCDate() + days
+  );
 
   return result;
 }
@@ -27,11 +32,17 @@ function getNextProfitDate(
   const date = new Date(start);
 
   if (frequency === "DAILY") {
-    date.setUTCDate(date.getUTCDate() + 1);
+    date.setUTCDate(
+      date.getUTCDate() + 1
+    );
   } else if (frequency === "WEEKLY") {
-    date.setUTCDate(date.getUTCDate() + 7);
+    date.setUTCDate(
+      date.getUTCDate() + 7
+    );
   } else {
-    date.setUTCMonth(date.getUTCMonth() + 1);
+    date.setUTCMonth(
+      date.getUTCMonth() + 1
+    );
   }
 
   return date;
@@ -56,6 +67,7 @@ export async function PATCH(
     }
 
     const { id } = await params;
+
     const body = await request.json();
 
     const action = body.action;
@@ -109,19 +121,85 @@ export async function PATCH(
      */
 
     if (action === "REJECT") {
+      const reason =
+        typeof body.reason === "string"
+          ? body.reason.trim()
+          : "";
+
       const updated =
-        await db.orm.public.Deposit
-          .where({ id })
-          .update({
-            status: "REJECTED",
-            rejectionReason:
-              typeof body.reason === "string"
-                ? body.reason.trim()
-                : null,
-            reviewedBy: admin.userId,
-            reviewedAt:
-              new Date().toISOString(),
-          });
+        await db.transaction(
+          async (tx) => {
+            const currentDeposit =
+              await tx.orm.public.Deposit.first({
+                id,
+              });
+
+            if (!currentDeposit) {
+              throw new Error(
+                "DEPOSIT_NOT_FOUND"
+              );
+            }
+
+            if (
+              currentDeposit.status !==
+              "PENDING"
+            ) {
+              throw new Error(
+                "DEPOSIT_ALREADY_REVIEWED"
+              );
+            }
+
+            /*
+             * Update deposit
+             */
+            const updatedDeposit =
+              await tx.orm.public.Deposit
+                .where({ id })
+                .update({
+                  status: "REJECTED",
+                  rejectionReason:
+                    reason || null,
+                  reviewedBy:
+                    admin.userId,
+                  reviewedAt:
+                    new Date().toISOString(),
+                });
+
+            /*
+             * Create notification
+             */
+            await tx.orm.public.Notification.create(
+              {
+                user: (user) =>
+                  user.connect({
+                    id: currentDeposit.userId,
+                  }),
+
+                title: "Deposit Rejected",
+
+                message: reason
+                  ? `Your deposit of Rs ${(currentDeposit.amountPaisa / 100).toLocaleString(
+                      "en-PK",
+                      {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }
+                    )} was rejected. Reason: ${reason}`
+                  : `Your deposit of Rs ${(currentDeposit.amountPaisa / 100).toLocaleString(
+                      "en-PK",
+                      {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }
+                    )} was rejected.`,
+
+                type: "WARNING",
+              }
+            );
+
+            return updatedDeposit;
+          }
+        );
 
       return NextResponse.json({
         message:
@@ -162,7 +240,9 @@ export async function PATCH(
           });
 
         if (!user) {
-          throw new Error("USER_NOT_FOUND");
+          throw new Error(
+            "USER_NOT_FOUND"
+          );
         }
 
         /*
@@ -172,12 +252,16 @@ export async function PATCH(
          */
 
         const plan =
-          await tx.orm.public.InvestmentPlan.first({
-            id: deposit.planId!,
-          });
+          await tx.orm.public.InvestmentPlan.first(
+            {
+              id: deposit.planId!,
+            }
+          );
 
         if (!plan) {
-          throw new Error("PLAN_NOT_FOUND");
+          throw new Error(
+            "PLAN_NOT_FOUND"
+          );
         }
 
         /*
@@ -187,7 +271,9 @@ export async function PATCH(
          */
 
         if (!plan.isActive) {
-          throw new Error("PLAN_INACTIVE");
+          throw new Error(
+            "PLAN_INACTIVE"
+          );
         }
 
         /*
@@ -211,7 +297,7 @@ export async function PATCH(
 
         /*
          * --------------------------------------------------------
-         * 5. Validate amount against plan
+         * 5. Validate investment amount
          * --------------------------------------------------------
          */
 
@@ -229,8 +315,6 @@ export async function PATCH(
         /*
          * --------------------------------------------------------
          * 6. Investment dates
-         *
-         * All dates are stored as UTC ISO strings.
          * --------------------------------------------------------
          */
 
@@ -258,7 +342,8 @@ export async function PATCH(
             .where({ id })
             .update({
               status: "APPROVED",
-              reviewedBy: admin.userId,
+              reviewedBy:
+                admin.userId,
               reviewedAt:
                 new Date().toISOString(),
             });
@@ -267,14 +352,10 @@ export async function PATCH(
          * --------------------------------------------------------
          * IMPORTANT ACCOUNTING RULE
          *
-         * The deposit principal is invested.
+         * Deposit principal is immediately allocated
+         * to the investment.
          *
-         * Therefore:
-         *
-         * balancePaisa DOES NOT increase here.
-         *
-         * Only future investment profits increase
-         * balancePaisa.
+         * Therefore balancePaisa does not increase.
          * --------------------------------------------------------
          */
 
@@ -287,9 +368,6 @@ export async function PATCH(
         /*
          * --------------------------------------------------------
          * 8. Create DEPOSIT transaction
-         *
-         * This records the money received without making
-         * the invested principal withdrawable.
          * --------------------------------------------------------
          */
 
@@ -312,7 +390,8 @@ export async function PATCH(
               balanceAfterPaisa:
                 balanceAfter,
 
-              referenceId: deposit.id,
+              referenceId:
+                deposit.id,
 
               description:
                 `Deposit approved and allocated to ${plan.name} investment - ${deposit.method}`,
@@ -333,9 +412,11 @@ export async function PATCH(
         const investment =
           await tx.orm.public.Investment.create(
             {
-              userId: deposit.userId,
+              userId:
+                deposit.userId,
 
-              planId: plan.id,
+              planId:
+                plan.id,
 
               amountPaisa:
                 deposit.amountPaisa,
@@ -360,20 +441,26 @@ export async function PATCH(
               status: "ACTIVE",
             }
           );
-          await tx.orm.public.User
-  .where({ id: user.id })
-  .update({
-    totalInvestmentPaisa:
-      user.totalInvestmentPaisa +
-      investment.amountPaisa,
-  });
 
         /*
          * --------------------------------------------------------
-         * 10. Create referral commissions
-         *
-         * Referral commissions are generated once when the
-         * investment becomes active.
+         * 10. Update total investment
+         * --------------------------------------------------------
+         */
+
+        await tx.orm.public.User
+          .where({
+            id: user.id,
+          })
+          .update({
+            totalInvestmentPaisa:
+              user.totalInvestmentPaisa +
+              investment.amountPaisa,
+          });
+
+        /*
+         * --------------------------------------------------------
+         * 11. Create referral commissions
          * --------------------------------------------------------
          */
 
@@ -386,10 +473,7 @@ export async function PATCH(
 
         /*
          * --------------------------------------------------------
-         * 11. Create INVESTMENT transaction
-         *
-         * This records that the approved deposit was allocated
-         * into the investment.
+         * 12. Create INVESTMENT transaction
          * --------------------------------------------------------
          */
 
@@ -427,11 +511,94 @@ export async function PATCH(
             }
           );
 
+        /*
+         * --------------------------------------------------------
+         * 13. Deposit notification
+         * --------------------------------------------------------
+         */
+
+        await tx.orm.public.Notification.create(
+          {
+            user: (notificationUser) =>
+              notificationUser.connect({
+                id: user.id,
+              }),
+
+            title: "Deposit Approved",
+
+            message:
+              `Your deposit of Rs ${(deposit.amountPaisa / 100).toLocaleString(
+                "en-PK",
+                {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }
+              )} has been approved and allocated to your ${plan.name} investment.`,
+
+            type: "SUCCESS",
+          }
+        );
+
+        /*
+         * --------------------------------------------------------
+         * 14. Transaction notification
+         * --------------------------------------------------------
+         */
+
+        await tx.orm.public.Notification.create(
+          {
+            user: (notificationUser) =>
+              notificationUser.connect({
+                id: user.id,
+              }),
+
+            title: "Transaction Recorded",
+
+            message:
+              `Investment transaction of Rs ${(investment.amountPaisa / 100).toLocaleString(
+                "en-PK",
+                {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }
+              )} has been recorded for ${plan.name}.`,
+
+            type: "INFO",
+          }
+        );
+
+        /*
+         * --------------------------------------------------------
+         * 15. Investment started notification
+         * --------------------------------------------------------
+         */
+
+        await tx.orm.public.Notification.create(
+          {
+            user: (notificationUser) =>
+              notificationUser.connect({
+                id: user.id,
+              }),
+
+            title: "Investment Started",
+
+            message:
+              `Your ${plan.name} investment is now active. Your next profit is scheduled according to the ${plan.frequency.toLowerCase()} plan.`,
+
+            type: "SUCCESS",
+          }
+        );
+
         return {
-          deposit: updatedDeposit,
+          deposit:
+            updatedDeposit,
+
           depositTransaction,
+
           investmentTransaction,
+
           investment,
+
           balanceAfter,
         };
       }
@@ -518,6 +685,36 @@ export async function PATCH(
           {
             message:
               "The deposit amount is outside the investment plan limits.",
+          },
+          {
+            status: 400,
+          }
+        );
+      }
+
+      if (
+        error.message ===
+        "DEPOSIT_NOT_FOUND"
+      ) {
+        return NextResponse.json(
+          {
+            message:
+              "Deposit not found.",
+          },
+          {
+            status: 404,
+          }
+        );
+      }
+
+      if (
+        error.message ===
+        "DEPOSIT_ALREADY_REVIEWED"
+      ) {
+        return NextResponse.json(
+          {
+            message:
+              "This deposit has already been reviewed.",
           },
           {
             status: 400,

@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 
 import { db } from "@/src/prisma/db";
@@ -8,6 +9,16 @@ type Params = {
     id: string;
   }>;
 };
+
+function formatPKR(amountPaisa: number) {
+  return `Rs ${(amountPaisa / 100).toLocaleString(
+    "en-PK",
+    {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }
+  )}`;
+}
 
 export async function PATCH(
   request: Request,
@@ -21,8 +32,12 @@ export async function PATCH(
       session.role !== "ADMIN"
     ) {
       return NextResponse.json(
-        { message: "Unauthorized." },
-        { status: 401 }
+        {
+          message: "Unauthorized.",
+        },
+        {
+          status: 401,
+        }
       );
     }
 
@@ -41,13 +56,16 @@ export async function PATCH(
           message:
             "Invalid withdrawal status.",
         },
-        { status: 400 }
+        {
+          status: 400,
+        }
       );
     }
 
     const withdrawal =
-      await db.orm.public.Withdrawal
-        .first({ id });
+      await db.orm.public.Withdrawal.first({
+        id,
+      });
 
     if (!withdrawal) {
       return NextResponse.json(
@@ -55,7 +73,9 @@ export async function PATCH(
           message:
             "Withdrawal not found.",
         },
-        { status: 404 }
+        {
+          status: 404,
+        }
       );
     }
 
@@ -68,22 +88,32 @@ export async function PATCH(
           message:
             "This withdrawal has already been processed.",
         },
-        { status: 400 }
+        {
+          status: 400,
+        }
       );
     }
 
-    // APPROVE
+    /*
+     * ============================================================
+     * APPROVE WITHDRAWAL
+     * ============================================================
+     */
+
     if (status === "APPROVED") {
       const updated =
         await db.transaction(
           async (tx) => {
+            /*
+             * Re-read inside transaction
+             */
             const current =
               await tx.orm.public.Withdrawal
                 .first({ id });
 
             if (!current) {
               throw new Error(
-                "Withdrawal not found."
+                "WITHDRAWAL_NOT_FOUND"
               );
             }
 
@@ -92,51 +122,175 @@ export async function PATCH(
               "PENDING"
             ) {
               throw new Error(
-                "Withdrawal has already been processed."
+                "WITHDRAWAL_ALREADY_PROCESSED"
               );
             }
 
+            /*
+             * Find user
+             */
             const user =
-  await tx.orm.public.User.first({
-    id: current.userId,
-  });
+              await tx.orm.public.User.first({
+                id: current.userId,
+              });
 
-if (!user) {
-  throw new Error(
-    "User account not found."
-  );
-}
+            if (!user) {
+              throw new Error(
+                "USER_NOT_FOUND"
+              );
+            }
 
-await tx.orm.public.User
-  .where({
-    id: user.id,
-  })
-  .update({
-    totalWithdrawnPaisa:
-      user.totalWithdrawnPaisa +
-      current.amountPaisa,
-  });
+            /*
+             * The withdrawal amount was already
+             * reserved/deducted when the user
+             * submitted the withdrawal.
+             *
+             * Therefore we DO NOT deduct
+             * balancePaisa again here.
+             */
 
-return await tx.orm.public.Withdrawal
-  .where({ id })
-  .update({
-    status: "APPROVED",
-    reviewedBy:
-      session.userId,
-    reviewedAt:
-      new Date().toISOString(),
-  });
+            const balanceBefore =
+              user.balancePaisa;
+
+            const balanceAfter =
+              user.balancePaisa;
+
+            /*
+             * Update withdrawal totals
+             */
+            await tx.orm.public.User
+              .where({
+                id: user.id,
+              })
+              .update({
+                totalWithdrawnPaisa:
+                  user.totalWithdrawnPaisa +
+                  current.amountPaisa,
+              });
+
+            /*
+             * Update withdrawal status
+             */
+            const updatedWithdrawal =
+              await tx.orm.public.Withdrawal
+                .where({ id })
+                .update({
+                  status: "APPROVED",
+
+                  reviewedBy:
+                    session.userId,
+
+                  reviewedAt:
+                    new Date().toISOString(),
+                });
+
+            /*
+             * Create WITHDRAWAL transaction
+             *
+             * Balance remains unchanged because
+             * the amount was already reserved.
+             */
+            const transaction =
+              await tx.orm.public.Transaction.create(
+                {
+                  user: (transactionUser) =>
+                    transactionUser.connect({
+                      id: user.id,
+                    }),
+
+                  type: "WITHDRAWAL",
+
+                  amountPaisa:
+                    current.amountPaisa,
+
+                  balanceBeforePaisa:
+                    balanceBefore,
+
+                  balanceAfterPaisa:
+                    balanceAfter,
+
+                  referenceId:
+                    current.id,
+
+                  description:
+                    `Withdrawal approved - ${current.method}`,
+
+                  withdrawal: (
+                    selectedWithdrawal
+                  ) =>
+                    selectedWithdrawal.connect({
+                      id: current.id,
+                    }),
+                }
+              );
+
+            /*
+             * Withdrawal notification
+             */
+            await tx.orm.public.Notification.create(
+              {
+                user: (notificationUser) =>
+                  notificationUser.connect({
+                    id: user.id,
+                  }),
+
+                title:
+                  "Withdrawal Approved",
+
+                message:
+                  `Your withdrawal of ${formatPKR(
+                    current.amountPaisa
+                  )} has been approved and is being processed.`,
+
+                type: "SUCCESS",
+              }
+            );
+
+            /*
+             * Transaction notification
+             */
+            await tx.orm.public.Notification.create(
+              {
+                user: (notificationUser) =>
+                  notificationUser.connect({
+                    id: user.id,
+                  }),
+
+                title:
+                  "Transaction Recorded",
+
+                message:
+                  `Withdrawal transaction of ${formatPKR(
+                    current.amountPaisa
+                  )} has been recorded.`,
+
+                type: "INFO",
+              }
+            );
+
+            return {
+              withdrawal:
+                updatedWithdrawal,
+
+              transaction,
+            };
           }
         );
 
       return NextResponse.json({
         message:
           "Withdrawal approved successfully.",
-        withdrawal: updated,
+
+        ...updated,
       });
     }
 
-    // REJECT
+    /*
+     * ============================================================
+     * REJECT WITHDRAWAL
+     * ============================================================
+     */
+
     const reason =
       typeof body.rejectionReason ===
       "string"
@@ -149,20 +303,25 @@ return await tx.orm.public.Withdrawal
           message:
             "Rejection reason is required.",
         },
-        { status: 400 }
+        {
+          status: 400,
+        }
       );
     }
 
     const updated =
       await db.transaction(
         async (tx) => {
+          /*
+           * Re-read inside transaction
+           */
           const current =
             await tx.orm.public.Withdrawal
               .first({ id });
 
           if (!current) {
             throw new Error(
-              "Withdrawal not found."
+              "WITHDRAWAL_NOT_FOUND"
             );
           }
 
@@ -171,10 +330,13 @@ return await tx.orm.public.Withdrawal
             "PENDING"
           ) {
             throw new Error(
-              "Withdrawal has already been processed."
+              "WITHDRAWAL_ALREADY_PROCESSED"
             );
           }
 
+          /*
+           * Find user
+           */
           const user =
             await tx.orm.public.User.first({
               id: current.userId,
@@ -182,10 +344,16 @@ return await tx.orm.public.Withdrawal
 
           if (!user) {
             throw new Error(
-              "User account not found."
+              "USER_NOT_FOUND"
             );
           }
 
+          /*
+           * The amount was previously reserved
+           * from balance.
+           *
+           * Rejection returns it.
+           */
           const balanceBefore =
             user.balancePaisa;
 
@@ -193,7 +361,9 @@ return await tx.orm.public.Withdrawal
             balanceBefore +
             current.amountPaisa;
 
-          // Return reserved money
+          /*
+           * Return money to user
+           */
           await tx.orm.public.User
             .where({
               id: user.id,
@@ -210,57 +380,173 @@ return await tx.orm.public.Withdrawal
                 ),
             });
 
-          // Create refund transaction
-          await tx.orm.public.Transaction.create(
+          /*
+           * Create REFUND transaction
+           */
+          const refundTransaction =
+            await tx.orm.public.Transaction.create(
+              {
+                user: (transactionUser) =>
+                  transactionUser.connect({
+                    id: user.id,
+                  }),
+
+                type: "REFUND",
+
+                amountPaisa:
+                  current.amountPaisa,
+
+                balanceBeforePaisa:
+                  balanceBefore,
+
+                balanceAfterPaisa:
+                  balanceAfter,
+
+                referenceId:
+                  current.id,
+
+                description:
+                  `Withdrawal refund: ${reason}`,
+
+                withdrawal: (
+                  selectedWithdrawal
+                ) =>
+                  selectedWithdrawal.connect({
+                    id: current.id,
+                  }),
+              }
+            );
+
+          /*
+           * Update withdrawal
+           */
+          const updatedWithdrawal =
+            await tx.orm.public.Withdrawal
+              .where({ id })
+              .update({
+                status: "REJECTED",
+
+                rejectionReason:
+                  reason,
+
+                reviewedBy:
+                  session.userId,
+
+                reviewedAt:
+                  new Date().toISOString(),
+              });
+
+          /*
+           * Withdrawal rejected notification
+           */
+          await tx.orm.public.Notification.create(
             {
-              userId: user.id,
+              user: (notificationUser) =>
+                notificationUser.connect({
+                  id: user.id,
+                }),
 
-              type: "REFUND",
+              title:
+                "Withdrawal Rejected",
 
-              amountPaisa:
-                current.amountPaisa,
+              message:
+                `Your withdrawal of ${formatPKR(
+                  current.amountPaisa
+                )} was rejected. Reason: ${reason}. The amount has been returned to your available balance.`,
 
-              balanceBeforePaisa:
-                balanceBefore,
-
-              balanceAfterPaisa:
-                balanceAfter,
-
-              referenceId:
-                current.id,
-
-              description:
-                `Withdrawal refund: ${reason}`,
-
-              withdrawalId:
-                current.id,
+              type: "WARNING",
             }
           );
 
-          return await tx.orm.public.Withdrawal
-            .where({ id })
-            .update({
-              status: "REJECTED",
-              rejectionReason:
-                reason,
-              reviewedBy:
-                session.userId,
-              reviewedAt:
-                new Date().toISOString()
-            });
+          /*
+           * Refund transaction notification
+           */
+          await tx.orm.public.Notification.create(
+            {
+              user: (notificationUser) =>
+                notificationUser.connect({
+                  id: user.id,
+                }),
+
+              title:
+                "Transaction Recorded",
+
+              message:
+                `A refund of ${formatPKR(
+                  current.amountPaisa
+                )} has been added back to your balance.`,
+
+              type: "INFO",
+            }
+          );
+
+          return {
+            withdrawal:
+              updatedWithdrawal,
+
+            refundTransaction,
+          };
         }
       );
 
     return NextResponse.json({
       message:
         "Withdrawal rejected and amount refunded.",
-      withdrawal: updated,
+
+      ...updated,
     });
   } catch (error) {
     console.error(
       "Admin withdrawal PATCH error:",
       error
     );
+
+    if (error instanceof Error) {
+      if (
+        error.message ===
+        "WITHDRAWAL_NOT_FOUND"
+      ) {
+        return NextResponse.json(
+          {
+            message:
+              "Withdrawal not found.",
+          },
+          {
+            status: 404,
+          }
+        );
+      }
+
+      if (
+        error.message ===
+        "WITHDRAWAL_ALREADY_PROCESSED"
+      ) {
+        return NextResponse.json(
+          {
+            message:
+              "This withdrawal has already been processed.",
+          },
+          {
+            status: 400,
+          }
+        );
+      }
+
+      if (
+        error.message ===
+        "USER_NOT_FOUND"
+      ) {
+        return NextResponse.json(
+          {
+            message:
+              "User account not found.",
+          },
+          {
+            status: 404,
+          }
+        );
+      }
+    }
 
     return NextResponse.json(
       {
@@ -269,7 +555,9 @@ return await tx.orm.public.Withdrawal
             ? error.message
             : "Unable to process withdrawal.",
       },
-      { status: 400 }
+      {
+        status: 400,
+      }
     );
   }
 }

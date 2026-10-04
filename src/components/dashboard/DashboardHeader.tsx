@@ -11,6 +11,7 @@ import {
   Info,
   AlertCircle,
   X,
+  Trash2,
 } from "lucide-react";
 
 import { useDashboardUI } from "./DashboardUI";
@@ -96,40 +97,48 @@ export default function DashboardHeader({
     }
   };
 
-  const handleMarkAllRead = async () => {
-    if (unreadCount === 0) {
-      return;
-    }
+const handleMarkAllRead = async () => {
+  if (unreadCount === 0) {
+    return;
+  }
 
-    try {
-      const response = await fetch(
-        "/api/notifications",
-        {
-          method: "PATCH",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          "Failed to mark notifications as read."
-        );
+  try {
+    const response = await fetch(
+      "/api/notifications",
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
       }
+    );
 
-      setNotifications((current) =>
-        current.map((notification) => ({
-          ...notification,
-          isRead: true,
-        }))
-      );
+    const data = await response.json();
 
-      setUnreadCount(0);
-    } catch (error) {
-      console.error(
-        "Failed to mark all notifications:",
-        error
+    if (!response.ok) {
+      throw new Error(
+        data.message ||
+          "Failed to mark notifications as read."
       );
     }
-  };
+
+    // Update the UI immediately.
+    setNotifications((current) =>
+      current.map((notification) => ({
+        ...notification,
+        isRead: true,
+      }))
+    );
+
+    setUnreadCount(0);
+  } catch (error) {
+    console.error(
+      "Failed to mark all notifications:",
+      error
+    );
+  }
+};
+
 
   /*
    * =========================================================
@@ -239,48 +248,43 @@ export default function DashboardHeader({
    * =========================================================
    */
 
-  const handleNotificationClick = async (
+  const handleDeleteNotification = async (
     notification: NotificationItem
   ) => {
-    if (notification.isRead) {
-      return;
-    }
-
     try {
       const response = await fetch(
         `/api/notifications/${notification.id}`,
         {
-          method: "PATCH",
+          method: "DELETE",
         }
       );
 
       if (!response.ok) {
         throw new Error(
-          "Failed to mark notification as read."
+          "Failed to delete notification."
         );
       }
 
       setNotifications((current) =>
-        current.map((item) =>
-          item.id === notification.id
-            ? {
-                ...item,
-                isRead: true,
-              }
-            : item
+        current.filter(
+          (item) => item.id !== notification.id
         )
       );
 
-      setUnreadCount((current) =>
-        Math.max(0, current - 1)
-      );
+      if (!notification.isRead) {
+        setUnreadCount((current) =>
+          Math.max(0, current - 1)
+        );
+      }
     } catch (error) {
       console.error(
-        "Failed to mark notification:",
+        "Failed to delete notification:",
         error
       );
     }
   };
+
+
 
   /*
    * =========================================================
@@ -332,12 +336,12 @@ export default function DashboardHeader({
   const liveBalance =
     liveBalancePaisa !== null
       ? `Rs ${(liveBalancePaisa / 100).toLocaleString(
-          "en-PK",
-          {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          }
-        )}`
+        "en-PK",
+        {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }
+      )}`
       : balanceStr;
 
   const initials = displayName
@@ -472,12 +476,12 @@ export default function DashboardHeader({
           className="flex items-center"
         >
           <Image
-  src={images.brandLogo}
-  alt="GrowVest"
-  width={80}
-  height={80}
-  priority
-  className="
+            src={images.brandLogo}
+            alt="GrowVest"
+            width={80}
+            height={80}
+            priority
+            className="
     h-11
     w-11
     shrink-0
@@ -485,23 +489,23 @@ export default function DashboardHeader({
     md:h-12
     md:w-12
   "
-/>
+          />
 
           <div className="flex h-11 flex-col justify-center md:h-12">
             <Image
-  src={images.brandName}
-  alt="GrowVest"
-  width={200}
-  height={48}
-  priority
-  className="
+              src={images.brandName}
+              alt="GrowVest"
+              width={200}
+              height={48}
+              priority
+              className="
     h-6
     w-auto
     object-contain
     object-left
     md:h-7
   "
-/>
+            />
 
             <span
               className="
@@ -715,77 +719,99 @@ export default function DashboardHeader({
                     </p>
                   </div>
                 ) : (
-                  notifications.map(
-                    (notification) => (
-                      <button
-                        key={notification.id}
-                        type="button"
-                        onClick={() =>
-                          handleNotificationClick(
-                            notification
-                          )
+
+                  notifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      className={`
+      flex
+      w-full
+      gap-3
+      border-b
+      border-[#EDF4EF]
+      px-4
+      py-3
+      text-left
+      transition
+      last:border-b-0
+      hover:bg-[#F5FBF7]
+      ${!notification.isRead
+                          ? "bg-[#EAF8F0]"
+                          : "bg-white"
                         }
-                        className={`
-                          flex
-                          w-full
-                          gap-3
-                          border-b
-                          border-[#EDF4EF]
-                          px-4
-                          py-3
-                          text-left
-                          transition
-                          last:border-b-0
-                          hover:bg-[#F5FBF7]
-                          ${
-                            !notification.isRead
-                              ? "bg-[#EAF8F0]"
-                              : "bg-white"
-                          }
-                        `}
+    `}
+                    >
+                      {/* Notification Icon */}
+                      <div
+                        className="
+        mt-0.5
+        flex
+        h-8
+        w-8
+        shrink-0
+        items-center
+        justify-center
+        rounded-lg
+        bg-[#EAF8F0]
+      "
                       >
-                        <div
-                          className="
-                            mt-0.5
-                            flex
-                            h-8
-                            w-8
-                            shrink-0
-                            items-center
-                            justify-center
-                            rounded-lg
-                            bg-[#EAF8F0]
-                          "
-                        >
-                          {getNotificationIcon(
-                            notification.type
+                        {getNotificationIcon(notification.type)}
+                      </div>
+
+                      {/* Notification Content */}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-xs font-bold text-[#0F3D2E]">
+                            {notification.title}
+                          </p>
+
+                          {!notification.isRead && (
+                            <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#18B152]" />
                           )}
                         </div>
 
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-start justify-between gap-2">
-                            <p className="text-xs font-bold text-[#0F3D2E]">
-                              {notification.title}
-                            </p>
+                        <p className="mt-1 text-[11px] leading-4 text-gray-500">
+                          {notification.message}
+                        </p>
 
-                            {!notification.isRead && (
-                              <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#18B152]" />
-                            )}
-                          </div>
+                        <p className="mt-1.5 text-[9px] font-medium text-gray-400">
+                          {formatNotificationTime(
+                            notification.createdAt
+                          )}
+                        </p>
+                      </div>
 
-                          <p className="mt-1 text-[11px] leading-4 text-gray-500">
-                            {notification.message}
-                          </p>
-
-                          <p className="mt-1.5 text-[9px] font-medium text-gray-400">
-                            {formatNotificationTime(
-                              notification.createdAt
-                            )}
-                          </p>
-                        </div>
+                      {/* Delete Button */}
+                      <button
+                        type="button"
+                        aria-label="Delete notification"
+                        title="Delete notification"
+                        onClick={() =>
+                          handleDeleteNotification(notification)
+                        }
+                        className="
+        flex
+        h-7
+        w-7
+        shrink-0
+        items-center
+        justify-center
+        self-start
+        rounded-lg
+        text-gray-300
+        transition
+        hover:bg-red-50
+        hover:text-red-500
+      "
+                      >
+                        <Trash2
+                          size={14}
+                          strokeWidth={2.2}
+                        />
                       </button>
-                    )
-                  )
+                    </div>
+                  ))
+
                 )}
               </div>
             </div>
@@ -862,10 +888,9 @@ export default function DashboardHeader({
               className={`
                 text-[#18B152]
                 transition
-                ${
-                  showProfile
-                    ? "rotate-180"
-                    : ""
+                ${showProfile
+                  ? "rotate-180"
+                  : ""
                 }
               `}
               strokeWidth={2.5}

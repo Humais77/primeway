@@ -24,8 +24,8 @@ import React from "react";
 import { db } from "@/src/prisma/db";
 import { getSession } from "@/src/lib/auth";
 import { formatPKR } from "@/src/lib/money";
-import HelpSupport from "@/src/components/help-support";
 import ReferralCodeCard from "@/src/components/dashboard/ReferralCodeCard";
+import HelpSupport from "@/src/components/help-support";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -226,7 +226,7 @@ export default async function DashboardPage() {
             HELP & SUPPORT
         ===================================================== */}
 
-        {/* <HelpSupport /> */}
+        <HelpSupport />
 
         {/* =====================================================
             REFERRAL
