@@ -1,3 +1,9 @@
+const LEVEL_1_BONUS_BPS = 1300; // 13%
+const LEVEL_2_BONUS_BPS = 500;  // 5%
+
+const LEVEL_1 = 1;
+const LEVEL_2 = 2;
+
 export async function createReferralCommissions(
   tx: any,
   sourceUserId: string,
@@ -5,159 +11,192 @@ export async function createReferralCommissions(
   investmentAmountPaisa: number
 ) {
   /*
-   * Get referral settings.
+   * ------------------------------------------------------------
+   * Find the direct referrer of the user who invested.
+   *
+   * Every referral relationship is DIRECT.
+   * Referral.level should always be 1.
+   * The referrer's OWN referralLevel determines the commission.
+   * ------------------------------------------------------------
    */
-  let referralSetting =
-    await tx.orm.public.ReferralSetting.first();
+
+  const referral = await tx.orm.public.Referral.first({
+    referredUserId: sourceUserId,
+  });
 
   /*
-   * Create default settings if they don't exist.
+   * The user was not referred by anyone.
    */
-  if (!referralSetting) {
-    referralSetting =
-      await tx.orm.public.ReferralSetting.create({
-        id: "default",
-        level1BonusBps: 1300, // 13%
-        level2BonusBps: 500,  // 5%
-      });
+  if (!referral) {
+    return;
   }
 
   /*
-   * Get Level 1 + Level 2 relationships
-   * for the user who made the investment.
+   * Find the referrer.
    */
-  const referrals =
-    await tx.orm.public.Referral
-      .where({
-        referredUserId: sourceUserId,
-      })
-      .all();
+  const receiver = await tx.orm.public.User.first({
+    id: referral.referrerId,
+  });
 
-  for (const referral of referrals) {
-    const rate =
-      referral.level === 1
-        ? referralSetting.level1BonusBps
-        : referral.level === 2
-          ? referralSetting.level2BonusBps
-          : 0;
+  if (!receiver) {
+    return;
+  }
 
-    if (rate <= 0) {
-      continue;
-    }
+  /*
+   * ------------------------------------------------------------
+   * Determine the referrer's current referral level.
+   *
+   * Every user starts at Level 1.
+   *
+   * Level 1 = 13%
+   * Level 2 = 5%
+   * ------------------------------------------------------------
+   */
 
-    /*
-     * Calculate commission.
-     *
-     * BPS:
-     * 1300 = 13%
-     * 500  = 5%
-     */
-    const commissionAmountPaisa =
-      Math.floor(
-        (investmentAmountPaisa * rate) /
-          10000
-      );
+  const currentReferralLevel =
+    receiver.referralLevel === LEVEL_2
+      ? LEVEL_2
+      : LEVEL_1;
 
-    if (commissionAmountPaisa <= 0) {
-      continue;
-    }
+  const commissionRateBps =
+    currentReferralLevel === LEVEL_1
+      ? LEVEL_1_BONUS_BPS
+      : LEVEL_2_BONUS_BPS;
 
-    /*
-     * Safety check:
-     * never pay the same level twice
-     * for the same investment.
-     */
-    const existing =
-      await tx.orm.public.ReferralCommission.first(
-        {
-          investmentId,
-          level: referral.level,
-        }
-      );
+  /*
+   * ------------------------------------------------------------
+   * Calculate commission.
+   * ------------------------------------------------------------
+   */
 
-    if (existing) {
-      continue;
-    }
+  const commissionAmountPaisa = Math.floor(
+    (investmentAmountPaisa * commissionRateBps) /
+      10_000
+  );
 
-    const receiver =
-      await tx.orm.public.User.first({
-        id: referral.referrerId,
-      });
+  if (commissionAmountPaisa <= 0) {
+    return;
+  }
 
-    if (!receiver) {
-      continue;
-    }
+  /*
+   * ------------------------------------------------------------
+   * Prevent duplicate commission for the same investment.
+   * ------------------------------------------------------------
+   */
 
-    const balanceBefore =
-      receiver.balancePaisa;
-
-    const balanceAfter =
-      balanceBefore +
-      commissionAmountPaisa;
-
-    /*
-     * Credit commission to receiver.
-     */
-    await tx.orm.public.User
-      .where({
-        id: receiver.id,
-      })
-      .update({
-        balancePaisa: balanceAfter,
-
-        totalReferralPaisa:
-          receiver.totalReferralPaisa +
-          commissionAmountPaisa,
-      });
-
-    /*
-     * Create transaction ledger entry.
-     */
-    const transaction =
-      await tx.orm.public.Transaction.create({
-        userId: receiver.id,
-
-        type: "REFERRAL_COMMISSION",
-
-        amountPaisa:
-          commissionAmountPaisa,
-
-        balanceBeforePaisa:
-          balanceBefore,
-
-        balanceAfterPaisa:
-          balanceAfter,
-
-        referenceId: investmentId,
-
-        description:
-          `Level ${referral.level} referral commission`,
-
-        investmentId,
-      });
-
-    /*
-     * Save commission record.
-     */
-    await tx.orm.public.ReferralCommission.create({
+  const existingCommission =
+    await tx.orm.public.ReferralCommission.first({
+      investmentId,
       receiverId: receiver.id,
+    });
 
-      sourceUserId,
+  if (existingCommission) {
+    return;
+  }
+
+  /*
+   * ------------------------------------------------------------
+   * Credit commission.
+   * ------------------------------------------------------------
+   */
+
+  const balanceBefore =
+    receiver.balancePaisa;
+
+  const balanceAfter =
+    balanceBefore +
+    commissionAmountPaisa;
+
+  await tx.orm.public.User
+    .where({
+      id: receiver.id,
+    })
+    .update({
+      balancePaisa: balanceAfter,
+
+      totalReferralPaisa:
+        receiver.totalReferralPaisa +
+        commissionAmountPaisa,
+
+      /*
+       * IMPORTANT:
+       *
+       * If the referrer was Level 1, this is their
+       * first successful referred investment.
+       *
+       * Give them the 13% commission first,
+       * then upgrade them permanently to Level 2.
+       *
+       * If they are already Level 2, they stay Level 2.
+       */
+      referralLevel:
+        currentReferralLevel === LEVEL_1
+          ? LEVEL_2
+          : LEVEL_2,
+    });
+
+  /*
+   * ------------------------------------------------------------
+   * Create transaction ledger entry.
+   *
+   * "level" here means the referrer's OWN level
+   * at the time this commission was earned.
+   * ------------------------------------------------------------
+   */
+
+  const transaction =
+    await tx.orm.public.Transaction.create({
+      userId: receiver.id,
+
+      type: "REFERRAL_COMMISSION",
+
+      amountPaisa:
+        commissionAmountPaisa,
+
+      balanceBeforePaisa:
+        balanceBefore,
+
+      balanceAfterPaisa:
+        balanceAfter,
+
+      referenceId:
+        investmentId,
+
+      description:
+        `Level ${currentReferralLevel} referral commission (${commissionRateBps / 100}%)`,
 
       investmentId,
-
-      level: referral.level,
-
-      baseAmountPaisa:
-        investmentAmountPaisa,
-
-      commissionRateBps:
-        rate,
-
-      commissionAmountPaisa,
-
-      transactionId:
-        transaction.id,
     });
-  }
+
+  /*
+   * ------------------------------------------------------------
+   * Save commission record.
+   * ------------------------------------------------------------
+   */
+
+  await tx.orm.public.ReferralCommission.create({
+    receiverId:
+      receiver.id,
+
+    sourceUserId,
+
+    investmentId,
+
+    /*
+     * This is the referrer's OWN level when
+     * the commission was generated.
+     */
+    level:
+      currentReferralLevel,
+
+    baseAmountPaisa:
+      investmentAmountPaisa,
+
+    commissionRateBps,
+
+    commissionAmountPaisa,
+
+    transactionId:
+      transaction.id,
+  });
 }

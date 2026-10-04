@@ -41,8 +41,7 @@ type ProfileData = {
   role: "USER" | "ADMIN";
   balancePaisa: number;
   referralCode?: string;
-  level1Count?: number;
-  level2Count?: number;
+  referralLevel?: number;
 };
 
 export default function DashboardHeader({
@@ -68,7 +67,8 @@ export default function DashboardHeader({
   const notificationRef =
     useRef<HTMLDivElement>(null);
 
-  const profileRef = useRef<HTMLDivElement>(null);
+  const profileRef =
+    useRef<HTMLDivElement>(null);
 
   /*
    * =========================================================
@@ -156,14 +156,20 @@ export default function DashboardHeader({
     }
   };
 
+  /*
+   * =========================================================
+   * INITIAL LOAD + REFRESH
+   * =========================================================
+   */
+
   useEffect(() => {
     loadNotifications();
     loadProfile();
 
-    const interval = setInterval(
-      loadNotifications,
-      15000
-    );
+    const interval = setInterval(() => {
+      loadNotifications();
+      loadProfile();
+    }, 15000);
 
     return () => {
       clearInterval(interval);
@@ -241,12 +247,18 @@ export default function DashboardHeader({
     }
 
     try {
-      await fetch(
+      const response = await fetch(
         `/api/notifications/${notification.id}`,
         {
           method: "PATCH",
         }
       );
+
+      if (!response.ok) {
+        throw new Error(
+          "Failed to mark notification as read."
+        );
+      }
 
       setNotifications((current) =>
         current.map((item) =>
@@ -283,15 +295,50 @@ export default function DashboardHeader({
   const displayName =
     profile?.fullName || fullName;
 
-  const username = profile?.username || "";
+  const username =
+    profile?.username || "";
 
-  const email = profile?.email || "";
+  const email =
+    profile?.email || "";
 
-  const level1Count =
-    profile?.level1Count ?? 0;
+  /*
+   * Referral level:
+   *
+   * Every user starts at Level 1.
+   * After their first successful referred investment,
+   * they become Level 2 permanently.
+   */
 
-  const level2Count =
-    profile?.level2Count ?? 0;
+  const referralLevel =
+    profile?.referralLevel === 2
+      ? 2
+      : 1;
+
+  const referralLevelLabel =
+    referralLevel === 2
+      ? "Level 2"
+      : "Level 1";
+
+  /*
+   * Balance:
+   *
+   * balancePaisa is the source of truth.
+   * 100 paisa = 1 PKR.
+   */
+
+  const liveBalancePaisa =
+    profile?.balancePaisa ?? null;
+
+  const liveBalance =
+    liveBalancePaisa !== null
+      ? `Rs ${(liveBalancePaisa / 100).toLocaleString(
+          "en-PK",
+          {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          }
+        )}`
+      : balanceStr;
 
   const initials = displayName
     .substring(0, 2)
@@ -396,8 +443,6 @@ export default function DashboardHeader({
       ========================================================= */}
 
       <div className="flex items-center gap-4 md:gap-6">
-        {/* Mobile / Sidebar Toggle */}
-
         <button
           type="button"
           onClick={toggleSidebar}
@@ -420,8 +465,6 @@ export default function DashboardHeader({
             strokeWidth={2.5}
           />
         </button>
-
-        {/* Brand */}
 
         <Link
           href="/dashboard"
@@ -486,6 +529,7 @@ export default function DashboardHeader({
       ========================================================= */}
 
       <div className="flex items-center gap-2 md:gap-4">
+
         {/* Settings */}
 
         <button
@@ -527,6 +571,7 @@ export default function DashboardHeader({
               setShowNotifications(
                 (current) => !current
               );
+
               setShowProfile(false);
             }}
             className="
@@ -577,8 +622,6 @@ export default function DashboardHeader({
             )}
           </button>
 
-          {/* Notification Dropdown */}
-
           {showNotifications && (
             <div
               className="
@@ -595,8 +638,6 @@ export default function DashboardHeader({
                 shadow-[0_15px_50px_rgba(15,61,46,0.15)]
               "
             >
-              {/* Header */}
-
               <div
                 className="
                   flex
@@ -667,8 +708,6 @@ export default function DashboardHeader({
                   </button>
                 </div>
               </div>
-
-              {/* List */}
 
               <div className="max-h-[380px] overflow-y-auto">
                 {notifications.length === 0 ? (
@@ -792,6 +831,7 @@ export default function DashboardHeader({
               setShowProfile(
                 (current) => !current
               );
+
               setShowNotifications(false);
             }}
             className="
@@ -925,76 +965,47 @@ export default function DashboardHeader({
                 </div>
               </div>
 
-              {/* Referral Network */}
+              {/* Referral Level */}
 
               <div className="p-3">
-  <div className="rounded-xl bg-[#EAF8F0] px-3 py-3">
-    <div className="mb-3 flex items-center justify-between">
-      <div>
-        <p className="text-[9px] font-medium uppercase tracking-wide text-gray-400">
-          Referral Network
-        </p>
+                <div className="rounded-xl bg-[#EAF8F0] px-3 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-[9px] font-medium uppercase tracking-wide text-gray-400">
+                        Referral Level
+                      </p>
 
-        <p className="mt-1 text-sm font-black text-[#18613F]">
-          My Team
-        </p>
-      </div>
+                      <p className="mt-1 text-sm font-black text-[#18613F]">
+                        {referralLevelLabel}
+                      </p>
 
-      <div
-        className="
-          flex
-          h-9
-          w-9
-          items-center
-          justify-center
-          rounded-lg
-          bg-[#D4F1DF]
-          text-xs
-          font-black
-          text-[#18B152]
-        "
-      >
-        2L
-      </div>
-    </div>
+                      <p className="mt-1 text-[9px] leading-4 text-gray-400">
+                        {referralLevel === 1
+                          ? "13% referral commission on your first successful referral investment."
+                          : "5% referral commission on future successful referral investments."}
+                      </p>
+                    </div>
 
-    <div className="grid grid-cols-2 gap-2">
-      {/* Level 1 */}
-      <div className="rounded-lg bg-white px-3 py-2.5">
-        <p className="text-[9px] font-medium uppercase tracking-wide text-gray-400">
-          Level 1
-        </p>
-
-        <p className="mt-1 text-base font-black text-[#0F3D2E]">
-          {level1Count}
-        </p>
-
-        <p className="text-[9px] text-gray-400">
-          Direct referrals
-        </p>
-      </div>
-
-      {/* Level 2 */}
-      <div className="rounded-lg bg-white px-3 py-2.5">
-        <p className="text-[9px] font-medium uppercase tracking-wide text-gray-400">
-          Level 2
-        </p>
-
-        <p className="mt-1 text-base font-black text-[#0F3D2E]">
-          {level2Count}
-        </p>
-
-        <p className="text-[9px] text-gray-400">
-          Indirect referrals
-        </p>
-      </div>
-    </div>
-
-    <p className="mt-3 text-[9px] leading-4 text-gray-400">
-      Referral rewards are credited once per eligible referral.
-    </p>
-  </div>
-</div>
+                    <div
+                      className="
+                        flex
+                        h-11
+                        w-11
+                        shrink-0
+                        items-center
+                        justify-center
+                        rounded-xl
+                        bg-[#D4F1DF]
+                        text-xs
+                        font-black
+                        text-[#18B152]
+                      "
+                    >
+                      L{referralLevel}
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* Logout */}
 
@@ -1058,7 +1069,7 @@ export default function DashboardHeader({
             </span>
 
             <span className="text-sm font-bold text-[#18613F]">
-              {balanceStr}
+              {liveBalance}
             </span>
           </div>
         </div>

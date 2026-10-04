@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+
 import {
   Users,
   UserPlus,
@@ -11,6 +12,7 @@ import {
   Loader2,
   AlertCircle,
   Gift,
+  TrendingUp,
 } from "lucide-react";
 
 type TeamMember = {
@@ -18,41 +20,56 @@ type TeamMember = {
   fullName: string;
   username: string;
   createdAt: string;
-  level: number;
+  relationshipLevel: number;
   isActive: boolean;
 };
 
 type ReferralResponse = {
   referralCode: string;
+
+  referralLevel: number;
+
   team: {
-    level1: TeamMember[];
-    level2: TeamMember[];
-    level1Count: number;
-    level2Count: number;
+    direct: TeamMember[];
+    directCount: number;
     totalCount: number;
   };
 };
 
 export default function MyTeamPage() {
-  const [data, setData] = useState<ReferralResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [copied, setCopied] = useState(false);
+  const [data, setData] =
+    useState<ReferralResponse | null>(null);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState("");
+
+  const [copied, setCopied] =
+    useState(false);
 
   useEffect(() => {
     async function loadTeam() {
       try {
         setLoading(true);
+
         setError("");
 
-        const response = await fetch("/api/referrals", {
-          cache: "no-store",
-        });
+        const response = await fetch(
+          "/api/referrals",
+          {
+            cache: "no-store",
+          }
+        );
 
         const result = await response.json();
 
         if (!response.ok) {
-          throw new Error(result.error || "Failed to load team");
+          throw new Error(
+            result.error ||
+              "Failed to load team"
+          );
         }
 
         setData(result);
@@ -74,7 +91,9 @@ export default function MyTeamPage() {
     if (!data?.referralCode) return;
 
     try {
-      await navigator.clipboard.writeText(data.referralCode);
+      await navigator.clipboard.writeText(
+        data.referralCode
+      );
 
       setCopied(true);
 
@@ -82,7 +101,9 @@ export default function MyTeamPage() {
         setCopied(false);
       }, 2000);
     } catch {
-      setError("Unable to copy referral code");
+      setError(
+        "Unable to copy referral code"
+      );
     }
   }
 
@@ -91,6 +112,7 @@ export default function MyTeamPage() {
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="flex items-center gap-3 text-slate-500">
           <Loader2 className="h-5 w-5 animate-spin text-[#18B152]" />
+
           Loading your team...
         </div>
       </div>
@@ -102,6 +124,7 @@ export default function MyTeamPage() {
       <div className="mx-auto max-w-5xl p-6">
         <div className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
           <AlertCircle className="h-5 w-5" />
+
           <span>{error}</span>
         </div>
       </div>
@@ -109,6 +132,11 @@ export default function MyTeamPage() {
   }
 
   if (!data) return null;
+
+  const referralLevel =
+    data.referralLevel === 2
+      ? 2
+      : 1;
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 p-4 md:p-6">
@@ -119,7 +147,8 @@ export default function MyTeamPage() {
         </h1>
 
         <p className="mt-1 text-sm text-slate-500">
-          View the users in your two-level referral network.
+          Manage your direct referrals and track
+          your referral level.
         </p>
       </div>
 
@@ -160,6 +189,74 @@ export default function MyTeamPage() {
         </div>
       </div>
 
+      {/* Current Referral Level */}
+      <div className="rounded-2xl border border-[#dceedd] bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#eff8f0] text-[#45a94a]">
+              <TrendingUp className="h-5 w-5" />
+            </div>
+
+            <div>
+              <h2 className="font-semibold text-[#173b20]">
+                Your Referral Level
+              </h2>
+
+              <p className="mt-1 text-sm text-slate-500">
+                Your commission rate is based on
+                your own referral level.
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-xl bg-[#eff8f0] px-5 py-3 text-center">
+            <p className="text-xs font-medium text-[#58705b]">
+              Current Level
+            </p>
+
+            <p className="mt-1 text-xl font-bold text-[#2f7d32]">
+              Level {referralLevel}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <div
+            className={`rounded-xl border p-4 ${
+              referralLevel === 1
+                ? "border-[#b9dfbc] bg-[#f5faf5]"
+                : "border-[#e1efe2] bg-white"
+            }`}
+          >
+            <p className="font-semibold text-[#173b20]">
+              Level 1
+            </p>
+
+            <p className="mt-1 text-sm text-slate-500">
+              13% commission on your first
+              successful referred investment.
+            </p>
+          </div>
+
+          <div
+            className={`rounded-xl border p-4 ${
+              referralLevel === 2
+                ? "border-[#b9dfbc] bg-[#f5faf5]"
+                : "border-[#e1efe2] bg-white"
+            }`}
+          >
+            <p className="font-semibold text-[#173b20]">
+              Level 2
+            </p>
+
+            <p className="mt-1 text-sm text-slate-500">
+              5% commission on future successful
+              referred investments.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Referral Rule */}
       <div className="rounded-2xl border border-[#dceedd] bg-white p-5 shadow-sm">
         <div className="flex items-start gap-3">
@@ -169,53 +266,52 @@ export default function MyTeamPage() {
 
           <div>
             <h2 className="font-semibold text-[#173b20]">
-              Referral Rewards
+              How Referral Rewards Work
             </h2>
 
             <p className="mt-1 text-sm leading-6 text-slate-500">
-              Referral rewards are credited once for each eligible
-              referred user. A user keeps the same referral level
-              throughout the network.
+              Every user who registers directly using
+              your referral code becomes part of your
+              direct team. Referral commission is only
+              credited after that user's investment is
+              successfully approved.
+            </p>
+
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              Your first successful referred investment
+              earns you 13% and moves your referral level
+              to Level 2. After that, successful referred
+              investments earn you 5%.
             </p>
           </div>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2">
         <StatCard
-          title="Total Team"
+          title="Total Direct Referrals"
           value={data.team.totalCount}
-          icon={<Users className="h-5 w-5" />}
+          icon={
+            <Users className="h-5 w-5" />
+          }
         />
 
         <StatCard
-          title="Level 1"
-          value={data.team.level1Count}
-          icon={<UserPlus className="h-5 w-5" />}
-        />
-
-        <StatCard
-          title="Level 2"
-          value={data.team.level2Count}
-          icon={<Users className="h-5 w-5" />}
+          title="Current Referral Level"
+          value={referralLevel}
+          icon={
+            <TrendingUp className="h-5 w-5" />
+          }
         />
       </div>
 
-      {/* Level 1 */}
+      {/* Direct Team */}
       <TeamSection
-        title="Level 1"
+        title="Direct Referrals"
         description="Users who registered directly using your referral code."
-        members={data.team.level1}
-        emptyMessage="No Level 1 referrals yet."
-      />
-
-      {/* Level 2 */}
-      <TeamSection
-        title="Level 2"
-        description="Users who registered using the referral code of your Level 1 members."
-        members={data.team.level2}
-        emptyMessage="No Level 2 referrals yet."
+        members={data.team.direct}
+        emptyMessage="No direct referrals yet."
       />
 
       {/* Referral Bonus Link */}
@@ -229,7 +325,7 @@ export default function MyTeamPage() {
           </h3>
 
           <p className="mt-1 text-sm text-slate-500">
-            View the one-time referral rewards you have earned.
+            View your 13% and 5% referral commissions.
           </p>
         </div>
 
@@ -303,7 +399,9 @@ function TeamSection({
             >
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#eff8f0] font-semibold text-[#2f7d32]">
-                  {member.fullName.charAt(0).toUpperCase()}
+                  {member.fullName
+                    .charAt(0)
+                    .toUpperCase()}
                 </div>
 
                 <div>
@@ -325,11 +423,15 @@ function TeamSection({
                       : "bg-slate-100 text-slate-500"
                   }`}
                 >
-                  {member.isActive ? "Active" : "Inactive"}
+                  {member.isActive
+                    ? "Active"
+                    : "Inactive"}
                 </span>
 
                 <span className="text-xs text-slate-400">
-                  {new Date(member.createdAt).toLocaleDateString()}
+                  {new Date(
+                    member.createdAt
+                  ).toLocaleDateString()}
                 </span>
               </div>
             </div>

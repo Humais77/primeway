@@ -326,7 +326,7 @@ model Referral {
   referrerId String
   referredUserId String
 
-  level Int
+  level Int @default(1)
 
   createdAt TimestamptzString @default(now())
 
@@ -344,12 +344,10 @@ model Referral {
     onDelete: Cascade
   )
 
-
-  @@unique([referredUserId, level])
+  @@unique([referredUserId])
 
   @@index([referrerId])
   @@index([referredUserId])
-  @@index([level])
 }
 
 model ReferralCommission {
@@ -389,7 +387,7 @@ model ReferralCommission {
     references: [id]
   )
 
-  @@unique([receiverId, sourceUserId, level])
+  @@unique([investmentId, receiverId])
 
   @@index([receiverId])
   @@index([sourceUserId])

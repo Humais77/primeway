@@ -55,7 +55,9 @@ export async function POST(request: Request) {
       data.referralCode?.trim().toUpperCase() || null;
 
     /*
-     * Check existing email.
+     * ------------------------------------------------
+     * CHECK EXISTING EMAIL
+     * ------------------------------------------------
      */
     const existingEmail =
       await db.orm.public.User.first({
@@ -90,7 +92,9 @@ export async function POST(request: Request) {
     }
 
     /*
-     * Check existing username.
+     * ------------------------------------------------
+     * CHECK EXISTING USERNAME
+     * ------------------------------------------------
      */
     const existingUsername =
       await db.orm.public.User.first({
@@ -109,13 +113,25 @@ export async function POST(request: Request) {
     }
 
     /*
-     * Find referrer.
+     * ------------------------------------------------
+     * FIND REFERRER
+     * ------------------------------------------------
+     *
+     * The referral code only creates the relationship.
+     *
+     * IMPORTANT:
+     *
+     * We DO NOT change the referrer's referralLevel
+     * here.
+     *
+     * The referrer changes from Level 1 → Level 2
+     * only after the referred user's investment has
+     * been successfully approved/activated.
      */
     let referrer:
       | {
           id: string;
           referralCode: string;
-          referralLevel: number;
         }
       | null = null;
 
@@ -138,10 +154,6 @@ export async function POST(request: Request) {
 
       /*
        * Prevent self-referral.
-       *
-       * This normally cannot happen because the new
-       * user's referral code does not exist yet,
-       * but keeping the protection here is safer.
        */
       if (foundReferrer.email === email) {
         return NextResponse.json(
@@ -157,14 +169,16 @@ export async function POST(request: Request) {
 
       referrer = {
         id: foundReferrer.id,
-        referralCode: foundReferrer.referralCode,
-        referralLevel:
-          foundReferrer.referralLevel ?? 1,
+
+        referralCode:
+          foundReferrer.referralCode,
       };
     }
 
     /*
-     * Hash password.
+     * ------------------------------------------------
+     * HASH PASSWORD
+     * ------------------------------------------------
      */
     const passwordHash = await bcrypt.hash(
       data.password,
@@ -172,7 +186,9 @@ export async function POST(request: Request) {
     );
 
     /*
-     * Generate unique referral code.
+     * ------------------------------------------------
+     * GENERATE UNIQUE REFERRAL CODE
+     * ------------------------------------------------
      */
     let generatedReferralCode = "";
 
@@ -191,8 +207,9 @@ export async function POST(request: Request) {
     }
 
     /*
-     * Create user + referral relationships
-     * in one transaction.
+     * ------------------------------------------------
+     * CREATE USER + REFERRAL RELATIONSHIP
+     * ------------------------------------------------
      */
     const result = await db.transaction(
       async (tx) => {
@@ -217,18 +234,26 @@ export async function POST(request: Request) {
             isEmailVerified: false,
           });
 
+        /*
+         * ------------------------------------------------
+         * CREATE DIRECT REFERRAL
+         * ------------------------------------------------
+         *
+         * Example:
+         *
+         * A refers B
+         *
+         * Referral:
+         *
+         * A → B
+         *
+         * level is always 1 because this represents
+         * the relationship, not the referrer's earning
+         * level.
+         *
+         * NO COMMISSION IS CREATED HERE.
+         */
         if (referrer) {
-          /*
-           * ------------------------------------------------
-           * LEVEL 1 RELATIONSHIP
-           * ------------------------------------------------
-           *
-           * Example:
-           *
-           * A refers B
-           *
-           * A → B = Level 1
-           */
           await tx.orm.public.Referral.create({
             referrerId: referrer.id,
 
@@ -236,73 +261,12 @@ export async function POST(request: Request) {
 
             level: 1,
           });
-
-          /*
-           * ------------------------------------------------
-           * UPDATE REFERRER'S OWN LEVEL
-           * ------------------------------------------------
-           *
-           * Every user starts at Level 1.
-           *
-           * After successfully referring someone,
-           * the referrer becomes Level 2.
-           *
-           * If already Level 2, remain Level 2.
-           */
-          if (referrer.referralLevel < 2) {
-            await tx.orm.public.User
-              .where({
-                id: referrer.id,
-              })
-              .update({
-                referralLevel: 2,
-              });
-          }
-
-          /*
-           * ------------------------------------------------
-           * LEVEL 2 RELATIONSHIP
-           * ------------------------------------------------
-           *
-           * Example:
-           *
-           * A → B
-           * B → C
-           *
-           * Existing parent relationship:
-           *
-           * A → B = Level 1
-           *
-           * New relationship:
-           *
-           * A → C = Level 2
-           */
-          const parentReferral =
-            await tx.orm.public.Referral.first({
-              referredUserId: referrer.id,
-
-              level: 1,
-            });
-
-          if (
-            parentReferral &&
-            parentReferral.referrerId !==
-              createdUser.id
-          ) {
-            await tx.orm.public.Referral.create({
-              referrerId:
-                parentReferral.referrerId,
-
-              referredUserId:
-                createdUser.id,
-
-              level: 2,
-            });
-          }
         }
 
         /*
-         * Create email verification token.
+         * ------------------------------------------------
+         * CREATE EMAIL VERIFICATION TOKEN
+         * ------------------------------------------------
          */
         const verificationCode =
           generateVerificationCode();
@@ -329,8 +293,11 @@ export async function POST(request: Request) {
     );
 
     /*
-     * Send verification email only after
-     * successful database transaction.
+     * ------------------------------------------------
+     * SEND VERIFICATION EMAIL
+     * ------------------------------------------------
+     *
+     * Only send after successful DB transaction.
      */
     try {
       await sendVerificationEmail({
