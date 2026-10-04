@@ -381,14 +381,21 @@ export default function LoginPage() {
                   </div>
 
                   {/* Forgot */}
-                  <div className="mt-3 flex justify-end">
-                    <Link
-                      href="/forgot-password"
-                      className="text-xs font-semibold text-[#35e889] transition hover:text-[#7af5ac]"
-                    >
-                      Forgot Password?
-                    </Link>
-                  </div>
+                 <div className="mt-3 flex items-center justify-between">
+  <Link
+    href="/verify-email"
+    className="text-xs font-semibold text-white/60 transition hover:text-[#35e889]"
+  >
+    Haven&apos;t verified yet?
+  </Link>
+
+  <Link
+    href="/forgot-password"
+    className="text-xs font-semibold text-[#35e889] transition hover:text-[#7af5ac]"
+  >
+    Forgot Password?
+  </Link>
+</div>
                 </div>
 
                 {/* Error */}
