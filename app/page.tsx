@@ -16,13 +16,35 @@ import {
   Zap,
 } from "lucide-react";
 
+import { redirect } from "next/navigation";
+
 import { db } from "@/src/prisma/db";
+import { getSession } from "@/src/lib/auth";
 import { formatPKR } from "@/src/lib/money";
 
 import { LandingHeader } from "@/src/components/landing/LandingHeader";
 import { LandingFooter } from "@/src/components/landing/LandingFooter";
 
 export default async function HomePage() {
+  // -----------------------------------------------------------
+  // Redirect logged-in users away from the public home page.
+  //
+  // Admins  -> /admin
+  // Users   -> /dashboard
+  //
+  // This runs before the page renders, so logged-in users
+  // never see the landing page.
+  // -----------------------------------------------------------
+  const session = await getSession();
+
+  if (session) {
+    if (session.role === "ADMIN") {
+      redirect("/admin");
+    }
+
+    redirect("/dashboard");
+  }
+
   const plans = await db.orm.public.InvestmentPlan
     .where({
       isActive: true,
