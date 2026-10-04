@@ -1,4 +1,4 @@
-import { processInvestmentProfits } from "@/src/lib/investment-profilt";
+import { processInvestmentProfits } from "@/src/lib/investment-profit";
 import { NextResponse } from "next/server";
 
 

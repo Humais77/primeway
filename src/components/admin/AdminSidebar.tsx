@@ -55,12 +55,7 @@ const items = [
     label: "Transactions",
     href: "/admin/transactions",
     icon: ReceiptText,
-  },
-  {
-    label: "Settings",
-    href: "/admin/settings",
-    icon: Settings,
-  },
+  }
 ];
 
 export default function AdminSidebar() {

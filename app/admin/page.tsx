@@ -110,7 +110,7 @@ export default async function AdminDashboardPage() {
             Quick Management
           </h2>
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <QuickLink
               href="/admin/users"
               title="Manage Users"
@@ -129,6 +129,10 @@ export default async function AdminDashboardPage() {
             <QuickLink
               href="/admin/deposits"
               title="Deposits"
+            />
+            <QuickLink
+              href="/admin/transactions"
+              title="Transactions"
             />
           </div>
         </div>

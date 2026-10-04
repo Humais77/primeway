@@ -354,58 +354,70 @@ export async function POST(
      */
 
     const investment =
-      await db.transaction(
-        async (tx) => {
-          const createdInvestment =
-            await tx.orm.public.Investment.create(
-              {
-                userId,
+  await db.transaction(
+    async (tx) => {
+      const createdInvestment =
+        await tx.orm.public.Investment.create(
+          {
+            userId,
 
-                planId,
+            planId,
 
-                amountPaisa,
+            amountPaisa,
 
-                profitRateBps:
-                  plan.profitRateBps,
+            profitRateBps:
+              plan.profitRateBps,
 
-                frequency:
-                  plan.frequency,
+            frequency:
+              plan.frequency,
 
-                startDate:
-                  start.toISOString(),
+            startDate:
+              start.toISOString(),
 
-                endDate:
-                  end.toISOString(),
+            endDate:
+              end.toISOString(),
 
-                nextProfitAt:
-                  nextProfit.toISOString(),
+            nextProfitAt:
+              nextProfit.toISOString(),
 
-                earnedProfitPaisa: 0,
+            earnedProfitPaisa: 0,
 
-                status:
-                  investmentStatus,
-              }
-            );
-
-          /*
-           * Referral commission is generated
-           * only for active investments.
-           */
-
-          if (
-            investmentStatus === "ACTIVE"
-          ) {
-            await createReferralCommissions(
-              tx,
-              userId,
-              createdInvestment.id,
-              createdInvestment.amountPaisa
-            );
+            status:
+              investmentStatus,
           }
+        );
 
-          return createdInvestment;
-        }
-      );
+      /*
+       * Update user's total investment.
+       */
+
+      await tx.orm.public.User
+        .where({ id: userId })
+        .update({
+          totalInvestmentPaisa:
+            user.totalInvestmentPaisa +
+            createdInvestment.amountPaisa,
+        });
+
+      /*
+       * Referral commission is generated
+       * only for active investments.
+       */
+
+      if (
+        investmentStatus === "ACTIVE"
+      ) {
+        await createReferralCommissions(
+          tx,
+          userId,
+          createdInvestment.id,
+          createdInvestment.amountPaisa
+        );
+      }
+
+      return createdInvestment;
+    }
+  );
 
     return NextResponse.json(
       {

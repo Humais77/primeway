@@ -424,27 +424,7 @@ export default function LoginPage() {
                 </button>
               </form>
 
-              {/* =================================================
-                  OR
-              ================================================= */}
-              <div className="my-7 flex items-center gap-4">
-                <div className="h-px flex-1 bg-white/20" />
-                <span className="text-xs font-medium text-white/70">OR</span>
-                <div className="h-px flex-1 bg-white/20" />
-              </div>
 
-              {/* Google */}
-              <button
-                type="button"
-                className="flex h-[58px] w-full items-center justify-center gap-3 rounded-xl border border-white/50 bg-transparent text-sm font-semibold text-white transition hover:border-[#35e889] hover:bg-white/5"
-              >
-                {/* Google G */}
-                <span className="text-xl font-bold">
-                  <span className="text-[#4285F4]">G</span>
-                </span>
-
-                Continue with Google
-              </button>
 
               {/* Register */}
               <p className="mt-8 text-center text-sm text-white/65">

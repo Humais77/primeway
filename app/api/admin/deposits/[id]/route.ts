@@ -360,6 +360,13 @@ export async function PATCH(
               status: "ACTIVE",
             }
           );
+          await tx.orm.public.User
+  .where({ id: user.id })
+  .update({
+    totalInvestmentPaisa:
+      user.totalInvestmentPaisa +
+      investment.amountPaisa,
+  });
 
         /*
          * --------------------------------------------------------

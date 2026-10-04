@@ -226,7 +226,7 @@ export default async function DashboardPage() {
             HELP & SUPPORT
         ===================================================== */}
 
-        <HelpSupport />
+        {/* <HelpSupport /> */}
 
         {/* =====================================================
             REFERRAL

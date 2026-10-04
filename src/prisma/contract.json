@@ -3015,6 +3015,10 @@
                 },
                 "level": {
                   "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 1
+                  },
                   "nativeType": "int4",
                   "nullable": false
                 },
@@ -3068,14 +3072,6 @@
               "indexes": [
                 {
                   "columns": [
-                    "level"
-                  ],
-                  "name": "Referral_level_idx_30977cf3",
-                  "prefix": "Referral_level_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
                     "referredUserId"
                   ],
                   "name": "Referral_referredUserId_idx_9cd5e2dd",
@@ -3099,8 +3095,7 @@
               "uniques": [
                 {
                   "columns": [
-                    "referredUserId",
-                    "level"
+                    "referredUserId"
                   ]
                 }
               ]
@@ -3256,9 +3251,8 @@
               "uniques": [
                 {
                   "columns": [
-                    "receiverId",
-                    "sourceUserId",
-                    "level"
+                    "investmentId",
+                    "receiverId"
                   ]
                 }
               ]
@@ -4062,7 +4056,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "158f8cab4889383800ceeb8a68e7d629353bd49e8e6f3a7d90c71103f018b372"
+    "storageHash": "fd011a028fb9a5ae47307d9df63156ab32e128ab8ae8d8359d29440588613df0"
   },
   "execution": {
     "executionHash": "4873380d813b7ec401c6b0a3c7210c05fe2262d591a72c72bc80a196b79aeab1",
