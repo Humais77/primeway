@@ -106,7 +106,7 @@ export default function DashboardSidebar({
         method: "POST",
       });
     } finally {
-      router.push("/login");
+      router.push("/");
       router.refresh();
     }
   };
