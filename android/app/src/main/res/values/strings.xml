@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">growvest</string>
+    <string name="title_activity_main">growvest</string>
+    <string name="package_name">live.growvest.live</string>
+    <string name="custom_url_scheme">live.growvest.live</string>
+</resources>

@@ -6,6 +6,8 @@
 /.claude/
 /.cursor/
 /.devin/
+/.idea/
+/.android/
 
 /.pnp
 .pnp.*
