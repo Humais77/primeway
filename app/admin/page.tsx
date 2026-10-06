@@ -53,7 +53,7 @@ export default async function AdminDashboardPage() {
     <main className="min-h-screen bg-[#f5f8f5] p-4 md:p-6 lg:p-8">
       <div className="mx-auto max-w-7xl">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-8 pl-14 text-center lg:pl-0 lg:text-left">
           <p className="text-sm font-bold uppercase tracking-wide text-[#45a94a]">
             Grow Vest ADMIN
           </p>
