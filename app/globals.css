@@ -134,7 +134,7 @@
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-8x);
+    transform: translateY(-8px);
   }
 }
 
@@ -155,4 +155,31 @@ input:-moz-autofill {
   background-color: #031f1a !important;
   color: #ffffff !important;
   box-shadow: 0 0 0px 1000px #031f1a inset;
+}
+
+@keyframes supportStar {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.5) rotate(0deg);
+  }
+
+  12% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1) rotate(20deg);
+  }
+
+  55% {
+    opacity: 0.9;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.65) rotate(180deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-\[supportStar_4\.8s_ease-in-out_infinite\] {
+    animation: none !important;
+  }
 }

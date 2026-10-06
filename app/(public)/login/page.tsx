@@ -212,39 +212,21 @@ export default function LoginPage() {
           {/* =====================================================
               GROWTH VISUAL
           ===================================================== */}
-          <div className="relative mt-8 h-[220px] w-full max-w-[650px] overflow-hidden sm:h-[280px] lg:mt-5 lg:h-[330px]">
-            {/* Glow */}
-            <div className="absolute bottom-0 left-[15%] h-32 w-72 rounded-full bg-[#00C833]/25 blur-[70px]" />
+          <div className="relative mt-8 w-full max-w-[650px] lg:mt-5">
+  {/* Soft green glow behind the image */}
+  <div className="pointer-events-none absolute inset-0 -z-10 flex items-end justify-center">
+    <div className="h-40 w-72 rounded-full bg-[#00C833]/25 blur-[80px]" />
+  </div>
 
-            {/* Ground */}
-            <div className="absolute bottom-0 left-0 right-0 h-10 rounded-full bg-gradient-to-t from-[#071e18] to-transparent" />
-
-            {/* Coins */}
-            <div className="absolute bottom-0 left-[4%] flex items-end gap-2 sm:left-[8%] sm:gap-3">
-              <CoinStack height="52px" />
-              <CoinStack height="75px" />
-              <CoinStack height="105px" />
-              <CoinStack height="140px" />
-              <CoinStack height="180px" large />
-            </div>
-
-            {/* Plants */}
-            <Plant className="bottom-[45px] left-[7%]" size="small" />
-            <Plant className="bottom-[68px] left-[25%]" size="medium" />
-            <Plant className="bottom-[98px] left-[45%]" size="medium" />
-            <Plant className="bottom-[138px] left-[66%]" size="large" />
-
-            {/* Growth arrow */}
-            <div className="absolute bottom-[100px] left-[12%] h-[160px] w-[430px] rotate-[-23deg] sm:left-[13%] sm:w-[500px]">
-              <div className="absolute bottom-0 left-0 h-[4px] w-full rounded-full bg-gradient-to-r from-[#00C833] via-[#35e889] to-[#9affbf] shadow-[0_0_15px_rgba(0,200,51,0.8)]" />
-
-              <ArrowUpRight
-                size={78}
-                strokeWidth={1.8}
-                className="absolute -right-2 -top-7 text-[#54ed93] drop-shadow-[0_0_12px_rgba(53,232,137,0.8)]"
-              />
-            </div>
-          </div>
+  <Image
+    src="/images/login-hero1.png"
+    alt="GrowVest — Invest, Grow, Together"
+    width={900}
+    height={600}
+    priority
+    className="h-auto w-full max-w-[620px] object-contain drop-shadow-[0_25px_60px_rgba(0,200,51,0.25)]"
+  />
+</div>
 
           {/* Bottom trust strip */}
           <div className="hidden max-w-[520px] rounded-full border border-[#35e889]/30 bg-[#062c22]/90 px-5 py-3 backdrop-blur-md sm:flex sm:items-center sm:gap-5 lg:flex">
@@ -518,76 +500,6 @@ function Feature({
         <p className="text-xs font-bold text-white sm:mt-3">{title}</p>
         <p className="mt-1 text-[10px] text-white/55">{description}</p>
       </div>
-    </div>
-  );
-}
-
-/* =============================================================
-   COIN STACK
-============================================================= */
-
-function CoinStack({
-  height,
-  large = false,
-}: {
-  height: string;
-  large?: boolean;
-}) {
-  return (
-    <div
-      className={`relative w-12 rounded-[50%] border border-[#d9a72d] bg-gradient-to-b from-[#f6d76a] via-[#dca82d] to-[#9c6412] shadow-[inset_0_4px_5px_rgba(255,255,255,0.4),0_5px_12px_rgba(0,0,0,0.25)] sm:w-16 ${
-        large ? "sm:w-20" : ""
-      }`}
-      style={{ height }}
-    >
-      <div className="absolute left-1/2 top-2 h-[2px] w-[75%] -translate-x-1/2 rounded-full bg-[#fff0a0]/70" />
-      <div className="absolute left-1/2 top-1/2 h-[2px] w-[85%] -translate-x-1/2 bg-[#8d5a12]/50" />
-      <div className="absolute left-1/2 bottom-2 h-[2px] w-[75%] -translate-x-1/2 rounded-full bg-[#fff0a0]/40" />
-    </div>
-  );
-}
-
-/* =============================================================
-   PLANT
-============================================================= */
-
-function Plant({
-  className,
-  size = "medium",
-}: {
-  className: string;
-  size?: "small" | "medium" | "large";
-}) {
-  const sizes = {
-    small: {
-      stem: "h-10",
-      leaf: "h-6 w-10",
-    },
-    medium: {
-      stem: "h-16",
-      leaf: "h-8 w-14",
-    },
-    large: {
-      stem: "h-24",
-      leaf: "h-10 w-16",
-    },
-  };
-
-  const current = sizes[size];
-
-  return (
-    <div className={`absolute ${className}`}>
-      <div
-        className={`absolute bottom-0 left-1/2 w-[3px] -translate-x-1/2 rounded-full bg-gradient-to-t from-[#2b8c28] to-[#65df51] ${current.stem}`}
-      />
-
-      <div
-        className={`absolute bottom-[55%] left-[45%] -rotate-[30deg] rounded-[100%_0] bg-gradient-to-br from-[#8ce65b] to-[#2c9e35] ${current.leaf}`}
-      />
-
-      <div
-        className={`absolute bottom-[70%] right-[20%] rotate-[25deg] rounded-[0_100%] bg-gradient-to-br from-[#a1ed6a] to-[#2b9632] ${current.leaf}`}
-      />
     </div>
   );
 }

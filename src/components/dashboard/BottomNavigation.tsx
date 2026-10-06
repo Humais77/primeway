@@ -33,7 +33,7 @@ const navItems = [
   },
   {
     label: "Team",
-    href: "/dashboard/team",
+    href: "/dashboard/my-team",
     icon: Users,
   },
 ];

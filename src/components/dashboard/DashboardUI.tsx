@@ -1,8 +1,10 @@
+
 "use client";
 
 import {
   createContext,
   useContext,
+  useEffect,
   useState,
 } from "react";
 
@@ -16,9 +18,7 @@ type DashboardUIContextType = {
 };
 
 const DashboardUIContext =
-  createContext<DashboardUIContextType | null>(
-    null
-  );
+  createContext<DashboardUIContextType | null>(null);
 
 export function DashboardUIProvider({
   children,
@@ -29,48 +29,101 @@ export function DashboardUIProvider({
   fullName: string;
   userId: string;
 }) {
-  // Sidebar is OPEN when dashboard loads
-  const [sidebarOpen, setSidebarOpen] =
-    useState(true);
+  /*
+   * IMPORTANT:
+   *
+   * Start closed during SSR/hydration.
+   *
+   * This prevents us from using window during the initial render,
+   * which can cause a hydration mismatch.
+   *
+   * After mount:
+   * - Desktop (>= 1024px): sidebar opens
+   * - Mobile/tablet (< 1024px): sidebar stays closed
+   */
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(
+      "(min-width: 1024px)"
+    );
+
+    // Desktop opens automatically after hydration.
+    if (mediaQuery.matches) {
+      setSidebarOpen(true);
+    }
+
+    /*
+     * Only react when crossing the desktop/mobile breakpoint.
+     * Do NOT continuously overwrite sidebarOpen on every resize.
+     */
+    const handleBreakpointChange = (
+      event: MediaQueryListEvent
+    ) => {
+      if (event.matches) {
+        // Entering desktop
+        setSidebarOpen(true);
+      } else {
+        // Entering mobile/tablet
+        setSidebarOpen(false);
+      }
+    };
+
+    mediaQuery.addEventListener(
+      "change",
+      handleBreakpointChange
+    );
+
+    return () => {
+      mediaQuery.removeEventListener(
+        "change",
+        handleBreakpointChange
+      );
+    };
+  }, []);
+
+  const openSidebar = () => {
+    setSidebarOpen(true);
+  };
+
+  const closeSidebar = () => {
+    setSidebarOpen(false);
+  };
+
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => !prev);
+  };
 
   return (
     <DashboardUIContext.Provider
       value={{
         sidebarOpen,
-
-        openSidebar: () =>
-          setSidebarOpen(true),
-
-        closeSidebar: () =>
-          setSidebarOpen(false),
-
-        toggleSidebar: () =>
-          setSidebarOpen((prev) => !prev),
+        openSidebar,
+        closeSidebar,
+        toggleSidebar,
       }}
     >
       <div className="min-h-screen w-full bg-[#F5F8F5]">
-        {/* ======================================================
-            SIDEBAR
-            Starts BELOW the header
-        ====================================================== */}
-
         <DashboardSidebar
           open={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
+          onClose={closeSidebar}
           fullName={fullName}
           userId={userId}
         />
 
-        {/* ======================================================
-            PAGE CONTENT
-        ====================================================== */}
-
         <div
-          className={`min-h-screen bg-[#F5F8F5] transition-[padding] duration-300 ease-in-out ${
-            sidebarOpen
-              ? "lg:pl-[245px]"
-              : "lg:pl-0"
-          }`}
+          className={`
+            min-h-screen
+            bg-[#F5F8F5]
+            transition-[padding]
+            duration-500
+            ease-[cubic-bezier(0.22,1,0.36,1)]
+            ${
+              sidebarOpen
+                ? "lg:pl-[245px]"
+                : "lg:pl-0"
+            }
+          `}
         >
           {children}
         </div>
@@ -80,9 +133,7 @@ export function DashboardUIProvider({
 }
 
 export function useDashboardUI() {
-  const context = useContext(
-    DashboardUIContext
-  );
+  const context = useContext(DashboardUIContext);
 
   if (!context) {
     throw new Error(

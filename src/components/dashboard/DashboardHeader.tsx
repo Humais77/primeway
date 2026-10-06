@@ -1,9 +1,9 @@
+
 "use client";
 
 import {
   Bell,
   Menu,
-  Settings,
   Wallet,
   Power,
   ChevronDown,
@@ -20,6 +20,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { images } from "@/src/lib/images";
+
 type DashboardHeaderProps = {
   fullName?: string;
   balanceStr?: string;
@@ -52,30 +53,18 @@ export default function DashboardHeader({
   const { toggleSidebar } = useDashboardUI();
   const router = useRouter();
 
-  const [notifications, setNotifications] =
-    useState<NotificationItem[]>([]);
-
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-
-  const [showNotifications, setShowNotifications] =
-    useState(false);
-
+  const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [profile, setProfile] = useState<ProfileData | null>(null);
 
-  const [profile, setProfile] =
-    useState<ProfileData | null>(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
 
-  const notificationRef =
-    useRef<HTMLDivElement>(null);
-
-  const profileRef =
-    useRef<HTMLDivElement>(null);
-
-  /*
-   * =========================================================
-   * LOAD NOTIFICATIONS
-   * =========================================================
-   */
+  /* =========================================================
+     LOAD NOTIFICATIONS
+  ========================================================= */
 
   const loadNotifications = async () => {
     try {
@@ -90,61 +79,49 @@ export default function DashboardHeader({
       setNotifications(data.notifications ?? []);
       setUnreadCount(data.unreadCount ?? 0);
     } catch (error) {
-      console.error(
-        "Failed to load notifications:",
-        error
-      );
+      console.error("Failed to load notifications:", error);
     }
   };
 
-const handleMarkAllRead = async () => {
-  if (unreadCount === 0) {
-    return;
-  }
+  /* =========================================================
+     MARK ALL READ
+  ========================================================= */
 
-  try {
-    const response = await fetch(
-      "/api/notifications",
-      {
+  const handleMarkAllRead = async () => {
+    if (unreadCount === 0) return;
+
+    try {
+      const response = await fetch("/api/notifications", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to mark notifications as read."
+        );
       }
-    );
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        data.message ||
-          "Failed to mark notifications as read."
+      setNotifications((current) =>
+        current.map((notification) => ({
+          ...notification,
+          isRead: true,
+        }))
       );
+
+      setUnreadCount(0);
+    } catch (error) {
+      console.error("Failed to mark all notifications:", error);
     }
+  };
 
-    // Update the UI immediately.
-    setNotifications((current) =>
-      current.map((notification) => ({
-        ...notification,
-        isRead: true,
-      }))
-    );
-
-    setUnreadCount(0);
-  } catch (error) {
-    console.error(
-      "Failed to mark all notifications:",
-      error
-    );
-  }
-};
-
-
-  /*
-   * =========================================================
-   * LOAD PROFILE
-   * =========================================================
-   */
+  /* =========================================================
+     LOAD PROFILE
+  ========================================================= */
 
   const loadProfile = async () => {
     try {
@@ -158,18 +135,13 @@ const handleMarkAllRead = async () => {
 
       setProfile(data.user ?? null);
     } catch (error) {
-      console.error(
-        "Failed to load profile:",
-        error
-      );
+      console.error("Failed to load profile:", error);
     }
   };
 
-  /*
-   * =========================================================
-   * INITIAL LOAD + REFRESH
-   * =========================================================
-   */
+  /* =========================================================
+     INITIAL LOAD + REFRESH
+  ========================================================= */
 
   useEffect(() => {
     loadNotifications();
@@ -185,16 +157,12 @@ const handleMarkAllRead = async () => {
     };
   }, []);
 
-  /*
-   * =========================================================
-   * CLOSE DROPDOWNS WHEN CLICKING OUTSIDE
-   * =========================================================
-   */
+  /* =========================================================
+     CLOSE DROPDOWNS WHEN CLICKING OUTSIDE
+  ========================================================= */
 
   useEffect(() => {
-    const handleClickOutside = (
-      event: MouseEvent
-    ) => {
+    const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
 
       if (
@@ -204,32 +172,21 @@ const handleMarkAllRead = async () => {
         setShowNotifications(false);
       }
 
-      if (
-        profileRef.current &&
-        !profileRef.current.contains(target)
-      ) {
+      if (profileRef.current && !profileRef.current.contains(target)) {
         setShowProfile(false);
       }
     };
 
-    document.addEventListener(
-      "mousedown",
-      handleClickOutside
-    );
+    document.addEventListener("mousedown", handleClickOutside);
 
     return () => {
-      document.removeEventListener(
-        "mousedown",
-        handleClickOutside
-      );
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
-  /*
-   * =========================================================
-   * LOGOUT
-   * =========================================================
-   */
+  /* =========================================================
+     LOGOUT
+  ========================================================= */
 
   const handleLogout = async () => {
     try {
@@ -242,11 +199,9 @@ const handleMarkAllRead = async () => {
     }
   };
 
-  /*
-   * =========================================================
-   * MARK NOTIFICATION READ
-   * =========================================================
-   */
+  /* =========================================================
+     DELETE NOTIFICATION
+  ========================================================= */
 
   const handleDeleteNotification = async (
     notification: NotificationItem
@@ -260,97 +215,56 @@ const handleMarkAllRead = async () => {
       );
 
       if (!response.ok) {
-        throw new Error(
-          "Failed to delete notification."
-        );
+        throw new Error("Failed to delete notification.");
       }
 
       setNotifications((current) =>
-        current.filter(
-          (item) => item.id !== notification.id
-        )
+        current.filter((item) => item.id !== notification.id)
       );
 
       if (!notification.isRead) {
-        setUnreadCount((current) =>
-          Math.max(0, current - 1)
-        );
+        setUnreadCount((current) => Math.max(0, current - 1));
       }
     } catch (error) {
-      console.error(
-        "Failed to delete notification:",
-        error
-      );
+      console.error("Failed to delete notification:", error);
     }
   };
 
-
-
-  /*
-   * =========================================================
-   * HELPERS
-   * =========================================================
-   */
+  /* =========================================================
+     HELPERS
+  ========================================================= */
 
   const firstName =
     profile?.fullName?.split(" ")[0] ||
     fullName.split(" ")[0];
 
-  const displayName =
-    profile?.fullName || fullName;
+  const displayName = profile?.fullName || fullName;
 
-  const username =
-    profile?.username || "";
+  const username = profile?.username || "";
 
-  const email =
-    profile?.email || "";
-
-  /*
-   * Referral level:
-   *
-   * Every user starts at Level 1.
-   * After their first successful referred investment,
-   * they become Level 2 permanently.
-   */
+  const email = profile?.email || "";
 
   const referralLevel =
-    profile?.referralLevel === 2
-      ? 2
-      : 1;
+    profile?.referralLevel === 2 ? 2 : 1;
 
   const referralLevelLabel =
-    referralLevel === 2
-      ? "Level 2"
-      : "Level 1";
+    referralLevel === 2 ? "Level 2" : "Level 1";
 
-  /*
-   * Balance:
-   *
-   * balancePaisa is the source of truth.
-   * 100 paisa = 1 PKR.
-   */
-
-  const liveBalancePaisa =
-    profile?.balancePaisa ?? null;
+  const liveBalancePaisa = profile?.balancePaisa ?? null;
 
   const liveBalance =
     liveBalancePaisa !== null
-      ? `Rs ${(liveBalancePaisa / 100).toLocaleString(
-        "en-PK",
-        {
+      ? `Rs ${(liveBalancePaisa / 100).toLocaleString("en-PK", {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
-        }
-      )}`
+        })}`
       : balanceStr;
 
   const initials = displayName
     .substring(0, 2)
     .toUpperCase();
 
-  const getNotificationIcon = (
-    type: string
-  ) => {
+  const getNotificationIcon = (type: string) => {
     if (type === "LOGIN") {
       return (
         <CheckCircle2
@@ -377,19 +291,14 @@ const handleMarkAllRead = async () => {
     );
   };
 
-  const formatNotificationTime = (
-    date: string
-  ) => {
+  const formatNotificationTime = (date: string) => {
     const notificationDate = new Date(date);
     const now = new Date();
 
     const difference =
-      now.getTime() -
-      notificationDate.getTime();
+      now.getTime() - notificationDate.getTime();
 
-    const minutes = Math.floor(
-      difference / 60000
-    );
+    const minutes = Math.floor(difference / 60000);
 
     if (minutes < 1) {
       return "Just now";
@@ -411,13 +320,10 @@ const handleMarkAllRead = async () => {
       return `${days}d ago`;
     }
 
-    return notificationDate.toLocaleDateString(
-      "en-PK",
-      {
-        day: "numeric",
-        month: "short",
-      }
-    );
+    return notificationDate.toLocaleDateString("en-PK", {
+      day: "numeric",
+      month: "short",
+    });
   };
 
   return (
@@ -432,21 +338,33 @@ const handleMarkAllRead = async () => {
         h-[72px]
         w-full
         items-center
-        justify-between
         border-b
         border-[#DCEDE3]
         bg-white
-        px-4
+        px-3
         shadow-[0_2px_15px_rgba(24,97,63,0.08)]
+        sm:px-4
         md:px-6
         lg:px-8
       "
     >
-      {/* =========================================================
+      {/* =====================================================
           LEFT SECTION
-      ========================================================= */}
+      ===================================================== */}
 
-      <div className="flex items-center gap-4 md:gap-6">
+      <div
+        className="
+          flex
+          min-w-0
+          flex-1
+          items-center
+          gap-2
+          sm:gap-3
+          md:gap-5
+        "
+      >
+        {/* Sidebar Button */}
+
         <button
           type="button"
           onClick={toggleSidebar}
@@ -455,6 +373,7 @@ const handleMarkAllRead = async () => {
             flex
             h-10
             w-10
+            shrink-0
             items-center
             justify-center
             rounded-xl
@@ -462,19 +381,32 @@ const handleMarkAllRead = async () => {
             transition
             hover:bg-[#EAF8F0]
             hover:text-[#18613F]
+            active:scale-95
           "
         >
           <Menu
-            size={24}
+            size={23}
             strokeWidth={2.5}
           />
         </button>
 
+        {/* Brand */}
+
         <Link
           href="/dashboard"
           aria-label="GrowVest — Home"
-          className="flex items-center"
+          className="
+            flex
+            min-w-0
+            shrink
+            items-center
+            gap-1.5
+            overflow-hidden
+            sm:gap-2
+          "
         >
+          {/* Brand Logo */}
+
           <Image
             src={images.brandLogo}
             alt="GrowVest"
@@ -482,16 +414,27 @@ const handleMarkAllRead = async () => {
             height={80}
             priority
             className="
-    h-11
-    w-11
-    shrink-0
-    object-contain
-    md:h-12
-    md:w-12
-  "
+              h-9
+              w-9
+              shrink-0
+              object-contain
+              sm:h-10
+              sm:w-10
+              md:h-12
+              md:w-12
+            "
           />
 
-          <div className="flex h-11 flex-col justify-center md:h-12">
+          {/* Brand Name */}
+
+          <div
+            className="
+              flex
+              min-w-0
+              flex-col
+              justify-center
+            "
+          >
             <Image
               src={images.brandName}
               alt="GrowVest"
@@ -499,23 +442,26 @@ const handleMarkAllRead = async () => {
               height={48}
               priority
               className="
-    h-6
-    w-auto
-    object-contain
-    object-left
-    md:h-7
-  "
+                h-[19px]
+                w-auto
+                max-w-[105px]
+                object-contain
+                object-left
+                sm:h-6
+                sm:max-w-[140px]
+                md:h-7
+                md:max-w-[175px]
+              "
             />
 
             <span
               className="
-                mt-0.5
-                mb-[-12px]
                 hidden
+                truncate
                 text-[8px]
                 font-semibold
                 uppercase
-                tracking-[0.22em]
+                tracking-[0.18em]
                 text-[#18613F]
                 sm:block
                 md:text-[9px]
@@ -528,29 +474,35 @@ const handleMarkAllRead = async () => {
         </Link>
       </div>
 
-      {/* =========================================================
+      {/* =====================================================
           RIGHT SECTION
-      ========================================================= */}
+      ===================================================== */}
 
-      <div className="flex items-center gap-2 md:gap-4">
-
-
-        {/* =====================================================
+      <div
+        className="
+          flex
+          shrink-0
+          items-center
+          gap-1.5
+          sm:gap-2
+          md:gap-3
+          lg:gap-4
+        "
+      >
+        {/* ===================================================
             NOTIFICATIONS
-        ===================================================== */}
+        =================================================== */}
 
         <div
           ref={notificationRef}
-          className="relative"
+          className="relative shrink-0"
         >
           <button
             type="button"
             aria-label="Notifications"
+            aria-expanded={showNotifications}
             onClick={() => {
-              setShowNotifications(
-                (current) => !current
-              );
-
+              setShowNotifications((current) => !current);
               setShowProfile(false);
             }}
             className="
@@ -558,6 +510,7 @@ const handleMarkAllRead = async () => {
               flex
               h-10
               w-10
+              shrink-0
               items-center
               justify-center
               rounded-full
@@ -566,6 +519,7 @@ const handleMarkAllRead = async () => {
               transition
               hover:bg-[#D9F3E4]
               hover:text-[#18613F]
+              active:scale-95
             "
           >
             <Bell
@@ -577,8 +531,8 @@ const handleMarkAllRead = async () => {
               <span
                 className="
                   absolute
-                  -right-1
-                  -top-1
+                  -right-0.5
+                  -top-0.5
                   flex
                   h-5
                   min-w-5
@@ -594,21 +548,22 @@ const handleMarkAllRead = async () => {
                   ring-white
                 "
               >
-                {unreadCount > 9
-                  ? "9+"
-                  : unreadCount}
+                {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
           </button>
+
+          {/* Notification Dropdown */}
 
           {showNotifications && (
             <div
               className="
                 absolute
                 right-0
-                top-12
+                top-[calc(100%+10px)]
                 z-[150]
-                w-[360px]
+                w-[calc(100vw-24px)]
+                max-w-[360px]
                 overflow-hidden
                 rounded-2xl
                 border
@@ -617,16 +572,20 @@ const handleMarkAllRead = async () => {
                 shadow-[0_15px_50px_rgba(15,61,46,0.15)]
               "
             >
+              {/* Header */}
+
               <div
                 className="
                   flex
-                  items-start
+                  items-center
                   justify-between
-                  gap-3
+                  gap-2
                   border-b
                   border-[#E8F2EC]
-                  px-4
-                  py-3.5
+                  px-3
+                  py-3
+                  sm:px-4
+                  sm:py-3.5
                 "
               >
                 <div className="min-w-0">
@@ -648,13 +607,15 @@ const handleMarkAllRead = async () => {
                       onClick={handleMarkAllRead}
                       className="
                         rounded-lg
-                        px-2.5
+                        px-2
                         py-1.5
-                        text-[10px]
+                        text-[9px]
                         font-bold
                         text-[#18B152]
                         transition
                         hover:bg-[#EAF8F0]
+                        sm:px-2.5
+                        sm:text-[10px]
                       "
                     >
                       Mark all read
@@ -671,6 +632,7 @@ const handleMarkAllRead = async () => {
                       flex
                       h-7
                       w-7
+                      shrink-0
                       items-center
                       justify-center
                       rounded-lg
@@ -688,9 +650,11 @@ const handleMarkAllRead = async () => {
                 </div>
               </div>
 
-              <div className="max-h-[380px] overflow-y-auto">
+              {/* Notification List */}
+
+              <div className="max-h-[min(380px,60vh)] overflow-y-auto overscroll-contain">
                 {notifications.length === 0 ? (
-                  <div className="px-5 py-12 text-center">
+                  <div className="px-5 py-10 text-center sm:py-12">
                     <div
                       className="
                         mx-auto
@@ -719,49 +683,55 @@ const handleMarkAllRead = async () => {
                     </p>
                   </div>
                 ) : (
-
                   notifications.map((notification) => (
                     <div
                       key={notification.id}
                       className={`
-      flex
-      w-full
-      gap-3
-      border-b
-      border-[#EDF4EF]
-      px-4
-      py-3
-      text-left
-      transition
-      last:border-b-0
-      hover:bg-[#F5FBF7]
-      ${!notification.isRead
-                          ? "bg-[#EAF8F0]"
-                          : "bg-white"
+                        flex
+                        w-full
+                        gap-2.5
+                        border-b
+                        border-[#EDF4EF]
+                        px-3
+                        py-3
+                        text-left
+                        transition
+                        last:border-b-0
+                        hover:bg-[#F5FBF7]
+                        sm:gap-3
+                        sm:px-4
+                        ${
+                          !notification.isRead
+                            ? "bg-[#EAF8F0]"
+                            : "bg-white"
                         }
-    `}
+                      `}
                     >
-                      {/* Notification Icon */}
+                      {/* Icon */}
+
                       <div
                         className="
-        mt-0.5
-        flex
-        h-8
-        w-8
-        shrink-0
-        items-center
-        justify-center
-        rounded-lg
-        bg-[#EAF8F0]
-      "
+                          mt-0.5
+                          flex
+                          h-8
+                          w-8
+                          shrink-0
+                          items-center
+                          justify-center
+                          rounded-lg
+                          bg-[#EAF8F0]
+                        "
                       >
-                        {getNotificationIcon(notification.type)}
+                        {getNotificationIcon(
+                          notification.type
+                        )}
                       </div>
 
-                      {/* Notification Content */}
+                      {/* Content */}
+
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-xs font-bold text-[#0F3D2E]">
+                          <p className="min-w-0 text-xs font-bold text-[#0F3D2E]">
                             {notification.title}
                           </p>
 
@@ -770,7 +740,7 @@ const handleMarkAllRead = async () => {
                           )}
                         </div>
 
-                        <p className="mt-1 text-[11px] leading-4 text-gray-500">
+                        <p className="mt-1 break-words text-[11px] leading-4 text-gray-500">
                           {notification.message}
                         </p>
 
@@ -781,28 +751,31 @@ const handleMarkAllRead = async () => {
                         </p>
                       </div>
 
-                      {/* Delete Button */}
+                      {/* Delete */}
+
                       <button
                         type="button"
                         aria-label="Delete notification"
                         title="Delete notification"
                         onClick={() =>
-                          handleDeleteNotification(notification)
+                          handleDeleteNotification(
+                            notification
+                          )
                         }
                         className="
-        flex
-        h-7
-        w-7
-        shrink-0
-        items-center
-        justify-center
-        self-start
-        rounded-lg
-        text-gray-300
-        transition
-        hover:bg-red-50
-        hover:text-red-500
-      "
+                          flex
+                          h-7
+                          w-7
+                          shrink-0
+                          items-center
+                          justify-center
+                          self-start
+                          rounded-lg
+                          text-gray-300
+                          transition
+                          hover:bg-red-50
+                          hover:text-red-500
+                        "
                       >
                         <Trash2
                           size={14}
@@ -811,44 +784,46 @@ const handleMarkAllRead = async () => {
                       </button>
                     </div>
                   ))
-
                 )}
               </div>
             </div>
           )}
         </div>
 
-        {/* =====================================================
+        {/* ===================================================
             PROFILE
-        ===================================================== */}
+        =================================================== */}
 
         <div
           ref={profileRef}
-          className="relative"
+          className="relative shrink-0"
         >
           <button
             type="button"
             onClick={() => {
-              setShowProfile(
-                (current) => !current
-              );
-
+              setShowProfile((current) => !current);
               setShowNotifications(false);
             }}
+            aria-expanded={showProfile}
             className="
               flex
+              h-10
+              shrink-0
               items-center
-              gap-2
+              gap-1.5
               rounded-full
               border
               border-[#DCEDE3]
               bg-white
-              px-2
-              py-1.5
+              px-1.5
+              py-1
               shadow-sm
               transition
               hover:border-[#BFE3CD]
               hover:bg-[#F7FCF9]
+              active:scale-95
+              sm:gap-2
+              sm:px-2
               md:gap-3
               md:px-3
             "
@@ -856,8 +831,8 @@ const handleMarkAllRead = async () => {
             <div
               className="
                 flex
-                h-9
-                w-9
+                h-8
+                w-8
                 shrink-0
                 items-center
                 justify-center
@@ -865,32 +840,37 @@ const handleMarkAllRead = async () => {
                 bg-gradient-to-br
                 from-[#18B152]
                 to-[#18613F]
-                text-[11px]
+                text-[10px]
                 font-bold
                 text-white
+                sm:h-9
+                sm:w-9
+                sm:text-[11px]
               "
             >
               {initials}
             </div>
 
-            <div className="hidden flex-col sm:flex">
+            <div className="hidden min-w-0 flex-col sm:flex">
               <span className="text-[9px] text-gray-400">
                 Welcome!
               </span>
 
-              <span className="mt-0.5 text-xs font-bold text-[#0F3D2E]">
+              <span className="mt-0.5 max-w-[80px] truncate text-xs font-bold text-[#0F3D2E]">
                 {firstName}
               </span>
             </div>
 
             <ChevronDown
-              size={15}
+              size={14}
               className={`
+                shrink-0
                 text-[#18B152]
                 transition
-                ${showProfile
-                  ? "rotate-180"
-                  : ""
+                ${
+                  showProfile
+                    ? "rotate-180"
+                    : ""
                 }
               `}
               strokeWidth={2.5}
@@ -904,9 +884,10 @@ const handleMarkAllRead = async () => {
               className="
                 absolute
                 right-0
-                top-12
+                top-[calc(100%+10px)]
                 z-[150]
-                w-[290px]
+                w-[calc(100vw-24px)]
+                max-w-[290px]
                 overflow-hidden
                 rounded-2xl
                 border
@@ -970,7 +951,7 @@ const handleMarkAllRead = async () => {
               <div className="p-3">
                 <div className="rounded-xl bg-[#EAF8F0] px-3 py-3">
                   <div className="flex items-center justify-between gap-3">
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-[9px] font-medium uppercase tracking-wide text-gray-400">
                         Referral Level
                       </p>
@@ -1033,7 +1014,6 @@ const handleMarkAllRead = async () => {
                     size={17}
                     strokeWidth={2.5}
                   />
-
                   Logout
                 </button>
               </div>
@@ -1041,18 +1021,23 @@ const handleMarkAllRead = async () => {
           )}
         </div>
 
-        {/* Divider */}
+        {/* ===================================================
+            DESKTOP DIVIDER
+        =================================================== */}
 
         <div className="hidden h-8 w-px bg-[#DCEDE3] lg:block" />
 
-        {/* Balance */}
+        {/* ===================================================
+            BALANCE
+        =================================================== */}
 
-        <div className="hidden items-center gap-2 sm:flex md:gap-3">
+        <div className="hidden shrink-0 items-center gap-2 sm:flex md:gap-3">
           <div
             className="
               flex
               h-10
               w-10
+              shrink-0
               items-center
               justify-center
               rounded-xl
@@ -1074,19 +1059,20 @@ const handleMarkAllRead = async () => {
           </div>
         </div>
 
-        {/* Divider */}
+        {/* ===================================================
+            DESKTOP LOGOUT
+        =================================================== */}
 
         <div className="hidden h-8 w-px bg-[#DCEDE3] lg:block" />
-
-        {/* Logout */}
 
         <button
           type="button"
           onClick={handleLogout}
           aria-label="Logout"
           className="
-            flex
+            hidden
             h-10
+            shrink-0
             items-center
             gap-2
             rounded-xl
@@ -1096,7 +1082,8 @@ const handleMarkAllRead = async () => {
             transition
             hover:bg-[#EAF8F0]
             hover:text-[#18613F]
-            md:px-3
+            lg:flex
+            lg:px-3
           "
         >
           <Power
@@ -1104,7 +1091,7 @@ const handleMarkAllRead = async () => {
             strokeWidth={2.5}
           />
 
-          <span className="hidden text-xs lg:block">
+          <span className="hidden text-xs xl:block">
             Logout
           </span>
         </button>

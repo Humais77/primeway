@@ -235,7 +235,8 @@ export default function DashboardSidebar({
           bg-[#0F3D2E]/55
           backdrop-blur-[2px]
           transition-opacity
-          duration-300
+duration-500
+ease-out
           lg:hidden
           ${
             open
@@ -264,8 +265,9 @@ export default function DashboardSidebar({
           border-white/10
           shadow-[4px_0_25px_rgba(15,61,46,0.25)]
           transition-transform
-          duration-300
-          ease-in-out
+duration-500
+ease-[cubic-bezier(0.22,1,0.36,1)]
+will-change-transform
           ${
             open
               ? "translate-x-0"
