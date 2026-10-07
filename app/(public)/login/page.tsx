@@ -18,6 +18,7 @@ import {
   TrendingUp,
   Leaf,
 } from "lucide-react";
+import { images } from "@/src/lib/images";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -103,7 +104,7 @@ export default function LoginPage() {
           aria-label="GrowVest home"
         >
           <Image
-            src="/images/Brand Logo.png"
+            src={images.brandLogo}
             alt="GrowVest"
             width={76}
             height={76}
@@ -269,7 +270,7 @@ export default function LoginPage() {
               <div className="mb-8 flex justify-center">
                 <Link href="/">
                   <Image
-                    src="/images/Brand Logo.png"
+                     src={images.brandLogo}
                     alt="GrowVest"
                     width={100}
                     height={100}

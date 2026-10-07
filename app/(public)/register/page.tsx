@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { images } from "@/src/lib/images";
 function RegisterPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -141,7 +142,7 @@ function RegisterPageContent() {
           className="group flex items-center gap-3"
         >
           <Image
-            src="/images/Brand Logo.png"
+          src={images.brandLogo}
             alt="GrowVest"
             width={76}
             height={76}
@@ -315,7 +316,7 @@ function RegisterPageContent() {
               <div className="mb-5 flex justify-center">
                 <Link href="/">
                   <Image
-                    src="/images/Brand Logo.png"
+                    src={images.brandLogo}
                     alt="GrowVest"
                     width={90}
                     height={90}

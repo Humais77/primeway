@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowUpRight, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { images } from "@/src/lib/images";
 
 const navigation = [
   { label: "Home", href: "/" },
@@ -29,7 +30,7 @@ export function LandingHeader() {
               aria-label="GrowVest — Home"
             >
               <Image
-                src="/images/Brand Logo.png"
+                src={images.brandLogo}
                 alt="GrowVest"
                 width={80}
                 height={80}
@@ -39,7 +40,7 @@ export function LandingHeader() {
 
               <div className="ml-2 flex h-10 flex-col justify-center sm:h-11 md:h-12">
                 <Image
-                  src="/images/Brand Name.png"
+                  src={images.brandName}
                   alt="GrowVest"
                   width={200}
                   height={48}
