@@ -166,22 +166,20 @@ function RegisterPageContent() {
         </Link>
 
         {/* Login */}
-        <div className="flex items-center gap-2 text-xs sm:gap-3 sm:text-sm">
-          <span className="hidden text-white/75 sm:inline">
-            Already a member?
-          </span>
+        <div className="flex items-center">
+  <Link
+    href="/login"
+    className="group flex h-9 items-center gap-1.5 rounded-lg border border-[#35e889]/40 bg-[#35e889]/10 px-3 text-[11px] font-semibold text-[#35e889] transition hover:border-[#35e889]/70 hover:bg-[#35e889]/15 hover:text-[#69f5a9] sm:h-10 sm:gap-2 sm:rounded-xl sm:px-4 sm:text-sm"
+  >
+    <span className="sm:hidden">Login</span>
+    <span className="hidden sm:inline">Already a member? Login</span>
 
-          <Link
-            href="/login"
-            className="group flex items-center gap-1.5 font-semibold text-[#35e889] transition hover:text-[#69f5a9]"
-          >
-            Login
-            <ArrowRight
-              size={16}
-              className="transition-transform group-hover:translate-x-1"
-            />
-          </Link>
-        </div>
+    <ArrowRight
+      size={15}
+      className="transition-transform group-hover:translate-x-1 sm:h-4 sm:w-4"
+    />
+  </Link>
+</div>
       </header>
 
       {/* =========================================================
