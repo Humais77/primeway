@@ -256,7 +256,7 @@ function RegisterPageContent() {
             </div>
           
             <Image
-              src="/images/login-hero1.png"
+              src={images.hero}
               alt="GrowVest — Invest, Grow, Together"
               width={900}
               height={600}

@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { images } from "@/src/lib/images";
 
 export const metadata: Metadata = {
   title: {
     default: "Grow Vest",
     template: "%s | Grow Vest",
+  },
+  icons: {
+    icon: images.favicon,
   },
   description:
     "Grow Vest is a digital investment platform offering investment plans, account management, referrals, and financial tracking.",

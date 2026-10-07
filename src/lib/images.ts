@@ -8,6 +8,6 @@ export const cloudinaryImage = (publicId: string) => {
 export const images = {
   brandLogo: cloudinaryImage("be420wykpsyn8nwjp2nx"),
   brandName: cloudinaryImage("s5kbj1m3c4cltfniocof"),
-  favicon: cloudinaryImage("favicon"),
-  hero: cloudinaryImage("hero"),
+  favicon: cloudinaryImage("be420wykpsyn8nwjp2nx"),
+  hero: cloudinaryImage("dj3zitznlatngtiiqyad"),
 };

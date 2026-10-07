@@ -348,13 +348,6 @@ export default async function DashboardPage() {
           />
 
           <QuickAction
-            href="/dashboard/app-download"
-            icon={<Download />}
-            label="App"
-            iconClass="bg-[#EAF8F0] text-[#18B152]"
-          />
-
-          <QuickAction
             href="/logout"
             icon={<LogOut />}
             label="Logout"

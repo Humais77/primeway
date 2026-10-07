@@ -29,7 +29,7 @@ function uploadToCloudinary(
     const uploadStream =
       cloudinary.uploader.upload_stream(
         {
-          folder: "primeway/deposit-proofs",
+          folder: "growvest/deposit-proofs",
           public_id: publicId,
           resource_type: "image",
           format: extension,
