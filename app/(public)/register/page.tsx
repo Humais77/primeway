@@ -21,8 +21,8 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-
-export default function RegisterPage() {
+import { Suspense } from "react";
+function RegisterPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -749,5 +749,19 @@ function SecurityItem({
 
       <span className="whitespace-nowrap">{text}</span>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-[#031f18] text-white">
+          Loading...
+        </div>
+      }
+    >
+      <RegisterPageContent />
+    </Suspense>
   );
 }
