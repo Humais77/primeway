@@ -47,8 +47,8 @@ type ProfileData = {
 };
 
 export default function DashboardHeader({
-  fullName = "Humais Ur Rehman",
-  balanceStr = "Rs 0.00",
+  fullName,
+  balanceStr,
 }: DashboardHeaderProps) {
   const { toggleSidebar } = useDashboardUI();
   const router = useRouter();
@@ -234,15 +234,11 @@ export default function DashboardHeader({
      HELPERS
   ========================================================= */
 
-  const firstName =
-    profile?.fullName?.split(" ")[0] ||
-    fullName.split(" ")[0];
 
-  const displayName = profile?.fullName || fullName;
-
-  const username = profile?.username || "";
-
-  const email = profile?.email || "";
+  const displayName = profile?.fullName || fullName || "";
+const firstName = displayName.split(" ")[0] || "";
+const username = profile?.username || "";
+const email = profile?.email || "";
 
   const referralLevel =
     profile?.referralLevel === 2 ? 2 : 1;
@@ -253,16 +249,22 @@ export default function DashboardHeader({
   const liveBalancePaisa = profile?.balancePaisa ?? null;
 
   const liveBalance =
-    liveBalancePaisa !== null
-      ? `Rs ${(liveBalancePaisa / 100).toLocaleString("en-PK", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })}`
-      : balanceStr;
+  liveBalancePaisa !== null
+    ? `Rs ${(liveBalancePaisa / 100).toLocaleString("en-PK", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`
+    : balanceStr || "Rs 0.00";
 
   const initials = displayName
-    .substring(0, 2)
-    .toUpperCase();
+  ? displayName
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((name) => name[0])
+      .join("")
+      .toUpperCase()
+  : "U";
 
   const getNotificationIcon = (type: string) => {
     if (type === "LOGIN") {
@@ -557,21 +559,28 @@ export default function DashboardHeader({
 
           {showNotifications && (
             <div
-              className="
-                absolute
-                right-0
-                top-[calc(100%+10px)]
-                z-[150]
-                w-[calc(100vw-24px)]
-                max-w-[360px]
-                overflow-hidden
-                rounded-2xl
-                border
-                border-[#DCEDE3]
-                bg-white
-                shadow-[0_15px_50px_rgba(15,61,46,0.15)]
-              "
-            >
+  className="
+    fixed
+    left-3
+    right-3
+    top-[82px]
+    z-[150]
+    w-auto
+    max-w-none
+    overflow-hidden
+    rounded-2xl
+    border
+    border-[#DCEDE3]
+    bg-white
+    shadow-[0_15px_50px_rgba(15,61,46,0.15)]
+    sm:absolute
+    sm:left-auto
+    sm:right-0
+    sm:top-[calc(100%+10px)]
+    sm:w-[360px]
+    sm:max-w-[360px]
+  "
+>
               {/* Header */}
 
               <div
@@ -881,21 +890,28 @@ export default function DashboardHeader({
 
           {showProfile && (
             <div
-              className="
-                absolute
-                right-0
-                top-[calc(100%+10px)]
-                z-[150]
-                w-[calc(100vw-24px)]
-                max-w-[290px]
-                overflow-hidden
-                rounded-2xl
-                border
-                border-[#DCEDE3]
-                bg-white
-                shadow-[0_15px_50px_rgba(15,61,46,0.15)]
-              "
-            >
+  className="
+    fixed
+    left-3
+    right-3
+    top-[82px]
+    z-[150]
+    w-auto
+    max-w-none
+    overflow-hidden
+    rounded-2xl
+    border
+    border-[#DCEDE3]
+    bg-white
+    shadow-[0_15px_50px_rgba(15,61,46,0.15)]
+    sm:absolute
+    sm:left-auto
+    sm:right-0
+    sm:top-[calc(100%+10px)]
+    sm:w-[290px]
+    sm:max-w-[290px]
+  "
+>
               {/* User Information */}
 
               <div
@@ -935,13 +951,17 @@ export default function DashboardHeader({
                       {displayName}
                     </p>
 
-                    <p className="mt-0.5 truncate text-[10px] text-gray-400">
-                      @{username}
-                    </p>
+                   {username && (
+  <p className="mt-0.5 truncate text-[10px] text-gray-400">
+    @{username}
+  </p>
+)}
 
-                    <p className="mt-0.5 truncate text-[10px] text-gray-400">
-                      {email}
-                    </p>
+{email && (
+  <p className="mt-0.5 truncate text-[10px] text-gray-400">
+    {email}
+  </p>
+)}
                   </div>
                 </div>
               </div>

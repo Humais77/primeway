@@ -3,7 +3,7 @@ import {
   ArrowUpRight,
   ShieldCheck,
 } from "lucide-react";
-import { FaFacebookF, FaInstagram } from "react-icons/fa";
+import { FaFacebookF, FaInstagram, FaTiktok } from "react-icons/fa";
 
 export function LandingFooter() {
   return (
@@ -103,21 +103,24 @@ export function LandingFooter() {
             </p>
 
             <div className="mt-5 flex gap-2">
-              <button
-                type="button"
+              <a
+    href="https://www.instagram.com/growvest.live?stkn=cW52MWJobzAzMDhi"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/60 transition hover:bg-white/10 hover:text-white"
+    aria-label="Instagram"
+  >
+    <FaInstagram size={16} />
+  </a>
+  <a
+                href="https://www.tiktok.com/@growvest.live?_r=1&_t=ZS-9AMHp9NhRI8"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/60 transition hover:bg-white/10 hover:text-white"
-                aria-label="Facebook"
+                aria-label="TikTok"
               >
-                <FaFacebookF size={16} />
-              </button>
-
-              <button
-                type="button"
-                className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/60 transition hover:bg-white/10 hover:text-white"
-                aria-label="Instagram"
-              >
-                <FaInstagram size={16} />
-              </button>
+                <FaTiktok size={16} />
+              </a>
             </div>
           </div>
         </div>

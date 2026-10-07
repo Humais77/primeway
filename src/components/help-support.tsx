@@ -93,14 +93,14 @@ export default function HelpSupport() {
       <div className="relative z-10 md:hidden">
         <div className="grid grid-cols-2 gap-3 sm:gap-4">
           <SupportCard
-            href="https://wa.me/923000000000"
+            href="https://wa.me/+966582470424"
             label="WhatsApp"
             sublabel="Admin"
             position="tl"
           />
 
           <SupportCard
-            href="https://wa.me/923000000001"
+            href="https://wa.me/+966582470424"
             label="WhatsApp"
             sublabel="Plan"
             position="tr"
@@ -112,14 +112,14 @@ export default function HelpSupport() {
           </div>
 
           <SupportCard
-            href="https://chat.whatsapp.com/your-group-invite"
+            href="https://whatsapp.com/channel/0029VbCn3IL0G0Xq6Ni4iv0V"
             label="WhatsApp"
             sublabel="Group"
             position="bl"
           />
 
           <SupportCard
-            href="https://whatsapp.com/channel/your-channel"
+            href="https://whatsapp.com/channel/0029VbCn3IL0G0Xq6Ni4iv0V"
             label="WhatsApp"
             sublabel="Channel"
             position="br"
@@ -193,7 +193,7 @@ export default function HelpSupport() {
             {/* Top left */}
             <div className="flex justify-end">
               <SupportCard
-                href="https://wa.me/923000000000"
+                href="https://wa.me/+966582470424"
                 label="WhatsApp"
                 sublabel="Admin"
                 position="tl"
@@ -208,7 +208,7 @@ export default function HelpSupport() {
             {/* Top right */}
             <div className="flex justify-start">
               <SupportCard
-                href="https://wa.me/923000000001"
+                href="https://wa.me/+966582470424"
                 label="WhatsApp"
                 sublabel="Plan"
                 position="tr"
@@ -218,7 +218,7 @@ export default function HelpSupport() {
             {/* Bottom left */}
             <div className="flex justify-end">
               <SupportCard
-                href="https://chat.whatsapp.com/your-group-invite"
+                href="https://chat.whatsapp.com/0029VbCn3IL0G0Xq6Ni4iv0V"
                 label="WhatsApp"
                 sublabel="Group"
                 position="bl"
@@ -228,7 +228,7 @@ export default function HelpSupport() {
             {/* Bottom right */}
             <div className="flex justify-start">
               <SupportCard
-                href="https://whatsapp.com/channel/your-channel"
+                href="https://whatsapp.com/channel/0029VbCn3IL0G0Xq6Ni4iv0V"
                 label="WhatsApp"
                 sublabel="Channel"
                 position="br"
