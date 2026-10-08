@@ -13,7 +13,7 @@ import {
   X,
   Trash2,
 } from "lucide-react";
-
+import { FaInstagram, FaTiktok } from "react-icons/fa";
 import { useDashboardUI } from "./DashboardUI";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -58,6 +58,7 @@ export default function DashboardHeader({
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [referralLevel, setReferralLevel] = useState(1);
 
   const notificationRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -138,24 +139,46 @@ export default function DashboardHeader({
       console.error("Failed to load profile:", error);
     }
   };
+  const loadReferralLevel = async () => {
+  try {
+    const response = await fetch("/api/referrals", {
+      cache: "no-store",
+    });
+
+    if (!response.ok) return;
+
+    const data = await response.json();
+
+    setReferralLevel(
+      data.referralLevel === 2 ? 2 : 1
+    );
+  } catch (error) {
+    console.error(
+      "Failed to load referral level:",
+      error
+    );
+  }
+};
 
   /* =========================================================
      INITIAL LOAD + REFRESH
   ========================================================= */
 
   useEffect(() => {
+  loadNotifications();
+  loadProfile();
+  loadReferralLevel();
+
+  const interval = setInterval(() => {
     loadNotifications();
     loadProfile();
+    loadReferralLevel();
+  }, 15000);
 
-    const interval = setInterval(() => {
-      loadNotifications();
-      loadProfile();
-    }, 15000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
+  return () => {
+    clearInterval(interval);
+  };
+}, []);
 
   /* =========================================================
      CLOSE DROPDOWNS WHEN CLICKING OUTSIDE
@@ -240,8 +263,6 @@ const firstName = displayName.split(" ")[0] || "";
 const username = profile?.username || "";
 const email = profile?.email || "";
 
-  const referralLevel =
-    profile?.referralLevel === 2 ? 2 : 1;
 
   const referralLevelLabel =
     referralLevel === 2 ? "Level 2" : "Level 1";
@@ -481,15 +502,16 @@ const email = profile?.email || "";
       ===================================================== */}
 
       <div
-        className="
-          flex
-          shrink-0
-          items-center
-          gap-1.5
-          sm:gap-2
-          md:gap-3
-          lg:gap-4
-        "
+       className="
+    flex
+    min-w-0
+    shrink-0
+    items-center
+    gap-1
+    sm:gap-2
+    md:gap-3
+    lg:gap-4
+  "
       >
         {/* ===================================================
             NOTIFICATIONS
@@ -1046,6 +1068,89 @@ const email = profile?.email || "";
         =================================================== */}
 
         <div className="hidden h-8 w-px bg-[#DCEDE3] lg:block" />
+        {/* ===================================================
+            SOCIAL LINKS
+        =================================================== */}
+
+        <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
+          <a
+            href="https://www.instagram.com/growvest.live"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GrowVest Instagram"
+            title="Instagram"
+            className="
+              flex
+              h-9
+              w-9
+              shrink-0
+              items-center
+              justify-center
+              rounded-xl
+              border
+              border-[#DCEDE3]
+              bg-white
+              text-[#18B152]
+              shadow-sm
+              transition
+              hover:border-[#BFE3CD]
+              hover:bg-[#EAF8F0]
+              hover:text-[#18613F]
+              active:scale-95
+              sm:h-10
+              sm:w-10
+            "
+          >
+            <FaInstagram
+              size={17}
+              className="sm:hidden"
+            />
+
+            <FaInstagram
+              size={19}
+              className="hidden sm:block"
+            />
+          </a>
+
+          <a
+            href="https://www.tiktok.com/@growvest.live"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GrowVest TikTok"
+            title="TikTok"
+            className="
+              flex
+              h-9
+              w-9
+              shrink-0
+              items-center
+              justify-center
+              rounded-xl
+              border
+              border-[#DCEDE3]
+              bg-white
+              text-[#18B152]
+              shadow-sm
+              transition
+              hover:border-[#BFE3CD]
+              hover:bg-[#EAF8F0]
+              hover:text-[#18613F]
+              active:scale-95
+              sm:h-10
+              sm:w-10
+            "
+          >
+            <FaTiktok
+              size={16}
+              className="sm:hidden"
+            />
+
+            <FaTiktok
+              size={18}
+              className="hidden sm:block"
+            />
+          </a>
+        </div>
 
         {/* ===================================================
             BALANCE

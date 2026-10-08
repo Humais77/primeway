@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, Copy, Users } from "lucide-react";
+import { ArrowRight, Check, Copy, Share2, Users } from "lucide-react";
 
 type Props = {
   referralCode: string;
@@ -15,25 +15,42 @@ export default function ReferralCodeCard({
 }: Props) {
   const [copied, setCopied] = useState(false);
 
-  const copy = async () => {
+  const referralUrl =
+    shareUrl ||
+    `${
+      typeof window !== "undefined"
+        ? window.location.origin
+        : "https://growvest.xyz"
+    }/register?ref=${encodeURIComponent(referralCode)}`;
+
+  const copyReferralLink = async () => {
     try {
-      await navigator.clipboard.writeText(referralCode);
+      await navigator.clipboard.writeText(referralUrl);
+
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
     } catch {
-      // Optional fallback for browsers that block clipboard
-      // outside HTTPS / user gesture contexts.
       try {
         const input = document.createElement("input");
-        input.value = referralCode;
+
+        input.value = referralUrl;
         document.body.appendChild(input);
+
         input.select();
         document.execCommand("copy");
+
         document.body.removeChild(input);
+
         setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+
+        setTimeout(() => {
+          setCopied(false);
+        }, 2000);
       } catch {
-        // swallow — nothing else we can do
+        // Nothing else to do
       }
     }
   };
@@ -50,8 +67,9 @@ export default function ReferralCodeCard({
             <h3 className="text-sm font-black text-[#0F3D2E]">
               Referral Program
             </h3>
+
             <p className="text-[11px] text-gray-500">
-              Share your code and earn rewards
+              Share your link and earn rewards
             </p>
           </div>
         </div>
@@ -65,29 +83,43 @@ export default function ReferralCodeCard({
         </Link>
       </div>
 
-      <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-dashed border-[#A9D9BC] bg-[#F5FBF7] px-3 py-3">
-        <p className="truncate font-mono text-sm font-bold tracking-wider text-[#18613F]">
-          {referralCode}
+      {/* Referral Code */}
+      <div className="mt-3 rounded-xl border border-dashed border-[#A9D9BC] bg-[#F5FBF7] px-3 py-3">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+          Your Referral Code
         </p>
 
-        <button
-          type="button"
-          onClick={copy}
-          aria-label="Copy referral code"
-          className="flex shrink-0 items-center gap-1 rounded-lg bg-[#18B152] px-2.5 py-1.5 text-[11px] font-bold text-white transition hover:bg-[#18613F] active:scale-95"
-        >
-          {copied ? (
-            <>
-              <Check size={13} />
-              Copied
-            </>
-          ) : (
-            <>
-              <Copy size={13} />
-              Copy
-            </>
-          )}
-        </button>
+        <div className="mt-1 flex items-center justify-between gap-3">
+          <p className="truncate font-mono text-sm font-bold tracking-wider text-[#18613F]">
+            {referralCode}
+          </p>
+
+          <button
+            type="button"
+            onClick={copyReferralLink}
+            aria-label="Copy referral link"
+            className="flex shrink-0 items-center gap-1 rounded-lg bg-[#18B152] px-2.5 py-1.5 text-[11px] font-bold text-white transition hover:bg-[#18613F] active:scale-95"
+          >
+            {copied ? (
+              <>
+                <Check size={13} />
+                Copied
+              </>
+            ) : (
+              <>
+                <Share2 size={13} />
+                Copy Link
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Referral Link Preview */}
+      <div className="mt-2 rounded-xl bg-[#F8FCF9] px-3 py-2">
+        <p className="truncate text-[10px] text-gray-400">
+          {referralUrl}
+        </p>
       </div>
     </section>
   );

@@ -87,25 +87,29 @@ export default function MyTeamPage() {
     loadTeam();
   }, []);
 
-  async function copyReferralCode() {
-    if (!data?.referralCode) return;
+  async function copyReferralLink() {
+  if (!data?.referralCode) return;
 
-    try {
-      await navigator.clipboard.writeText(
-        data.referralCode
-      );
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    "https://growvest.xyz";
 
-      setCopied(true);
+  const referralUrl = `${baseUrl}/register?ref=${encodeURIComponent(
+    data.referralCode
+  )}`;
 
-      setTimeout(() => {
-        setCopied(false);
-      }, 2000);
-    } catch {
-      setError(
-        "Unable to copy referral code"
-      );
-    }
+  try {
+    await navigator.clipboard.writeText(referralUrl);
+
+    setCopied(true);
+
+    setTimeout(() => {
+      setCopied(false);
+    }, 2000);
+  } catch {
+    setError("Unable to copy referral link");
   }
+}
 
   if (loading) {
     return (
@@ -171,7 +175,7 @@ export default function MyTeamPage() {
 
           <button
             type="button"
-            onClick={copyReferralCode}
+            onClick={copyReferralLink}
             className="flex items-center justify-center gap-2 rounded-xl bg-[#45a94a] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#388e3c]"
           >
             {copied ? (
@@ -182,7 +186,7 @@ export default function MyTeamPage() {
             ) : (
               <>
                 <Copy className="h-4 w-4" />
-                Copy Code
+                Copy Link
               </>
             )}
           </button>
