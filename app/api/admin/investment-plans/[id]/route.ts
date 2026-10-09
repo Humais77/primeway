@@ -1,18 +1,28 @@
-import { NextResponse } from "next/server";
 
+import { NextResponse } from "next/server";
 import { db } from "@/src/prisma/db";
 import { requireAdmin } from "@/src/lib/admin";
 
 type Params = {
-  params: Promise<{
-    id: string;
-  }>;
+  params: Promise<{ id: string }>;
 };
 
 const frequencies = ["DAILY", "WEEKLY", "MONTHLY"] as const;
 
+function validPositiveInteger(value: unknown): value is number {
+  return (
+    typeof value === "number" &&
+    Number.isSafeInteger(value) &&
+    value > 0
+  );
+}
+
+function validOptionalLimit(value: unknown): value is number | null {
+  return value === null || validPositiveInteger(value);
+}
+
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: Params
 ) {
   try {
@@ -26,11 +36,7 @@ export async function GET(
     }
 
     const { id } = await params;
-
-    const plan =
-      await db.orm.public.InvestmentPlan.first({
-        id,
-      });
+    const plan = await db.orm.public.InvestmentPlan.first({ id });
 
     if (!plan) {
       return NextResponse.json(
@@ -41,10 +47,10 @@ export async function GET(
 
     return NextResponse.json({ plan });
   } catch (error) {
-    console.error("Plan GET error:", error);
+    console.error("Investment plan GET error:", error);
 
     return NextResponse.json(
-      { message: "Unable to load plan." },
+      { message: "Unable to load investment plan." },
       { status: 500 }
     );
   }
@@ -65,11 +71,7 @@ export async function PATCH(
     }
 
     const { id } = await params;
-
-    const existing =
-      await db.orm.public.InvestmentPlan.first({
-        id,
-      });
+    const existing = await db.orm.public.InvestmentPlan.first({ id });
 
     if (!existing) {
       return NextResponse.json(
@@ -79,120 +81,147 @@ export async function PATCH(
     }
 
     const body = await request.json();
+    const update: Record<string, unknown> = {};
 
-    const {
-      name,
-      minAmountPaisa,
-      maxAmountPaisa,
-      profitRateBps,
-      referralBonusBps,
-      frequency,
-      durationDays,
-      isActive,
-    } = body;
+    if (body.name !== undefined) {
+      if (typeof body.name !== "string" || !body.name.trim()) {
+        return NextResponse.json(
+          { message: "Plan name cannot be empty." },
+          { status: 400 }
+        );
+      }
+      update.name = body.name.trim();
+    }
 
-    if (
-      typeof name !== "string" ||
-      !name.trim()
-    ) {
+    for (const field of [
+      "minAmountPaisa",
+      "maxAmountPaisa",
+      "durationDays",
+    ] as const) {
+      if (body[field] !== undefined) {
+        if (!validPositiveInteger(body[field])) {
+          return NextResponse.json(
+            { message: `${field} must be a positive integer.` },
+            { status: 400 }
+          );
+        }
+        update[field] = body[field];
+      }
+    }
+
+    for (const field of [
+      "profitRateBps",
+      "referralBonusBps",
+    ] as const) {
+      if (body[field] !== undefined) {
+        if (
+          !Number.isSafeInteger(body[field]) ||
+          body[field] < 0
+        ) {
+          return NextResponse.json(
+            { message: `${field} must be a non-negative integer.` },
+            { status: 400 }
+          );
+        }
+        update[field] = body[field];
+      }
+    }
+
+    if (body.frequency !== undefined) {
+      if (!frequencies.includes(body.frequency)) {
+        return NextResponse.json(
+          { message: "Select a valid profit frequency." },
+          { status: 400 }
+        );
+      }
+      update.frequency = body.frequency;
+    }
+
+    if (body.isActive !== undefined) {
+      if (typeof body.isActive !== "boolean") {
+        return NextResponse.json(
+          { message: "isActive must be true or false." },
+          { status: 400 }
+        );
+      }
+      update.isActive = body.isActive;
+    }
+
+    if (body.customWithdrawalLimitsEnabled !== undefined) {
+      if (typeof body.customWithdrawalLimitsEnabled !== "boolean") {
+        return NextResponse.json(
+          {
+            message:
+              "customWithdrawalLimitsEnabled must be true or false.",
+          },
+          { status: 400 }
+        );
+      }
+      update.customWithdrawalLimitsEnabled =
+        body.customWithdrawalLimitsEnabled;
+    }
+
+    for (const field of [
+      "dailyWithdrawalLimitPaisa",
+      "lifetimeWithdrawalLimitPaisa",
+    ] as const) {
+      if (body[field] !== undefined) {
+        if (!validOptionalLimit(body[field])) {
+          return NextResponse.json(
+            {
+              message:
+                `${field} must be a positive amount in paisa or null to inherit the global default.`,
+            },
+            { status: 400 }
+          );
+        }
+        update[field] = body[field];
+      }
+    }
+
+    const minAmount =
+      (update.minAmountPaisa as number | undefined) ??
+      existing.minAmountPaisa;
+    const maxAmount =
+      (update.maxAmountPaisa as number | undefined) ??
+      existing.maxAmountPaisa;
+
+    if (minAmount > maxAmount) {
       return NextResponse.json(
-        { message: "Plan name is required." },
+        { message: "Minimum plan amount cannot exceed maximum amount." },
         { status: 400 }
       );
     }
 
-    if (
-      !Number.isInteger(minAmountPaisa) ||
-      minAmountPaisa <= 0
-    ) {
+    if (Object.keys(update).length === 0) {
       return NextResponse.json(
-        { message: "Invalid minimum investment." },
+        { message: "No valid fields provided to update." },
         { status: 400 }
       );
     }
 
-    if (
-      !Number.isInteger(maxAmountPaisa) ||
-      maxAmountPaisa < minAmountPaisa
-    ) {
-      return NextResponse.json(
-        { message: "Invalid maximum investment." },
-        { status: 400 }
-      );
-    }
+    update.updatedAt = new Date().toISOString();
 
-    if (
-      !Number.isInteger(profitRateBps) ||
-      profitRateBps < 0
-    ) {
-      return NextResponse.json(
-        { message: "Invalid profit rate." },
-        { status: 400 }
-      );
-    }
-
-    if (
-      !Number.isInteger(referralBonusBps) ||
-      referralBonusBps < 0
-    ) {
-      return NextResponse.json(
-        { message: "Invalid referral bonus." },
-        { status: 400 }
-      );
-    }
-
-    if (!frequencies.includes(frequency)) {
-      return NextResponse.json(
-        { message: "Invalid frequency." },
-        { status: 400 }
-      );
-    }
-
-    if (
-      !Number.isInteger(durationDays) ||
-      durationDays <= 0
-    ) {
-      return NextResponse.json(
-        { message: "Invalid duration." },
-        { status: 400 }
-      );
-    }
-
-    const plan =
-      await db.orm.public.InvestmentPlan
-        .where({ id })
-        .update({
-          name: name.trim(),
-          minAmountPaisa,
-          maxAmountPaisa,
-          profitRateBps,
-          referralBonusBps,
-          frequency,
-          durationDays,
-          isActive:
-            typeof isActive === "boolean"
-              ? isActive
-              : existing.isActive,
-        });
+    const plan = await db.orm.public.InvestmentPlan
+      .where({ id })
+      .update(update);
 
     return NextResponse.json({
       message: "Investment plan updated successfully.",
       plan,
     });
   } catch (error) {
-    console.error("Plan PATCH error:", error);
+    console.error("Investment plan PATCH error:", error);
 
     return NextResponse.json(
-      {
-        message: "Unable to update investment plan.",
-      },
+      { message: "Unable to update investment plan." },
       { status: 500 }
     );
   }
 }
 
 export async function DELETE(
-  request: Request,
+  _request: Request,
   { params }: Params
 ) {
   try {
@@ -206,35 +235,29 @@ export async function DELETE(
     }
 
     const { id } = await params;
+    const existing = await db.orm.public.InvestmentPlan.first({ id });
 
-    const plan =
-      await db.orm.public.InvestmentPlan.first({
-        id,
-      });
-
-    if (!plan) {
+    if (!existing) {
       return NextResponse.json(
         { message: "Investment plan not found." },
         { status: 404 }
       );
     }
 
-    await db.orm.public.InvestmentPlan
-      .where({ id })
-      .delete();
+    await db.orm.public.InvestmentPlan.where({ id }).delete();
 
     return NextResponse.json({
       message: "Investment plan deleted successfully.",
     });
   } catch (error) {
-    console.error("Plan DELETE error:", error);
+    console.error("Investment plan DELETE error:", error);
 
     return NextResponse.json(
       {
         message:
-          "Unable to delete investment plan. It may have existing investments.",
+          "Unable to delete this plan. It may already be referenced by investments, deposits, or withdrawals.",
       },
-      { status: 500 }
+      { status: 409 }
     );
   }
 }

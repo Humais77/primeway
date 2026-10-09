@@ -87,6 +87,7 @@ model User {
   totalProfitPaisa Int @default(0)
   totalReferralPaisa Int @default(0)
   totalWithdrawnPaisa Int @default(0)
+   withdrawalSetting UserWithdrawalSetting?
 
   isActive Boolean @default(true)
   isEmailVerified Boolean @default(false)
@@ -129,6 +130,11 @@ model InvestmentPlan {
 
   frequency ProfitFrequency
   durationDays Int
+   customWithdrawalLimitsEnabled Boolean @default(false)
+  dailyWithdrawalLimitPaisa Int?
+  lifetimeWithdrawalLimitPaisa Int?
+
+  withdrawals Withdrawal[]
 
   isActive Boolean @default(true)
 
@@ -253,6 +259,7 @@ model Withdrawal {
 
   reviewedBy String?
   reviewedAt TimestamptzString?
+  
 
   createdAt TimestamptzString @default(now())
   updatedAt TimestamptzString @default(now())
@@ -269,11 +276,19 @@ model Withdrawal {
     fields: [reviewedBy],
     references: [id]
   )
+  planId String?
+
+  plan InvestmentPlan? @relation(
+    fields: [planId],
+    references: [id],
+    onDelete: SetNull
+  )
 
   transactions Transaction[]
 
   @@index([userId])
   @@index([status])
+  @@index([planId])
 }
 
 model Transaction {
@@ -432,6 +447,8 @@ model WithdrawalSetting {
   id String @id @default(uuid())
 
   minWithdrawalPaisa Int @default(50000)
+   defaultDailyLimitPaisa Int?
+  defaultLifetimeLimitPaisa Int?
 
   updatedAt TimestamptzString @default(now())
 }
@@ -460,4 +477,22 @@ model VerificationToken {
   @@index([userId])
   @@index([type])
   @@index([expiresAt])
+}
+
+model UserWithdrawalSetting {
+  id String @id @default(uuid())
+
+  userId String @unique
+
+  dailyLimitPaisa Int?
+  isEnabled Boolean @default(true)
+
+  createdAt TimestamptzString @default(now())
+  updatedAt TimestamptzString @default(now())
+
+  user User @relation(
+    fields: [userId],
+    references: [id],
+    onDelete: Cascade
+  )
 }

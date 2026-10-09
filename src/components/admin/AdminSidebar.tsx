@@ -28,6 +28,7 @@ const items = [
   { label: "Withdrawals", href: "/admin/withdrawals", icon: ArrowUpFromLine },
   { label: "Transactions", href: "/admin/transactions", icon: ReceiptText },
   { label: "Referral Settings", href: "/admin/referral-settings", icon: Gift },
+  { label: "Withdrawal Settings", href: "/admin/withdrawal-settings", icon: Gift },
 ];
 
 export default function AdminSidebar() {

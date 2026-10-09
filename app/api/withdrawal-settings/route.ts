@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 
+import { NextResponse } from "next/server";
 import { db } from "@/src/prisma/db";
 import { getSession } from "@/src/lib/auth";
 
@@ -14,34 +14,26 @@ export async function GET() {
       );
     }
 
-    let setting =
-      await db.orm.public.WithdrawalSetting
-        .first();
+    let setting = await db.orm.public.WithdrawalSetting.first();
 
     if (!setting) {
-      setting =
-        await db.orm.public.WithdrawalSetting.create(
-          {
-            minWithdrawalPaisa: 50000,
-          }
-        );
+      setting = await db.orm.public.WithdrawalSetting.create({
+        minWithdrawalPaisa: 50000,
+        defaultDailyLimitPaisa: null,
+        defaultLifetimeLimitPaisa: null,
+      });
     }
 
     return NextResponse.json({
-      minWithdrawalPaisa:
-        setting.minWithdrawalPaisa,
+      minWithdrawalPaisa: setting.minWithdrawalPaisa,
+      defaultDailyLimitPaisa: setting.defaultDailyLimitPaisa,
+      defaultLifetimeLimitPaisa: setting.defaultLifetimeLimitPaisa,
     });
   } catch (error) {
-    console.error(
-      "Withdrawal settings GET error:",
-      error
-    );
+    console.error("Withdrawal settings GET error:", error);
 
     return NextResponse.json(
-      {
-        message:
-          "Unable to load withdrawal settings.",
-      },
+      { message: "Unable to load withdrawal settings." },
       { status: 500 }
     );
   }

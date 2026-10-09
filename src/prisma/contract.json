@@ -44,6 +44,10 @@
       "model": "User",
       "namespace": "public"
     },
+    "UserWithdrawalSetting": {
+      "model": "UserWithdrawalSetting",
+      "namespace": "public"
+    },
     "VerificationToken": {
       "model": "VerificationToken",
       "namespace": "public"
@@ -705,6 +709,20 @@
                   "kind": "scalar"
                 }
               },
+              "customWithdrawalLimitsEnabled": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "dailyWithdrawalLimitPaisa": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "durationDays": {
                 "nullable": false,
                 "type": {
@@ -736,6 +754,13 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "lifetimeWithdrawalLimitPaisa": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
                   "kind": "scalar"
                 }
               },
@@ -812,12 +837,33 @@
                   "model": "Investment",
                   "namespace": "public"
                 }
+              },
+              "withdrawals": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "planId"
+                  ]
+                },
+                "to": {
+                  "model": "Withdrawal",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
               "fields": {
                 "createdAt": {
                   "column": "createdAt"
+                },
+                "customWithdrawalLimitsEnabled": {
+                  "column": "customWithdrawalLimitsEnabled"
+                },
+                "dailyWithdrawalLimitPaisa": {
+                  "column": "dailyWithdrawalLimitPaisa"
                 },
                 "durationDays": {
                   "column": "durationDays"
@@ -830,6 +876,9 @@
                 },
                 "isActive": {
                   "column": "isActive"
+                },
+                "lifetimeWithdrawalLimitPaisa": {
+                  "column": "lifetimeWithdrawalLimitPaisa"
                 },
                 "maxAmountPaisa": {
                   "column": "maxAmountPaisa"
@@ -1873,6 +1922,22 @@
                   "namespace": "public"
                 }
               },
+              "withdrawalSetting": {
+                "cardinality": "1:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "userId"
+                  ]
+                },
+                "to": {
+                  "model": "UserWithdrawalSetting",
+                  "namespace": "public"
+                }
+              },
               "withdrawals": {
                 "cardinality": "1:N",
                 "on": {
@@ -1948,6 +2013,94 @@
               },
               "namespaceId": "public",
               "table": "User"
+            }
+          },
+          "UserWithdrawalSetting": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "dailyLimitPaisa": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "isEnabled": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "user": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "userId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "dailyLimitPaisa": {
+                  "column": "dailyLimitPaisa"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "isEnabled": {
+                  "column": "isEnabled"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "userId": {
+                  "column": "userId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "UserWithdrawalSetting"
             }
           },
           "VerificationToken": {
@@ -2091,6 +2244,13 @@
                   "kind": "scalar"
                 }
               },
+              "planId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "rejectionReason": {
                 "nullable": true,
                 "type": {
@@ -2141,6 +2301,22 @@
               }
             },
             "relations": {
+              "plan": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "planId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "InvestmentPlan",
+                  "namespace": "public"
+                }
+              },
               "reviewer": {
                 "cardinality": "N:1",
                 "nullable": true,
@@ -2206,6 +2382,9 @@
                 "method": {
                   "column": "method"
                 },
+                "planId": {
+                  "column": "planId"
+                },
                 "rejectionReason": {
                   "column": "rejectionReason"
                 },
@@ -2231,6 +2410,20 @@
           },
           "WithdrawalSetting": {
             "fields": {
+              "defaultDailyLimitPaisa": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "defaultLifetimeLimitPaisa": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -2256,6 +2449,12 @@
             "relations": {},
             "storage": {
               "fields": {
+                "defaultDailyLimitPaisa": {
+                  "column": "defaultDailyLimitPaisa"
+                },
+                "defaultLifetimeLimitPaisa": {
+                  "column": "defaultLifetimeLimitPaisa"
+                },
                 "id": {
                   "column": "id"
                 },
@@ -2719,6 +2918,20 @@
                   "nativeType": "timestamptz",
                   "nullable": false
                 },
+                "customWithdrawalLimitsEnabled": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "dailyWithdrawalLimitPaisa": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
                 "durationDays": {
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
@@ -2748,6 +2961,11 @@
                   },
                   "nativeType": "bool",
                   "nullable": false
+                },
+                "lifetimeWithdrawalLimitPaisa": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
                 },
                 "maxAmountPaisa": {
                   "codecId": "pg/int4@1",
@@ -3684,6 +3902,84 @@
                 }
               ]
             },
+            "UserWithdrawalSetting": {
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "dailyLimitPaisa": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "isEnabled": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": true
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "userId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "userId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "UserWithdrawalSetting"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "User"
+                  }
+                }
+              ],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "userId"
+                  ]
+                }
+              ]
+            },
             "VerificationToken": {
               "checks": [
                 {
@@ -3835,6 +4131,11 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "planId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "rejectionReason": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -3913,9 +4214,34 @@
                     "namespaceId": "public",
                     "tableName": "User"
                   }
+                },
+                {
+                  "onDelete": "setNull",
+                  "source": {
+                    "columns": [
+                      "planId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Withdrawal"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "InvestmentPlan"
+                  }
                 }
               ],
               "indexes": [
+                {
+                  "columns": [
+                    "planId"
+                  ],
+                  "name": "Withdrawal_planId_idx_5b32079a",
+                  "prefix": "Withdrawal_planId_idx",
+                  "unique": false
+                },
                 {
                   "columns": [
                     "reviewedBy"
@@ -3950,6 +4276,16 @@
             },
             "WithdrawalSetting": {
               "columns": {
+                "defaultDailyLimitPaisa": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "defaultLifetimeLimitPaisa": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
                 "id": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -4056,10 +4392,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "fd011a028fb9a5ae47307d9df63156ab32e128ab8ae8d8359d29440588613df0"
+    "storageHash": "59cc3068c1483e9aca3f458d3469d120bb03924aca7964efe4fc113261b325d2"
   },
   "execution": {
-    "executionHash": "4873380d813b7ec401c6b0a3c7210c05fe2262d591a72c72bc80a196b79aeab1",
+    "executionHash": "9d6f4ad41037f46bfe0e22885f41e7d0338a13fd110ea48f31b3d2e1c72140a8",
     "mutations": {
       "defaults": [
         {
@@ -4159,6 +4495,17 @@
             "column": "id",
             "namespace": "public",
             "table": "User"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "UserWithdrawalSetting"
           }
         },
         {

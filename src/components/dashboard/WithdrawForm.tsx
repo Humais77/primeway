@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo, useState } from "react";
@@ -6,10 +7,24 @@ import {
   Building2,
   CheckCircle2,
   CreditCard,
+  Info,
+  Loader2,
   WalletCards,
 } from "lucide-react";
 
 type Method = "EASYPAISA" | "BANK" | "RAAST";
+
+type PlanLimit = {
+  id: string;
+  name: string;
+  dailyLimitPaisa: number | null;
+  dailyUsedPaisa: number;
+  dailyRemainingPaisa: number | null;
+  lifetimeLimitPaisa: number | null;
+  lifetimeUsedPaisa: number;
+  lifetimeRemainingPaisa: number | null;
+  remainingPaisa: number | null;
+};
 
 const methods: {
   value: Method;
@@ -20,22 +35,19 @@ const methods: {
   {
     value: "EASYPAISA",
     title: "Easypaisa",
-    description:
-      "Receive your withdrawal in your Easypaisa account.",
+    description: "Receive funds in your Easypaisa account.",
     icon: <WalletCards size={22} />,
   },
   {
     value: "BANK",
     title: "Bank Account",
-    description:
-      "Receive your withdrawal directly into your bank account.",
+    description: "Receive funds through a bank transfer.",
     icon: <Building2 size={22} />,
   },
   {
     value: "RAAST",
     title: "Raast Payment",
-    description:
-      "Receive your withdrawal through your Raast account.",
+    description: "Receive funds through your Raast account.",
     icon: <CreditCard size={22} />,
   },
 ];
@@ -47,132 +59,126 @@ function money(paisa: number) {
   })}`;
 }
 
+function allowance(value: number | null) {
+  return value == null ? "No cap" : money(value);
+}
+
 export default function WithdrawForm({
   balancePaisa,
   minWithdrawalPaisa,
+  userDailyLimitPaisa,
+  userDailyUsedPaisa,
+  userDailyRemainingPaisa,
+  maxAllowedPaisa,
+  planLimits,
 }: {
   balancePaisa: number;
   minWithdrawalPaisa: number;
+  userDailyLimitPaisa: number | null;
+  userDailyUsedPaisa: number;
+  userDailyRemainingPaisa: number | null;
+  maxAllowedPaisa: number;
+  planLimits: PlanLimit[];
 }) {
-  const [method, setMethod] =
-    useState<Method>("EASYPAISA");
-
+  const [method, setMethod] = useState<Method>("EASYPAISA");
   const [amount, setAmount] = useState("");
-  const [accountName, setAccountName] =
-    useState("");
-
-  const [accountNumber, setAccountNumber] =
-    useState("");
-
-  const [bankName, setBankName] =
-    useState("");
-
+  const [accountName, setAccountName] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [bankName, setBankName] = useState("");
   const [iban, setIban] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const amountPaisa =
-    Math.round(Number(amount || 0) * 100);
-
-  const isBelowMinimum =
-    amountPaisa > 0 &&
-    amountPaisa < minWithdrawalPaisa;
-
-  const insufficient =
-    amountPaisa > balancePaisa;
-
-  const canSubmit =
-    amountPaisa >= minWithdrawalPaisa &&
-    amountPaisa <= balancePaisa &&
-    accountName.trim() &&
-    accountNumber.trim() &&
-    !loading;
+  const amountPaisa = Math.round(Number(amount || 0) * 100);
 
   const selectedMethod = useMemo(
-    () =>
-      methods.find(
-        (item) => item.value === method
-      ),
+    () => methods.find((item) => item.value === method),
     [method]
   );
 
-  async function submitWithdrawal(
-    event: React.FormEvent
-  ) {
-    event.preventDefault();
+  const amountValid =
+    Number.isSafeInteger(amountPaisa) &&
+    amountPaisa >= minWithdrawalPaisa &&
+    amountPaisa <= balancePaisa &&
+    amountPaisa <= maxAllowedPaisa;
 
-    setError("");
-    setMessage("");
+  const canSubmit =
+    amountValid &&
+    Boolean(accountName.trim()) &&
+    Boolean(accountNumber.trim()) &&
+    !loading;
+
+  function amountError() {
+    if (!amount.trim()) return "";
+
+    if (!Number.isSafeInteger(amountPaisa) || amountPaisa <= 0) {
+      return "Enter a valid amount.";
+    }
 
     if (amountPaisa < minWithdrawalPaisa) {
-      setError(
-        `Minimum withdrawal amount is ${money(
-          minWithdrawalPaisa
-        )}.`
-      );
-      return;
+      return `Minimum withdrawal is ${money(minWithdrawalPaisa)}.`;
     }
 
     if (amountPaisa > balancePaisa) {
-      setError(
-        "Insufficient available balance."
-      );
+      return "The amount exceeds your available balance.";
+    }
+
+    if (amountPaisa > maxAllowedPaisa) {
+      return `Your current maximum eligible withdrawal is ${money(maxAllowedPaisa)}.`;
+    }
+
+    return "";
+  }
+
+  async function submitWithdrawal(event: React.FormEvent) {
+    event.preventDefault();
+    setError("");
+    setMessage("");
+
+    const validationMessage = amountError();
+
+    if (validationMessage) {
+      setError(validationMessage);
       return;
     }
 
-    if (!accountName.trim()) {
-      setError("Account name is required.");
+    if (!accountName.trim() || !accountNumber.trim()) {
+      setError("Account holder name and account number are required.");
       return;
     }
 
-    if (!accountNumber.trim()) {
-      setError(
-        "Account number is required."
-      );
+    if (method === "BANK" && !bankName.trim()) {
+      setError("Enter your bank name.");
       return;
     }
 
     setLoading(true);
 
     try {
-      const response = await fetch(
-        "/api/withdrawals",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            amountPaisa,
-            method,
-            accountName,
-            accountNumber,
-            bankName:
-              method === "BANK"
-                ? bankName
-                : "",
-            iban:
-              method === "BANK"
-                ? iban
-                : "",
-          }),
-        }
-      );
+      const response = await fetch("/api/withdrawals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amountPaisa,
+          method,
+          accountName: accountName.trim(),
+          accountNumber: accountNumber.trim(),
+          bankName: method === "BANK" ? bankName.trim() : "",
+          iban: method === "BANK" ? iban.trim() : "",
+        }),
+      });
 
-      const data =
-        await response.json();
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.message ||
-            "Unable to submit withdrawal."
-        );
+        throw new Error(data.message || "Unable to submit withdrawal.");
       }
 
       setMessage(
-        "Your withdrawal request has been submitted successfully."
+        `Your withdrawal request was submitted successfully${
+          data.planName ? ` under ${data.planName}` : ""
+        }.`
       );
 
       setAmount("");
@@ -180,10 +186,10 @@ export default function WithdrawForm({
       setAccountNumber("");
       setBankName("");
       setIban("");
-    } catch (error) {
+    } catch (err) {
       setError(
-        error instanceof Error
-          ? error.message
+        err instanceof Error
+          ? err.message
           : "Unable to submit withdrawal."
       );
     } finally {
@@ -193,323 +199,355 @@ export default function WithdrawForm({
 
   return (
     <div className="space-y-6">
-      {/* BALANCE CARD */}
-      <div className="rounded-[2rem] bg-gradient-to-br from-[#0F3D2E]
-            via-[#18613F]
-            to-[#18B152] p-6 text-white shadow-[0_10px_30px_rgba(69,169,74,0.18)] md:p-8">
-        <p className="text-sm font-medium text-green-100">
-          Available Balance
-        </p>
-
-        <p className="mt-2 text-4xl font-black tracking-tight">
-          {money(balancePaisa)}
-        </p>
-
-        <div className="mt-6 flex flex-wrap gap-3">
-          <div className="rounded-xl border border-white/10 bg-white/[0.08] px-4 py-2.5 backdrop-blur-sm">
-            <p className="text-[10px] uppercase tracking-wider text-green-100">
-              Minimum Withdrawal
+      <section className="overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#103c2c] via-[#18613f] to-[#18a852] p-6 text-white shadow-[0_14px_40px_rgba(24,97,63,0.18)] md:p-8">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-green-100">
+              Available balance
             </p>
-
-            <p className="mt-1 text-sm font-bold">
-              {money(minWithdrawalPaisa)}
+            <p className="mt-2 text-3xl font-black tracking-tight md:text-4xl">
+              {money(balancePaisa)}
+            </p>
+            <p className="mt-2 text-xs text-green-100/80">
+              Balance is reserved when you submit a withdrawal request.
             </p>
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-white/[0.08] px-4 py-2.5 backdrop-blur-sm">
-            <p className="text-[10px] uppercase tracking-wider text-green-100">
-              Payment
-            </p>
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/15 bg-white/10">
+            <WalletCards size={24} />
+          </div>
+        </div>
 
-            <p className="mt-1 text-sm font-bold">
-              Manual Processing
+        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          <SummaryTile
+            label="Minimum withdrawal"
+            value={money(minWithdrawalPaisa)}
+          />
+          <SummaryTile
+            label="Maximum currently eligible"
+            value={money(maxAllowedPaisa)}
+          />
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-[#dceedd] bg-white p-5 shadow-sm md:p-6">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#eff8f0] text-[#388e3c]">
+            <Info size={20} />
+          </div>
+          <div>
+            <h2 className="font-black text-[#173b20]">Your withdrawal limits</h2>
+            <p className="mt-1 text-xs leading-5 text-gray-500">
+              Your personal daily cap applies across plans. Each eligible plan
+              can also have its own daily and lifetime allowance.
             </p>
           </div>
         </div>
-      </div>
 
-      {/* SUCCESS MESSAGE */}
-      {message && (
-        <div className="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700 shadow-sm">
-          <CheckCircle2
-            size={20}
-            className="mt-0.5 shrink-0"
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <LimitTile
+            title="Personal daily limit"
+            limit={userDailyLimitPaisa}
+            used={userDailyUsedPaisa}
+            remaining={userDailyRemainingPaisa}
           />
+          <LimitTile
+            title="Available balance"
+            limit={balancePaisa}
+            used={0}
+            remaining={balancePaisa}
+            balanceMode
+          />
+        </div>
 
-          <p className="font-medium">
-            {message}
+        {planLimits.length === 0 ? (
+          <p className="mt-4 rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-800">
+            No eligible investment plan was found for your account. You may
+            need to complete an investment before withdrawing.
           </p>
+        ) : (
+          <div className="mt-5 space-y-3">
+            <h3 className="text-sm font-bold text-gray-700">
+              Investment plan allowances
+            </h3>
+
+            {planLimits.map((plan) => (
+              <div
+                key={plan.id}
+                className="rounded-2xl border border-gray-100 bg-gray-50/80 p-4"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="font-bold text-[#173b20]">{plan.name}</p>
+                  <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#388e3c]">
+                    Remaining: {allowance(plan.remainingPaisa)}
+                  </span>
+                </div>
+
+                <div className="mt-3 grid gap-3 text-xs sm:grid-cols-2">
+                  <div>
+                    <p className="text-gray-500">Daily remaining</p>
+                    <p className="mt-1 font-bold text-gray-800">
+                      {allowance(plan.dailyRemainingPaisa)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Lifetime remaining</p>
+                    <p className="mt-1 font-bold text-gray-800">
+                      {allowance(plan.lifetimeRemainingPaisa)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {message && (
+        <div className="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+          <CheckCircle2 size={20} className="mt-0.5 shrink-0" />
+          <p className="font-medium">{message}</p>
         </div>
       )}
 
-      {/* ERROR MESSAGE */}
       {error && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-600 shadow-sm">
+        <div
+          role="alert"
+          className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700"
+        >
           {error}
         </div>
       )}
 
-      {/* FORM CARD */}
       <form
         onSubmit={submitWithdrawal}
-        className="rounded-[2rem] border border-[#DDEBDD] bg-white p-6 shadow-sm md:p-8"
+        className="rounded-[2rem] border border-[#dceedd] bg-white p-5 shadow-sm md:p-8"
       >
-        {/* PAYMENT METHOD */}
-        <div>
-          <h2 className="text-xl font-black text-[#163B20]">
-            Choose Payment Method
-          </h2>
+        <h2 className="text-xl font-black text-[#173b20]">
+          Request a withdrawal
+        </h2>
+        <p className="mt-1 text-sm text-gray-500">
+          Choose your payout method and enter your account details.
+        </p>
 
-          <p className="mt-1 text-sm text-gray-500">
-            Select where you want to receive your
-            withdrawal.
-          </p>
+        <div className="mt-5 grid gap-3 md:grid-cols-3">
+          {methods.map((item) => {
+            const active = method === item.value;
 
-          <div className="mt-5 grid gap-4 md:grid-cols-3">
-            {methods.map((item) => {
-              const selected =
-                method === item.value;
-
-              return (
-                <button
-                  key={item.value}
-                  type="button"
-                  onClick={() =>
-                    setMethod(item.value)
-                  }
-                  className={`
-                    group relative rounded-2xl border p-5 text-left transition-all duration-200
-                    ${
-                      selected
-                        ? "border-[#45A94A] bg-[#EFF8F0] shadow-md ring-1 ring-[#45A94A]"
-                        : "border-gray-200 bg-white hover:border-green-200 hover:bg-[#F8FCF8]"
-                    }
-                  `}
+            return (
+              <button
+                key={item.value}
+                type="button"
+                onClick={() => setMethod(item.value)}
+                className={`rounded-2xl border p-4 text-left transition ${
+                  active
+                    ? "border-[#45a94a] bg-[#eff8f0] ring-1 ring-[#45a94a]"
+                    : "border-gray-200 bg-white hover:border-green-200 hover:bg-gray-50"
+                }`}
+              >
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                    active
+                      ? "bg-[#45a94a] text-white"
+                      : "bg-gray-100 text-[#388e3c]"
+                  }`}
                 >
-                  <div
-                    className={`
-                      flex h-12 w-12 items-center justify-center rounded-xl transition-colors
-                      ${
-                        selected
-                          ? "bg-[#45A94A] text-white"
-                          : "bg-gray-100 text-[#45A94A] group-hover:bg-[#EFF8F0]"
-                      }
-                    `}
-                  >
-                    {item.icon}
-                  </div>
-
-                  <p className="mt-4 text-sm font-black text-[#163B20]">
-                    {item.title}
-                  </p>
-
-                  <p className="mt-1.5 text-xs leading-5 text-gray-500">
-                    {item.description}
-                  </p>
-                </button>
-              );
-            })}
-          </div>
+                  {item.icon}
+                </div>
+                <p className="mt-3 text-sm font-black text-[#173b20]">
+                  {item.title}
+                </p>
+                <p className="mt-1 text-xs leading-5 text-gray-500">
+                  {item.description}
+                </p>
+              </button>
+            );
+          })}
         </div>
 
-        {/* DIVIDER */}
-        <div className="my-8 border-t border-[#E5EEE6]" />
+        <div className="my-7 border-t border-gray-100" />
 
-        {/* WITHDRAWAL DETAILS */}
-        <div>
-          <h2 className="text-xl font-black text-[#163B20]">
-            Withdrawal Details
-          </h2>
-
-          <p className="mt-1 text-sm text-gray-500">
-            Enter the account where you want to
-            receive the funds.
-          </p>
-
-          {/* AMOUNT */}
-          <label className="mt-6 block">
-            <span className="mb-2 block text-xs font-bold text-gray-600">
-              Withdrawal Amount (PKR)
-            </span>
-
-            <input
-              required
-              type="number"
-              min={
-                minWithdrawalPaisa / 100
-              }
-              max={balancePaisa / 100}
-              step="0.01"
-              value={amount}
-              onChange={(event) =>
-                setAmount(
-                  event.target.value
-                )
-              }
-              placeholder={`Minimum ${money(
-                minWithdrawalPaisa
-              )}`}
-              className="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm outline-none transition focus:border-[#45A94A] focus:bg-white focus:ring-1 focus:ring-[#45A94A]"
-            />
-
-            {isBelowMinimum && (
-              <p className="mt-2 text-xs font-semibold text-red-500">
-                Minimum withdrawal is{" "}
-                {money(
-                  minWithdrawalPaisa
-                )}
-              </p>
-            )}
-
-            {insufficient && (
-              <p className="mt-2 text-xs font-semibold text-red-500">
-                Amount exceeds your available
-                balance.
-              </p>
-            )}
-          </label>
-
-          {/* ACCOUNT DETAILS */}
-          <div className="mt-5 grid gap-5 md:grid-cols-2">
-            <label>
-              <span className="mb-2 block text-xs font-bold text-gray-600">
-                Account Name
-              </span>
-
-              <input
-                required
-                value={accountName}
-                onChange={(event) =>
-                  setAccountName(
-                    event.target.value
-                  )
-                }
-                placeholder="Enter account holder name"
-                className="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm outline-none transition focus:border-[#45A94A] focus:bg-white focus:ring-1 focus:ring-[#45A94A]"
-              />
-            </label>
-
-            <label>
-              <span className="mb-2 block text-xs font-bold text-gray-600">
-                Account Number
-              </span>
-
-              <input
-                required
-                value={accountNumber}
-                onChange={(event) =>
-                  setAccountNumber(
-                    event.target.value
-                  )
-                }
-                placeholder="03XXXXXXXXX"
-                className="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm outline-none transition focus:border-[#45A94A] focus:bg-white focus:ring-1 focus:ring-[#45A94A]"
-              />
-            </label>
-          </div>
-
-          {/* BANK SPECIFIC DETAILS */}
-          {method === "BANK" && (
-            <div className="mt-5 grid gap-5 md:grid-cols-2">
-              <label>
-                <span className="mb-2 block text-xs font-bold text-gray-600">
-                  Bank Name
-                </span>
-
-                <input
-                  value={bankName}
-                  onChange={(event) =>
-                    setBankName(
-                      event.target.value
-                    )
-                  }
-                  placeholder="e.g. HBL"
-                  className="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm outline-none transition focus:border-[#45A94A] focus:bg-white focus:ring-1 focus:ring-[#45A94A]"
-                />
-              </label>
-
-              <label>
-                <span className="mb-2 block text-xs font-bold text-gray-600">
-                  IBAN
-                </span>
-
-                <input
-                  value={iban}
-                  onChange={(event) =>
-                    setIban(
-                      event.target.value
-                    )
-                  }
-                  placeholder="PK..."
-                  className="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm outline-none transition focus:border-[#45A94A] focus:bg-white focus:ring-1 focus:ring-[#45A94A]"
-                />
-              </label>
-            </div>
+        <label className="block">
+          <span className="mb-2 block text-xs font-bold text-gray-600">
+            Withdrawal amount (PKR)
+          </span>
+          <input
+            required
+            type="number"
+            min={minWithdrawalPaisa / 100}
+            max={Math.min(balancePaisa, maxAllowedPaisa) / 100}
+            step="0.01"
+            value={amount}
+            onChange={(event) => setAmount(event.target.value)}
+            placeholder={`Minimum ${money(minWithdrawalPaisa)}`}
+            className="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm outline-none transition focus:border-[#45a94a] focus:bg-white focus:ring-1 focus:ring-[#45a94a]"
+          />
+          {amountError() && (
+            <p className="mt-2 text-xs font-semibold text-red-600">
+              {amountError()}
+            </p>
           )}
+        </label>
+
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
+          <TextField
+            label="Account holder name"
+            value={accountName}
+            onChange={setAccountName}
+            placeholder="Enter account holder name"
+          />
+          <TextField
+            label="Account number"
+            value={accountNumber}
+            onChange={setAccountNumber}
+            placeholder="Enter account number"
+          />
         </div>
 
-        {/* SUMMARY BOX */}
-        <div className="mt-8 rounded-2xl border border-[#DDEBDD] bg-[#F5F8F5] p-5 md:p-6">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">
-              Payment Method
-            </span>
+        {method === "BANK" && (
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <TextField
+              label="Bank name"
+              value={bankName}
+              onChange={setBankName}
+              placeholder="e.g. HBL"
+            />
+            <TextField
+              label="IBAN (optional)"
+              value={iban}
+              onChange={setIban}
+              placeholder="PK..."
+            />
+          </div>
+        )}
 
-            <span className="text-sm font-bold text-[#163B20]">
+        <div className="mt-6 rounded-2xl border border-[#dceedd] bg-[#f5faf5] p-4">
+          <div className="flex items-center justify-between gap-3 text-sm">
+            <span className="text-gray-500">Payout method</span>
+            <span className="font-bold text-[#173b20]">
               {selectedMethod?.title}
             </span>
           </div>
-
-          <div className="mt-3 flex items-center justify-between">
-            <span className="text-sm text-gray-500">
-              Withdrawal Amount
-            </span>
-
-            <span className="font-black text-[#163B20]">
-              {amountPaisa > 0
-                ? money(amountPaisa)
-                : "Rs 0.00"}
+          <div className="mt-3 flex items-center justify-between gap-3 text-sm">
+            <span className="text-gray-500">Withdrawal amount</span>
+            <span className="font-black text-[#173b20]">
+              {amountPaisa > 0 ? money(amountPaisa) : money(0)}
             </span>
           </div>
-
-          <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-4">
-            <span className="text-sm font-bold text-gray-600">
-              Available After Request
+          <div className="mt-3 flex items-center justify-between gap-3 border-t border-gray-200 pt-3 text-sm">
+            <span className="font-bold text-gray-600">
+              Balance after request
             </span>
-
-            <span className="text-lg font-black text-[#45A94A]">
-              {money(
-                Math.max(
-                  0,
-                  balancePaisa -
-                    amountPaisa
-                )
-              )}
+            <span className="font-black text-[#388e3c]">
+              {money(Math.max(0, balancePaisa - amountPaisa))}
             </span>
           </div>
         </div>
 
-        {/* SUBMIT BUTTON */}
         <button
           type="submit"
           disabled={!canSubmit}
-          className="mt-6 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#45A94A] px-6 text-sm font-black text-white shadow-md transition hover:bg-[#2F7D32] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+          className="mt-6 flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#45a94a] to-[#2f7d32] px-5 text-sm font-black text-white shadow-md transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {loading
-            ? "Submitting..."
-            : "Submit Withdrawal"}
-
-          {!loading && (
-            <ArrowRight size={18} />
+          {loading ? (
+            <>
+              <Loader2 size={18} className="animate-spin" />
+              Submitting request...
+            </>
+          ) : (
+            <>
+              Submit withdrawal request
+              <ArrowRight size={18} />
+            </>
           )}
         </button>
 
         <p className="mt-4 text-center text-xs leading-5 text-gray-400">
-          Withdrawals are manually processed by
-          the administration. Your balance is
+          Your request will be reviewed by the administration. Your balance is
           reserved when the request is submitted.
         </p>
       </form>
     </div>
+  );
+}
+
+function SummaryTile({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/10 p-3">
+      <p className="text-xs text-green-100">{label}</p>
+      <p className="mt-1 text-lg font-black">{value}</p>
+    </div>
+  );
+}
+
+function LimitTile({
+  title,
+  limit,
+  used,
+  remaining,
+  balanceMode = false,
+}: {
+  title: string;
+  limit: number | null;
+  used: number;
+  remaining: number | null;
+  balanceMode?: boolean;
+}) {
+  return (
+    <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+      <p className="text-xs font-semibold text-gray-500">{title}</p>
+      <p className="mt-1 text-lg font-black text-[#173b20]">
+        {balanceMode ? allowance(limit) : allowance(limit)}
+      </p>
+      <div className="mt-3 flex items-center justify-between gap-3 text-xs">
+        <span className="text-gray-500">
+          {balanceMode ? "Available" : "Used today"}
+        </span>
+        <span className="font-bold text-gray-700">
+          {balanceMode ? allowance(remaining) : money(used)}
+        </span>
+      </div>
+      {!balanceMode && (
+        <div className="mt-2 flex items-center justify-between gap-3 text-xs">
+          <span className="text-gray-500">Remaining today</span>
+          <span className="font-bold text-[#388e3c]">
+            {allowance(remaining)}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TextField({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-xs font-bold text-gray-600">
+        {label}
+      </span>
+      <input
+        required={label !== "IBAN (optional)"}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        className="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm outline-none transition focus:border-[#45a94a] focus:bg-white focus:ring-1 focus:ring-[#45a94a]"
+      />
+    </label>
   );
 }

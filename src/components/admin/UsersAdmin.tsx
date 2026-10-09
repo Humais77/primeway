@@ -72,6 +72,10 @@ export default function UsersAdmin({
   // independently without blocking each other.
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [limitUser, setLimitUser] = useState<User | null>(null);
+const [limitAmount, setLimitAmount] = useState("");
+const [limitEnabled, setLimitEnabled] = useState(true);
+const [limitSaving, setLimitSaving] = useState(false);
 
   const [form, setForm] = useState({
     ...emptyEditForm,
@@ -283,6 +287,93 @@ export default function UsersAdmin({
       setDeletingId(null);
     }
   }
+  async function openWithdrawalLimit(user: User) {
+  setLimitUser(user);
+
+  try {
+    const response = await fetch(
+      `/api/admin/users/${user.id}/withdrawal-limit`
+    );
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message);
+    }
+
+    const setting = data.setting;
+
+    setLimitAmount(
+      setting.dailyLimitPaisa == null
+        ? ""
+        : String(setting.dailyLimitPaisa / 100)
+    );
+
+    setLimitEnabled(Boolean(setting.isEnabled));
+  } catch (error) {
+    setLimitUser(null);
+    alert(
+      error instanceof Error
+        ? error.message
+        : "Unable to load withdrawal limit."
+    );
+  }
+}
+
+async function saveWithdrawalLimit(
+  event: React.FormEvent
+) {
+  event.preventDefault();
+
+  if (!limitUser) return;
+
+  setLimitSaving(true);
+
+  try {
+    const dailyLimitPaisa =
+      limitAmount.trim() === ""
+        ? null
+        : Math.round(Number(limitAmount) * 100);
+
+    if (
+      dailyLimitPaisa !== null &&
+      (!Number.isSafeInteger(dailyLimitPaisa) ||
+        dailyLimitPaisa <= 0)
+    ) {
+      throw new Error(
+        "Enter a positive daily limit or leave it empty for no individual cap."
+      );
+    }
+
+    const response = await fetch(
+      `/api/admin/users/${limitUser.id}/withdrawal-limit`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dailyLimitPaisa,
+          isEnabled: limitEnabled,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message);
+    }
+
+    setLimitUser(null);
+    alert("Withdrawal limit saved successfully.");
+  } catch (error) {
+    alert(
+      error instanceof Error
+        ? error.message
+        : "Unable to save withdrawal limit."
+    );
+  } finally {
+    setLimitSaving(false);
+  }
+}
 
   const filtered = users.filter((user) => {
     const query = search.toLowerCase();
@@ -482,6 +573,7 @@ export default function UsersAdmin({
                 <X size={18} />
               </button>
             </div>
+            
 
             <div className="grid gap-4 md:grid-cols-2">
               <Field
@@ -605,6 +697,81 @@ export default function UsersAdmin({
           </form>
         </div>
       )}
+      {limitUser && (
+  <div className="fixed inset-0 z-[220] flex items-start justify-center overflow-y-auto bg-black/50 p-4">
+    <form
+      onSubmit={saveWithdrawalLimit}
+      className="my-8 w-full max-w-lg rounded-3xl border border-[#dceedd] bg-white p-6 shadow-2xl"
+    >
+      <div className="mb-5 flex items-start justify-between">
+        <div>
+          <h2 className="text-xl font-black text-[#173b20]">
+            Daily Withdrawal Limit
+          </h2>
+          <p className="mt-1 text-sm text-gray-500">
+            {limitUser.fullName} (@{limitUser.username})
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setLimitUser(null)}
+          className="rounded-lg p-2 text-gray-500 hover:bg-gray-100"
+        >
+          <X size={18} />
+        </button>
+      </div>
+
+      <label className="block">
+        <span className="mb-2 block text-xs font-bold text-gray-600">
+          Daily Limit (PKR)
+        </span>
+        <input
+          type="number"
+          min="0.01"
+          step="0.01"
+          value={limitAmount}
+          onChange={(event) => setLimitAmount(event.target.value)}
+          placeholder="Leave empty for no individual cap"
+          className="h-11 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#45a94a]"
+        />
+      </label>
+
+      <label className="mt-5 flex items-center gap-2 text-sm font-semibold text-[#173b20]">
+        <input
+          type="checkbox"
+          checked={limitEnabled}
+          onChange={(event) => setLimitEnabled(event.target.checked)}
+          className="accent-[#45a94a]"
+        />
+        Apply individual daily limit
+      </label>
+
+      <p className="mt-3 text-xs leading-5 text-gray-500">
+        The limit resets at midnight Pakistan time and applies across
+        all investment plans. It is an additional restriction on top
+        of global and plan-specific limits.
+      </p>
+
+      <div className="mt-6 flex justify-end gap-3">
+        <button
+          type="button"
+          onClick={() => setLimitUser(null)}
+          className="rounded-xl border border-gray-200 px-5 py-3 text-sm font-bold text-gray-600"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={limitSaving}
+          className="rounded-xl bg-[#45a94a] px-5 py-3 text-sm font-bold text-white disabled:opacity-60"
+        >
+          {limitSaving ? "Saving..." : "Save Limit"}
+        </button>
+      </div>
+    </form>
+  </div>
+)}
 
       {/* TOOLBAR */}
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
@@ -701,6 +868,16 @@ export default function UsersAdmin({
 
                     <td className="px-5 py-4">
                       <div className="flex gap-2">
+                        <button
+    type="button"
+    onClick={() => openWithdrawalLimit(user)}
+    disabled={rowBusy}
+    title="Manage daily withdrawal limit"
+    aria-label="Manage daily withdrawal limit"
+    className="rounded-lg border border-[#dceedd] bg-[#f4faf4] px-2.5 py-2 text-[10px] font-bold text-[#2f7d32] transition hover:bg-[#e4f4e5] disabled:cursor-not-allowed disabled:opacity-50"
+  >
+    Limit
+  </button>
                         <button
                           type="button"
                           onClick={() => editUser(user)}
