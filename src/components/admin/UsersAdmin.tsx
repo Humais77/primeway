@@ -74,6 +74,7 @@ export default function UsersAdmin({
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [limitUser, setLimitUser] = useState<User | null>(null);
 const [limitAmount, setLimitAmount] = useState("");
+const [minimumWithdrawalAmount, setMinimumWithdrawalAmount] = useState("");
 const [limitEnabled, setLimitEnabled] = useState(true);
 const [limitSaving, setLimitSaving] = useState(false);
 
@@ -307,6 +308,11 @@ const [limitSaving, setLimitSaving] = useState(false);
         ? ""
         : String(setting.dailyLimitPaisa / 100)
     );
+    setMinimumWithdrawalAmount(
+      setting.minWithdrawalPaisa == null
+        ? ""
+        : String(setting.minWithdrawalPaisa / 100)
+    );
 
     setLimitEnabled(Boolean(setting.isEnabled));
   } catch (error) {
@@ -344,6 +350,15 @@ async function saveWithdrawalLimit(
       );
     }
 
+    const minWithdrawalPaisa =
+      minimumWithdrawalAmount.trim() === ""
+        ? null
+        : Math.round(Number(minimumWithdrawalAmount) * 100);
+
+    if (minWithdrawalPaisa !== null && (!Number.isSafeInteger(minWithdrawalPaisa) || minWithdrawalPaisa <= 0)) {
+      throw new Error("Enter a positive minimum withdrawal amount or leave it empty to inherit the global minimum.");
+    }
+
     const response = await fetch(
       `/api/admin/users/${limitUser.id}/withdrawal-limit`,
       {
@@ -351,6 +366,7 @@ async function saveWithdrawalLimit(
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           dailyLimitPaisa,
+          minWithdrawalPaisa,
           isEnabled: limitEnabled,
         }),
       }
@@ -363,7 +379,7 @@ async function saveWithdrawalLimit(
     }
 
     setLimitUser(null);
-    alert("Withdrawal limit saved successfully.");
+    alert("User withdrawal settings saved successfully.");
   } catch (error) {
     alert(
       error instanceof Error
@@ -706,7 +722,7 @@ async function saveWithdrawalLimit(
       <div className="mb-5 flex items-start justify-between">
         <div>
           <h2 className="text-xl font-black text-[#173b20]">
-            Daily Withdrawal Limit
+            User Withdrawal Settings
           </h2>
           <p className="mt-1 text-sm text-gray-500">
             {limitUser.fullName} (@{limitUser.username})
@@ -721,6 +737,12 @@ async function saveWithdrawalLimit(
           <X size={18} />
         </button>
       </div>
+
+      <label className="mb-5 block">
+        <span className="mb-2 block text-xs font-bold text-gray-600">Minimum Withdrawal (PKR)</span>
+        <input type="number" min="0.01" step="0.01" value={minimumWithdrawalAmount} onChange={(event) => setMinimumWithdrawalAmount(event.target.value)} placeholder="Leave empty to use global minimum" className="h-11 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#45a94a]" />
+        <p className="mt-1 text-xs text-gray-500">Only affects this user. Example: Rs 120.</p>
+      </label>
 
       <label className="block">
         <span className="mb-2 block text-xs font-bold text-gray-600">
@@ -748,9 +770,7 @@ async function saveWithdrawalLimit(
       </label>
 
       <p className="mt-3 text-xs leading-5 text-gray-500">
-        The limit resets at midnight Pakistan time and applies across
-        all investment plans. It is an additional restriction on top
-        of global and plan-specific limits.
+        The daily cap resets at midnight Pakistan time. The minimum withdrawal above applies only to this user; empty means use the global minimum. Daily caps remain an additional restriction.
       </p>
 
       <div className="mt-6 flex justify-end gap-3">
@@ -872,8 +892,8 @@ async function saveWithdrawalLimit(
     type="button"
     onClick={() => openWithdrawalLimit(user)}
     disabled={rowBusy}
-    title="Manage daily withdrawal limit"
-    aria-label="Manage daily withdrawal limit"
+    title="Manage withdrawal settings"
+    aria-label="Manage withdrawal settings"
     className="rounded-lg border border-[#dceedd] bg-[#f4faf4] px-2.5 py-2 text-[10px] font-bold text-[#2f7d32] transition hover:bg-[#e4f4e5] disabled:cursor-not-allowed disabled:opacity-50"
   >
     Limit

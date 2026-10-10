@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   Building2,
@@ -80,6 +79,33 @@ export default function WithdrawForm({
   maxAllowedPaisa: number;
   planLimits: PlanLimit[];
 }) {
+  const [minimumRequiredPaisa, setMinimumRequiredPaisa] = useState(minWithdrawalPaisa);
+  const [planMinimums, setPlanMinimums] = useState<{ id: string; name: string; minWithdrawalPaisa: number | null }[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadMinimums() {
+      try {
+        const response = await fetch("/api/withdrawal-settings", { cache: "no-store" });
+        const data = await response.json();
+        if (!response.ok) return;
+        const setting = data.setting;
+        const userMinimum = setting.userMinWithdrawalPaisa ?? null;
+        const plans = Array.isArray(setting.planMinimums) ? setting.planMinimums : [];
+        const effectiveByPlan = plans.map((plan: { id: string; name: string; minWithdrawalPaisa: number | null }) => {
+          const overrides = [userMinimum, plan.minWithdrawalPaisa].filter((value): value is number => value != null);
+          return { ...plan, effectiveMinimum: overrides.length ? Math.max(...overrides) : setting.minWithdrawalPaisa };
+        });
+        const minimum = effectiveByPlan.length
+          ? Math.min(...effectiveByPlan.map((plan: { effectiveMinimum: number }) => plan.effectiveMinimum))
+          : (userMinimum ?? setting.minWithdrawalPaisa);
+        if (!cancelled) { setMinimumRequiredPaisa(minimum); setPlanMinimums(plans); }
+      } catch { /* Keep the server-provided minimum if settings cannot load. */ }
+    }
+    void loadMinimums();
+    return () => { cancelled = true; };
+  }, [minWithdrawalPaisa]);
+
   const [method, setMethod] = useState<Method>("EASYPAISA");
   const [amount, setAmount] = useState("");
   const [accountName, setAccountName] = useState("");
@@ -99,7 +125,7 @@ export default function WithdrawForm({
 
   const amountValid =
     Number.isSafeInteger(amountPaisa) &&
-    amountPaisa >= minWithdrawalPaisa &&
+    amountPaisa >= minimumRequiredPaisa &&
     amountPaisa <= balancePaisa &&
     amountPaisa <= maxAllowedPaisa;
 
@@ -116,8 +142,8 @@ export default function WithdrawForm({
       return "Enter a valid amount.";
     }
 
-    if (amountPaisa < minWithdrawalPaisa) {
-      return `Minimum withdrawal is ${money(minWithdrawalPaisa)}.`;
+    if (amountPaisa < minimumRequiredPaisa) {
+      return `Minimum withdrawal is ${money(minimumRequiredPaisa)}.`;
     }
 
     if (amountPaisa > balancePaisa) {
@@ -221,7 +247,7 @@ export default function WithdrawForm({
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
           <SummaryTile
             label="Minimum withdrawal"
-            value={money(minWithdrawalPaisa)}
+            value={money(minimumRequiredPaisa)}
           />
           <SummaryTile
             label="Maximum currently eligible"
@@ -267,9 +293,19 @@ export default function WithdrawForm({
           </p>
         ) : (
           <div className="mt-5 space-y-3">
-            <h3 className="text-sm font-bold text-gray-700">
-              Investment plan allowances
-            </h3>
+            <h3 className="text-sm font-bold text-gray-700">Investment plan allowances</h3>
+            {planMinimums.length > 0 && (
+              <div className="rounded-xl border border-green-100 bg-green-50 p-3">
+                <p className="text-xs font-bold text-[#173b20]">Plan-specific minimum withdrawals</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {planMinimums.map((plan) => (
+                    <span key={plan.id} className="rounded-full bg-white px-3 py-1 text-xs text-gray-700">
+                      {plan.name}: {money(plan.minWithdrawalPaisa ?? minWithdrawalPaisa)}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {planLimits.map((plan) => (
               <div
@@ -374,14 +410,15 @@ export default function WithdrawForm({
           <input
             required
             type="number"
-            min={minWithdrawalPaisa / 100}
+            min={minimumRequiredPaisa / 100}
             max={Math.min(balancePaisa, maxAllowedPaisa) / 100}
             step="0.01"
             value={amount}
             onChange={(event) => setAmount(event.target.value)}
-            placeholder={`Minimum ${money(minWithdrawalPaisa)}`}
+            placeholder={`Minimum ${money(minimumRequiredPaisa)}`}
             className="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm outline-none transition focus:border-[#45a94a] focus:bg-white focus:ring-1 focus:ring-[#45a94a]"
           />
+          <p className="mt-2 text-xs leading-5 text-gray-500">Your personal minimum and the minimum for the plan assigned to this request are enforced by the server.</p>
           {amountError() && (
             <p className="mt-2 text-xs font-semibold text-red-600">
               {amountError()}

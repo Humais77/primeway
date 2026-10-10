@@ -778,6 +778,13 @@
                   "kind": "scalar"
                 }
               },
+              "minWithdrawalPaisa": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "name": {
                 "nullable": false,
                 "type": {
@@ -885,6 +892,9 @@
                 },
                 "minAmountPaisa": {
                   "column": "minAmountPaisa"
+                },
+                "minWithdrawalPaisa": {
+                  "column": "minWithdrawalPaisa"
                 },
                 "name": {
                   "column": "name"
@@ -2045,6 +2055,13 @@
                   "kind": "scalar"
                 }
               },
+              "minWithdrawalPaisa": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "updatedAt": {
                 "nullable": false,
                 "type": {
@@ -2091,6 +2108,9 @@
                 },
                 "isEnabled": {
                   "column": "isEnabled"
+                },
+                "minWithdrawalPaisa": {
+                  "column": "minWithdrawalPaisa"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
@@ -2976,6 +2996,11 @@
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
                   "nullable": false
+                },
+                "minWithdrawalPaisa": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
                 },
                 "name": {
                   "codecId": "pg/text@1",
@@ -3932,6 +3957,11 @@
                   "nativeType": "bool",
                   "nullable": false
                 },
+                "minWithdrawalPaisa": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "default": {
@@ -4392,7 +4422,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "59cc3068c1483e9aca3f458d3469d120bb03924aca7964efe4fc113261b325d2"
+    "storageHash": "cae51691ba0c545db245bbff3e33a15901315074e41b415aa485647c33e914f2"
   },
   "execution": {
     "executionHash": "9d6f4ad41037f46bfe0e22885f41e7d0338a13fd110ea48f31b3d2e1c72140a8",

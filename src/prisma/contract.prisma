@@ -130,7 +130,9 @@ model InvestmentPlan {
 
   frequency ProfitFrequency
   durationDays Int
-   customWithdrawalLimitsEnabled Boolean @default(false)
+   // Null means inherit the global minimum withdrawal setting.
+  minWithdrawalPaisa Int?
+  customWithdrawalLimitsEnabled Boolean @default(false)
   dailyWithdrawalLimitPaisa Int?
   lifetimeWithdrawalLimitPaisa Int?
 
@@ -484,6 +486,8 @@ model UserWithdrawalSetting {
 
   userId String @unique
 
+  // Null means inherit the global minimum withdrawal setting.
+  minWithdrawalPaisa Int?
   dailyLimitPaisa Int?
   isEnabled Boolean @default(true)
 

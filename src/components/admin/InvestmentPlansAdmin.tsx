@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -13,6 +12,7 @@ type Plan = {
   referralBonusBps: number;
   frequency: "DAILY" | "WEEKLY" | "MONTHLY";
   durationDays: number;
+  minWithdrawalPaisa: number | null;
   isActive: boolean;
   customWithdrawalLimitsEnabled: boolean;
   dailyWithdrawalLimitPaisa: number | null;
@@ -27,6 +27,7 @@ type PlanForm = {
   referralBonus: string;
   frequency: Plan["frequency"];
   durationDays: string;
+  minWithdrawal: string;
   isActive: boolean;
   customWithdrawalLimitsEnabled: boolean;
   dailyWithdrawalLimit: string;
@@ -41,6 +42,7 @@ const emptyForm: PlanForm = {
   referralBonus: "",
   frequency: "DAILY",
   durationDays: "30",
+  minWithdrawal: "",
   isActive: true,
   customWithdrawalLimitsEnabled: false,
   dailyWithdrawalLimit: "",
@@ -107,6 +109,7 @@ export default function InvestmentPlansAdmin({
       referralBonus: String(plan.referralBonusBps / 100),
       frequency: plan.frequency,
       durationDays: String(plan.durationDays),
+      minWithdrawal: plan.minWithdrawalPaisa == null ? "" : String(plan.minWithdrawalPaisa / 100),
       isActive: plan.isActive,
       customWithdrawalLimitsEnabled:
         plan.customWithdrawalLimitsEnabled ?? false,
@@ -125,6 +128,7 @@ export default function InvestmentPlansAdmin({
   function buildPayload() {
     const minAmountPaisa = amountToPaisa(form.minAmount);
     const maxAmountPaisa = amountToPaisa(form.maxAmount);
+    const minWithdrawalPaisa = amountToPaisa(form.minWithdrawal);
     const dailyWithdrawalLimitPaisa =
       amountToPaisa(form.dailyWithdrawalLimit);
     const lifetimeWithdrawalLimitPaisa =
@@ -165,6 +169,7 @@ export default function InvestmentPlansAdmin({
     }
 
     if (
+      Number.isNaN(minWithdrawalPaisa) ||
       Number.isNaN(dailyWithdrawalLimitPaisa) ||
       Number.isNaN(lifetimeWithdrawalLimitPaisa)
     ) {
@@ -182,6 +187,7 @@ export default function InvestmentPlansAdmin({
       frequency: form.frequency,
       durationDays: Number(form.durationDays),
       isActive: form.isActive,
+      minWithdrawalPaisa,
       customWithdrawalLimitsEnabled:
         form.customWithdrawalLimitsEnabled,
       dailyWithdrawalLimitPaisa,
@@ -401,6 +407,14 @@ export default function InvestmentPlansAdmin({
               Plan Active
             </label>
 
+            <div className="mt-5 rounded-2xl border border-[#dceedd] bg-white p-4">
+              <h3 className="font-bold text-[#173b20]">Plan-specific minimum withdrawal</h3>
+              <p className="mt-1 mb-3 text-xs leading-5 text-gray-500">
+                This minimum applies only to withdrawals assigned to this plan. Leave empty to use the global minimum.
+              </p>
+              <Field label="Minimum Withdrawal (PKR)" type="number" required={false} value={form.minWithdrawal} onChange={(value) => update("minWithdrawal", value)} />
+            </div>
+
             <div className="mt-6 rounded-2xl border border-[#dceedd] bg-[#f8fcf8] p-4">
               <label className="flex items-start gap-3">
                 <input
@@ -419,9 +433,7 @@ export default function InvestmentPlansAdmin({
                     Enable custom withdrawal limits for this plan
                   </span>
                   <span className="mt-1 block text-xs leading-5 text-gray-500">
-                    When disabled, both limits inherit the global defaults.
-                    When enabled, an empty field inherits its corresponding
-                    global limit.
+                    This toggle controls daily and lifetime caps only. Minimum withdrawal is configured separately above.
                   </span>
                 </span>
               </label>
@@ -512,6 +524,7 @@ export default function InvestmentPlansAdmin({
               <th className="px-5 py-4">Investment Range</th>
               <th className="px-5 py-4">Profit</th>
               <th className="px-5 py-4">Duration</th>
+              <th className="px-5 py-4">Minimum Withdrawal</th>
               <th className="px-5 py-4">Daily Limit</th>
               <th className="px-5 py-4">Lifetime Limit</th>
               <th className="px-5 py-4">Status</th>
@@ -538,6 +551,9 @@ export default function InvestmentPlansAdmin({
                 </td>
                 <td className="px-5 py-4 text-sm text-gray-700">
                   {plan.durationDays} days
+                </td>
+                <td className="px-5 py-4 text-sm font-semibold text-[#173b20]">
+                  {plan.minWithdrawalPaisa == null ? "Global default" : money(plan.minWithdrawalPaisa)}
                 </td>
                 <td className="px-5 py-4 text-sm text-gray-700">
                   {plan.customWithdrawalLimitsEnabled
@@ -604,7 +620,7 @@ export default function InvestmentPlansAdmin({
             {plans.length === 0 && (
               <tr>
                 <td
-                  colSpan={8}
+                  colSpan={9}
                   className="px-5 py-14 text-center text-sm text-gray-500"
                 >
                   No investment plans have been created yet.
