@@ -140,45 +140,45 @@ export default function DashboardHeader({
     }
   };
   const loadReferralLevel = async () => {
-  try {
-    const response = await fetch("/api/referrals", {
-      cache: "no-store",
-    });
+    try {
+      const response = await fetch("/api/referrals", {
+        cache: "no-store",
+      });
 
-    if (!response.ok) return;
+      if (!response.ok) return;
 
-    const data = await response.json();
+      const data = await response.json();
 
-    setReferralLevel(
-      data.referralLevel === 2 ? 2 : 1
-    );
-  } catch (error) {
-    console.error(
-      "Failed to load referral level:",
-      error
-    );
-  }
-};
+      setReferralLevel(
+        data.referralLevel === 2 ? 2 : 1
+      );
+    } catch (error) {
+      console.error(
+        "Failed to load referral level:",
+        error
+      );
+    }
+  };
 
   /* =========================================================
      INITIAL LOAD + REFRESH
   ========================================================= */
 
   useEffect(() => {
-  loadNotifications();
-  loadProfile();
-  loadReferralLevel();
-
-  const interval = setInterval(() => {
     loadNotifications();
     loadProfile();
     loadReferralLevel();
-  }, 15000);
 
-  return () => {
-    clearInterval(interval);
-  };
-}, []);
+    const interval = setInterval(() => {
+      loadNotifications();
+      loadProfile();
+      loadReferralLevel();
+    }, 15000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
 
   /* =========================================================
      CLOSE DROPDOWNS WHEN CLICKING OUTSIDE
@@ -259,9 +259,9 @@ export default function DashboardHeader({
 
 
   const displayName = profile?.fullName || fullName || "";
-const firstName = displayName.split(" ")[0] || "";
-const username = profile?.username || "";
-const email = profile?.email || "";
+  const firstName = displayName.split(" ")[0] || "";
+  const username = profile?.username || "";
+  const email = profile?.email || "";
 
 
   const referralLevelLabel =
@@ -270,22 +270,22 @@ const email = profile?.email || "";
   const liveBalancePaisa = profile?.balancePaisa ?? null;
 
   const liveBalance =
-  liveBalancePaisa !== null
-    ? `Rs ${(liveBalancePaisa / 100).toLocaleString("en-PK", {
+    liveBalancePaisa !== null
+      ? `Rs ${(liveBalancePaisa / 100).toLocaleString("en-PK", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })}`
-    : balanceStr || "Rs 0.00";
+      : balanceStr || "Rs 0.00";
 
   const initials = displayName
-  ? displayName
+    ? displayName
       .split(" ")
       .filter(Boolean)
       .slice(0, 2)
       .map((name) => name[0])
       .join("")
       .toUpperCase()
-  : "U";
+    : "U";
 
   const getNotificationIcon = (type: string) => {
     if (type === "LOGIN") {
@@ -415,18 +415,20 @@ const email = profile?.email || "";
 
         {/* Brand */}
 
+        {/* Brand */}
+
         <Link
           href="/dashboard"
           aria-label="GrowVest — Home"
           className="
-            flex
-            min-w-0
-            shrink
-            items-center
-            gap-1.5
-            overflow-hidden
-            sm:gap-2
-          "
+    flex
+    min-w-0
+    shrink
+    items-center
+    gap-1.5
+    overflow-hidden
+    sm:gap-2
+  "
         >
           {/* Brand Logo */}
 
@@ -437,26 +439,27 @@ const email = profile?.email || "";
             height={80}
             priority
             className="
-              h-9
-              w-9
-              shrink-0
-              object-contain
-              sm:h-10
-              sm:w-10
-              md:h-12
-              md:w-12
-            "
+      h-9
+      w-9
+      shrink-0
+      object-contain
+      sm:h-10
+      sm:w-10
+      md:h-12
+      md:w-12
+    "
           />
 
-          {/* Brand Name */}
+          {/* Brand Name — hidden on mobile */}
 
           <div
             className="
-              flex
-              min-w-0
-              flex-col
-              justify-center
-            "
+      hidden
+      min-w-0
+      flex-col
+      justify-center
+      sm:flex
+    "
           >
             <Image
               src={images.brandName}
@@ -465,31 +468,31 @@ const email = profile?.email || "";
               height={48}
               priority
               className="
-                h-[19px]
-                w-auto
-                max-w-[105px]
-                object-contain
-                object-left
-                sm:h-6
-                sm:max-w-[140px]
-                md:h-7
-                md:max-w-[175px]
-              "
+        h-[19px]
+        w-auto
+        max-w-[105px]
+        object-contain
+        object-left
+        sm:h-6
+        sm:max-w-[140px]
+        md:h-7
+        md:max-w-[175px]
+      "
             />
 
             <span
               className="
-                hidden
-                truncate
-                text-[8px]
-                font-semibold
-                uppercase
-                tracking-[0.18em]
-                text-[#18613F]
-                sm:block
-                md:text-[9px]
-                md:tracking-[0.28em]
-              "
+        hidden
+        truncate
+        text-[8px]
+        font-semibold
+        uppercase
+        tracking-[0.18em]
+        text-[#18613F]
+        sm:block
+        md:text-[9px]
+        md:tracking-[0.28em]
+      "
             >
               Invest · Grow · Together
             </span>
@@ -502,7 +505,7 @@ const email = profile?.email || "";
       ===================================================== */}
 
       <div
-       className="
+        className="
     flex
     min-w-0
     shrink-0
@@ -581,7 +584,7 @@ const email = profile?.email || "";
 
           {showNotifications && (
             <div
-  className="
+              className="
     fixed
     left-3
     right-3
@@ -602,7 +605,7 @@ const email = profile?.email || "";
     sm:w-[360px]
     sm:max-w-[360px]
   "
->
+            >
               {/* Header */}
 
               <div
@@ -731,10 +734,9 @@ const email = profile?.email || "";
                         hover:bg-[#F5FBF7]
                         sm:gap-3
                         sm:px-4
-                        ${
-                          !notification.isRead
-                            ? "bg-[#EAF8F0]"
-                            : "bg-white"
+                        ${!notification.isRead
+                          ? "bg-[#EAF8F0]"
+                          : "bg-white"
                         }
                       `}
                     >
@@ -898,10 +900,9 @@ const email = profile?.email || "";
                 shrink-0
                 text-[#18B152]
                 transition
-                ${
-                  showProfile
-                    ? "rotate-180"
-                    : ""
+                ${showProfile
+                  ? "rotate-180"
+                  : ""
                 }
               `}
               strokeWidth={2.5}
@@ -912,7 +913,7 @@ const email = profile?.email || "";
 
           {showProfile && (
             <div
-  className="
+              className="
     fixed
     left-3
     right-3
@@ -933,7 +934,7 @@ const email = profile?.email || "";
     sm:w-[290px]
     sm:max-w-[290px]
   "
->
+            >
               {/* User Information */}
 
               <div
@@ -973,17 +974,17 @@ const email = profile?.email || "";
                       {displayName}
                     </p>
 
-                   {username && (
-  <p className="mt-0.5 truncate text-[10px] text-gray-400">
-    @{username}
-  </p>
-)}
+                    {username && (
+                      <p className="mt-0.5 truncate text-[10px] text-gray-400">
+                        @{username}
+                      </p>
+                    )}
 
-{email && (
-  <p className="mt-0.5 truncate text-[10px] text-gray-400">
-    {email}
-  </p>
-)}
+                    {email && (
+                      <p className="mt-0.5 truncate text-[10px] text-gray-400">
+                        {email}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

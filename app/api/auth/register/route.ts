@@ -1,34 +1,26 @@
+
 import { NextResponse } from "next/server";
-
 import bcrypt from "bcryptjs";
-
 import { randomInt } from "crypto";
-
 import { z } from "zod";
 
 import { db } from "@/src/prisma/db";
 
-import { sendVerificationEmail } from "@/src/lib/email";
-
-import {
-  generateVerificationCode,
-  getExpiration,
-  hashToken,
-} from "@/src/lib/email-token";
+const USERNAME_REGEX = /^[a-zA-Z0-9_.@+-]{3,30}$/;
 
 const RegisterSchema = z.object({
-  fullName: z.string().min(2).max(100),
-
+  fullName: z.string().trim().min(2).max(100),
   username: z
     .string()
+    .trim()
     .min(3)
     .max(30)
-    .regex(/^[a-zA-Z0-9_]+$/),
-
-  email: z.string().email(),
-
-  password: z.string().min(8),
-
+    .regex(
+      USERNAME_REGEX,
+      "Username must be 3–30 characters and may contain only letters, numbers, underscores, dots, @, +, and hyphens."
+    ),
+  email: z.string().trim().email().max(254),
+  password: z.string().min(8).max(128),
   referralCode: z.string().optional(),
 });
 
@@ -42,335 +34,151 @@ function generateReferralCode(username: string) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-
     const data = RegisterSchema.parse(body);
 
     const fullName = data.fullName.trim();
-
     const email = data.email.trim().toLowerCase();
-
     const username = data.username.trim().toLowerCase();
 
     const referralCodeInput =
       data.referralCode?.trim().toUpperCase() || null;
 
-    /*
-     * ------------------------------------------------
-     * CHECK EXISTING EMAIL
-     * ------------------------------------------------
-     */
-    const existingEmail =
-      await db.orm.public.User.first({
-        email,
-      });
+    // Check existing email.
+    const existingEmail = await db.orm.public.User.first({
+      email,
+    });
 
     if (existingEmail) {
-      if (!existingEmail.isEmailVerified) {
-        return NextResponse.json(
-          {
-            message:
-              "This email is registered but not verified. Please verify your email.",
-
-            userId: existingEmail.id,
-
-            email: existingEmail.email,
-          },
-          {
-            status: 409,
-          }
-        );
-      }
-
       return NextResponse.json(
-        {
-          message: "Email is already registered.",
-        },
-        {
-          status: 409,
-        }
+        { message: "Email is already registered." },
+        { status: 409 }
       );
     }
 
-    /*
-     * ------------------------------------------------
-     * CHECK EXISTING USERNAME
-     * ------------------------------------------------
-     */
-    const existingUsername =
-      await db.orm.public.User.first({
-        username,
-      });
+    // Check existing username.
+    const existingUsername = await db.orm.public.User.first({
+      username,
+    });
 
     if (existingUsername) {
       return NextResponse.json(
-        {
-          message: "Username is already taken.",
-        },
-        {
-          status: 409,
-        }
+        { message: "Username is already taken." },
+        { status: 409 }
       );
     }
 
-    /*
-     * ------------------------------------------------
-     * FIND REFERRER
-     * ------------------------------------------------
-     *
-     * The referral code only creates the relationship.
-     *
-     * IMPORTANT:
-     *
-     * We DO NOT change the referrer's referralLevel
-     * here.
-     *
-     * The referrer changes from Level 1 → Level 2
-     * only after the referred user's investment has
-     * been successfully approved/activated.
-     */
-    let referrer:
-      | {
-          id: string;
-          referralCode: string;
-        }
-      | null = null;
+    // Find optional referrer.
+    let referrer: { id: string } | null = null;
 
     if (referralCodeInput) {
-      const foundReferrer =
-        await db.orm.public.User.first({
-          referralCode: referralCodeInput,
-        });
+      const foundReferrer = await db.orm.public.User.first({
+        referralCode: referralCodeInput,
+      });
 
       if (!foundReferrer) {
         return NextResponse.json(
-          {
-            message: "Invalid referral code.",
-          },
-          {
-            status: 400,
-          }
+          { message: "Invalid referral code." },
+          { status: 400 }
         );
       }
 
-      /*
-       * Prevent self-referral.
-       */
-      if (foundReferrer.email === email) {
+      if (
+        foundReferrer.email === email ||
+        foundReferrer.username === username
+      ) {
         return NextResponse.json(
-          {
-            message:
-              "You cannot use your own referral code.",
-          },
-          {
-            status: 400,
-          }
+          { message: "You cannot use your own referral code." },
+          { status: 400 }
         );
       }
 
-      referrer = {
-        id: foundReferrer.id,
-
-        referralCode:
-          foundReferrer.referralCode,
-      };
+      referrer = { id: foundReferrer.id };
     }
 
-    /*
-     * ------------------------------------------------
-     * HASH PASSWORD
-     * ------------------------------------------------
-     */
-    const passwordHash = await bcrypt.hash(
-      data.password,
-      12
-    );
+    // Keep the existing secure password hashing.
+    const passwordHash = await bcrypt.hash(data.password, 12);
 
-    /*
-     * ------------------------------------------------
-     * GENERATE UNIQUE REFERRAL CODE
-     * ------------------------------------------------
-     */
+    // Generate a unique referral code.
     let generatedReferralCode = "";
-
     let codeExists = true;
 
     while (codeExists) {
-      generatedReferralCode =
-        generateReferralCode(username);
+      generatedReferralCode = generateReferralCode(username);
 
-      const existingCode =
-        await db.orm.public.User.first({
-          referralCode: generatedReferralCode,
-        });
+      const existingCode = await db.orm.public.User.first({
+        referralCode: generatedReferralCode,
+      });
 
       codeExists = !!existingCode;
     }
 
-    /*
-     * ------------------------------------------------
-     * CREATE USER + REFERRAL RELATIONSHIP
-     * ------------------------------------------------
-     */
-    const result = await db.transaction(
-      async (tx) => {
-        /*
-         * Every new user starts at Level 1.
-         */
-        const createdUser =
-          await tx.orm.public.User.create({
-            fullName,
-
-            username,
-
-            email,
-
-            passwordHash,
-
-            referralCode:
-              generatedReferralCode,
-
-            referralLevel: 1,
-
-            isEmailVerified: false,
-          });
-
-        /*
-         * ------------------------------------------------
-         * CREATE DIRECT REFERRAL
-         * ------------------------------------------------
-         *
-         * Example:
-         *
-         * A refers B
-         *
-         * Referral:
-         *
-         * A → B
-         *
-         * level is always 1 because this represents
-         * the relationship, not the referrer's earning
-         * level.
-         *
-         * NO COMMISSION IS CREATED HERE.
-         */
-        if (referrer) {
-          await tx.orm.public.Referral.create({
-            referrerId: referrer.id,
-
-            referredUserId: createdUser.id,
-
-            level: 1,
-          });
-        }
-
-        /*
-         * ------------------------------------------------
-         * CREATE EMAIL VERIFICATION TOKEN
-         * ------------------------------------------------
-         */
-        const verificationCode =
-          generateVerificationCode();
-
-        const tokenHash =
-          hashToken(verificationCode);
-
-        await tx.orm.public.VerificationToken.create({
-          userId: createdUser.id,
-
-          tokenHash,
-
-          type: "EMAIL_VERIFICATION",
-
-          expiresAt: getExpiration(15),
-        });
-
-        return {
-          user: createdUser,
-
-          verificationCode,
-        };
-      }
-    );
-
-    /*
-     * ------------------------------------------------
-     * SEND VERIFICATION EMAIL
-     * ------------------------------------------------
-     *
-     * Only send after successful DB transaction.
-     */
-    try {
-      await sendVerificationEmail({
-        email,
-
+    // Create user and optional referral relationship atomically.
+    const user = await db.transaction(async (tx) => {
+      const createdUser = await tx.orm.public.User.create({
         fullName,
+        username,
+        email,
+        passwordHash,
+        referralCode: generatedReferralCode,
+        referralLevel: 1,
 
-        code: result.verificationCode,
+        // Email verification is no longer required.
+        isEmailVerified: true,
+        emailVerifiedAt: new Date().toISOString(),
       });
-    } catch (emailError) {
-      console.error(
-        "Verification email error:",
-        emailError
-      );
 
-      return NextResponse.json(
-        {
-          message:
-            "Account created, but we could not send the verification email. Please use the resend option.",
+      if (referrer) {
+        await tx.orm.public.Referral.create({
+          referrerId: referrer.id,
+          referredUserId: createdUser.id,
+          level: 1,
+        });
+      }
 
-          userId: result.user.id,
+      // No verification code or token is created.
 
-          email,
-
-          emailSent: false,
-        },
-        {
-          status: 201,
-        }
-      );
-    }
+      return createdUser;
+    });
 
     return NextResponse.json(
       {
-        message:
-          "Registration successful. Please check your email for the verification code.",
-
-        userId: result.user.id,
-
-        email,
-
-        emailSent: true,
+        message: "Registration successful. You can now log in.",
+        userId: user.id,
+        email: user.email,
+        emailSent: false,
       },
-      {
-        status: 201,
-      }
+      { status: 201 }
     );
   } catch (error) {
-    console.error(
-      "Registration error:",
-      error
-    );
+    console.error("Registration error:", error);
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         {
           message: "Invalid input.",
-
           errors: error.issues,
         },
-        {
-          status: 400,
-        }
+        { status: 400 }
+      );
+    }
+
+    const message =
+      error instanceof Error ? error.message : "";
+
+    if (
+      message.includes("Unique constraint") ||
+      message.includes("unique constraint") ||
+      message.includes("P2002")
+    ) {
+      return NextResponse.json(
+        { message: "Username, email, or referral code already exists." },
+        { status: 409 }
       );
     }
 
     return NextResponse.json(
-      {
-        message: "Something went wrong.",
-      },
-      {
-        status: 500,
-      }
+      { message: "Something went wrong." },
+      { status: 500 }
     );
   }
 }

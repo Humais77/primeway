@@ -16,6 +16,7 @@ import {
   TrendingUp,
   Leaf,
   BadgeCheck,
+  User
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { images } from "@/src/lib/images";
@@ -23,7 +24,7 @@ import { images } from "@/src/lib/images";
 export default function LoginPage() {
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -41,34 +42,23 @@ export default function LoginPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          username: username.trim(),
+          password,
+        }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        if (data.requiresEmailVerification) {
-          router.push(
-            `/verify-email?email=${encodeURIComponent(
-              data.email || email.trim().toLowerCase()
-            )}`
-          );
-          return;
-        }
-
-        setError(data.message || "Login failed");
+        setError(data.message || "Login failed. Please check your credentials.");
         return;
       }
 
-      if (data.role === "ADMIN") {
-        router.push("/admin");
-      } else {
-        router.push("/dashboard");
-      }
-
+      router.replace(data.role === "ADMIN" ? "/admin" : "/dashboard");
       router.refresh();
     } catch {
-      setError("Unable to connect to the server.");
+      setError("Unable to connect to the server. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -128,19 +118,19 @@ export default function LoginPage() {
 
         {/* Register */}
         <div className="flex items-center">
-  <Link
-    href="/register"
-    className="group flex h-9 items-center gap-1.5 rounded-lg border border-[#35e889]/40 bg-[#35e889]/10 px-3 text-[11px] font-semibold text-[#35e889] transition hover:border-[#35e889]/70 hover:bg-[#35e889]/15 hover:text-[#69f5a9] sm:h-10 sm:gap-2 sm:rounded-xl sm:px-4 sm:text-sm"
-  >
-    <span className="sm:hidden">Register</span>
-    <span className="hidden sm:inline">Create Account</span>
+          <Link
+            href="/register"
+            className="group flex h-9 items-center gap-1.5 rounded-lg border border-[#35e889]/40 bg-[#35e889]/10 px-3 text-[11px] font-semibold text-[#35e889] transition hover:border-[#35e889]/70 hover:bg-[#35e889]/15 hover:text-[#69f5a9] sm:h-10 sm:gap-2 sm:rounded-xl sm:px-4 sm:text-sm"
+          >
+            <span className="sm:hidden">Register</span>
+            <span className="hidden sm:inline">Create Account</span>
 
-    <ArrowRight
-      size={15}
-      className="transition-transform group-hover:translate-x-1 sm:h-4 sm:w-4"
-    />
-  </Link>
-</div>
+            <ArrowRight
+              size={15}
+              className="transition-transform group-hover:translate-x-1 sm:h-4 sm:w-4"
+            />
+          </Link>
+        </div>
       </header>
 
       {/* =========================================================
@@ -290,23 +280,27 @@ export default function LoginPage() {
                 onSubmit={handleSubmit}
                 className="mt-6 space-y-3.5"
               >
-                {/* Email */}
+                {/* Username or Email */}
                 <FormField
-                  id="email"
-                  label="Email Address"
-                  icon={<Mail size={19} />}
+                  id="username"
+                  label="Username or Email"
+                  icon={<User size={19} />}
                 >
                   <input
-                    id="email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
+                    id="username"
+                    name="username"
+                    type="text"
+                    placeholder="Enter your username or email"
+                    value={username}
+                    onChange={(event) => setUsername(event.target.value)}
                     required
-                    autoComplete="email"
-                    className="form-input"
+                    minLength={3}
+                    maxLength={254}
+                    autoComplete="username"
+                    className="h-full min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/35"
                   />
                 </FormField>
+
 
                 {/* Password */}
                 <div>
@@ -469,9 +463,8 @@ function Feature({
 }) {
   return (
     <div
-      className={`flex items-center gap-3 sm:flex-col sm:justify-center sm:text-center ${
-        border ? "sm:border-r sm:border-white/20" : ""
-      }`}
+      className={`flex items-center gap-3 sm:flex-col sm:justify-center sm:text-center ${border ? "sm:border-r sm:border-white/20" : ""
+        }`}
     >
       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#00C833]/70 text-[#35e889]">
         {icon}

@@ -92,19 +92,11 @@ function RegisterPageContent() {
       return;
     }
 
-    setSuccess(
-      data.emailSent === false
-        ? "Account created. Please use the resend option to verify your email."
-        : "Account created successfully. Redirecting to email verification..."
-    );
+    setSuccess("Account created successfully! Redirecting to login...");
 
     setTimeout(() => {
-      router.push(
-        `/verify-email?email=${encodeURIComponent(
-          data.email || email.trim().toLowerCase()
-        )}`
-      );
-    }, 800);
+      router.replace("/login");
+    }, 1000);
   } catch (error) {
     console.error("Registration error:", error);
     setError("Unable to connect to the server. Please try again.");
@@ -361,30 +353,33 @@ function RegisterPageContent() {
                 </FormField>
 
                 {/* Username */}
-                <FormField
-                  id="username"
-                  label="Username"
-                  icon={<UserPlus size={19} />}
-                >
-                  <input
-                    id="username"
-                    type="text"
-                    placeholder="Choose a username"
-                    value={username}
-                    onChange={(event) =>
-                      setUsername(event.target.value)
-                    }
-                    required
-                    autoComplete="username"
-                    pattern="[a-zA-Z0-9_]+"
-                    title="Only letters, numbers and underscores are allowed."
-                    className="form-input"
-                  />
-                </FormField>
+                {/* Username */}
+<FormField
+  id="username"
+  label="Username"
+  icon={<UserPlus size={19} />}
+>
+  <input
+    id="username"
+    type="text"
+    placeholder="Choose a username"
+    value={username}
+    onChange={(event) => setUsername(event.target.value)}
+    required
+    minLength={3}
+    maxLength={30}
+    autoComplete="username"
+    pattern="[a-zA-Z0-9_.@+-]{3,30}"
+    title="Use 3–30 characters: letters, numbers, underscores, dots, @, +, or hyphens."
+    className="form-input"
+  />
+</FormField>
 
-                <p className="-mt-2 pl-1 text-[10px] text-white/40">
-                  Letters, numbers and underscores only.
-                </p>
+<p className="-mt-2 pl-1 text-[10px] text-white/40">
+  3–30 characters. Letters, numbers, _, ., @, + and - are allowed.
+</p>
+
+               
 
                 {/* Email */}
                 <FormField
