@@ -1,7 +1,9 @@
+
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-   allowedDevOrigins: ['192.168.10.8'],
+  allowedDevOrigins: ["192.168.10.8"],
+
   images: {
     remotePatterns: [
       {
@@ -9,6 +11,11 @@ const nextConfig: NextConfig = {
         hostname: "res.cloudinary.com",
       },
     ],
+  },
+
+  experimental: {
+    staticGenerationMaxConcurrency: 2,
+    staticGenerationMinPagesPerWorker: 25,
   },
 };
 

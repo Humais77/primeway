@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-   "dev": "next dev --webpack",
-  "build": "next build --webpack",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "seed:plans": "tsx scripts/seed-investment-plans.ts"
@@ -23,7 +23,7 @@
     "jose": "^6.2.12",
     "lucide-react": "^1.48.0",
     "mongoose": "^9.10.2",
-    "next": "^16.3.8",
+    "next": "^16.4.3",
     "nodemailer": "^10.0.13",
     "react": "19.2.8",
     "react-dom": "19.2.8",
