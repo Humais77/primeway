@@ -1,4 +1,3 @@
-
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -9,6 +8,12 @@ const nextConfig: NextConfig = {
         hostname: "res.cloudinary.com",
       },
     ],
+  },
+
+  experimental: {
+    cpus: 2,
+    staticGenerationMaxConcurrency: 1,
+    staticGenerationMinPagesPerWorker: 50,
   },
 };
 
